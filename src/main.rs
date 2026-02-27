@@ -9,9 +9,11 @@ use menu::MenuManager;
 
 const SCREEN_WIDTH: i32 = 1280;
 const SCREEN_HEIGHT: i32 = 720;
+const GRAVITY: f32 = 9.81;
 
 fn main() {
     let (mut rl, thread) = raylib::init()
+        .size(SCREEN_WIDTH, SCREEN_HEIGHT)
         .size(SCREEN_WIDTH, SCREEN_HEIGHT)
         .size(SCREEN_WIDTH, SCREEN_HEIGHT)
         .title("Ruzzle")
@@ -60,10 +62,12 @@ fn main() {
         menu_manager.update(&rl);
         
         crab.update_with_camera(&mut rl, &camera, &thread);
-        //Drawing
-        let mut d = rl.begin_drawing(&thread);
 
-        d.clear_background(Color::RAYWHITE);
+        crab.update_with_camera(&mut rl, &camera, &thread);
+
+        let mut d = rl.begin_drawing(&thread);
+        d.clear_background(Color::BLACK);
+        d.clear_background(Color::BLACK);
 
         {
             let mut d3d = d.begin_mode3D(camera);
@@ -72,14 +76,11 @@ fn main() {
             d3d.draw_cube_wires(cube_position, 2.0, 2.0, 2.0, Color::MAROON);
             d3d.draw_grid(10, 1.0);
         }
-
-        d.draw_text(
-            "Welcome to the third dimension!",
-            10,
-            40,
-            20,
-            Color::DARKGRAY,
+        let coordonnees = format!(
+            "({:.2}, {:.2}, {:.2})",
+            crab.position.x, crab.position.y, crab.position.z
         );
+        d.draw_text(&coordonnees, 10, 40, 20, Color::DARKGRAY);
         d.draw_fps(10, 10);
     }
 }
