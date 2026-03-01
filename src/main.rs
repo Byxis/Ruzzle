@@ -1,11 +1,11 @@
 use raylib::prelude::*;
 
 mod crab;
+mod crab_animator;
 use crate::crab::Crab;
 
 const SCREEN_WIDTH: i32 = 1280;
 const SCREEN_HEIGHT: i32 = 720;
-const GRAVITY: f32 = 9.81;
 
 fn main() {
     let (mut rl, thread) = raylib::init()
@@ -24,7 +24,7 @@ fn main() {
         &mut rl,
         &thread,
         "rsc/crab.glb",
-        Vector3::new(0.0, 0.5, 0.0),
+        Vector3::new(0.0, 0.0, 0.0),
         0.0,
     );
 
@@ -42,6 +42,7 @@ fn main() {
             d3d.draw_grid(10, 1.0);
             crab.draw(&mut d3d);
         }
+
         let coordonnees = format!(
             "({:.2}, {:.2}, {:.2})",
             crab.position.x, crab.position.y, crab.position.z
