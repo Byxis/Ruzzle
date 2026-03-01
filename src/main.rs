@@ -9,7 +9,6 @@ use menu::MenuManager;
 
 const SCREEN_WIDTH: i32 = 1280;
 const SCREEN_HEIGHT: i32 = 720;
-const GRAVITY: f32 = 9.81;
 
 fn main() {
     let (mut rl, thread) = raylib::init()
@@ -76,6 +75,7 @@ fn main() {
             d3d.draw_cube_wires(cube_position, 2.0, 2.0, 2.0, Color::MAROON);
             d3d.draw_grid(10, 1.0);
         }
+
         let coordonnees = format!(
             "({:.2}, {:.2}, {:.2})",
             crab.position.x, crab.position.y, crab.position.z
