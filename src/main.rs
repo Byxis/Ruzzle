@@ -1,4 +1,4 @@
-use raylib::prelude::*;
+use raylib::{ffi::IsKeyPressed, prelude::*};
 
 fn main() {
     let screen_width = 800;
@@ -9,7 +9,7 @@ fn main() {
         .title("Ruzzle")
         .build();
 
-    let camera = Camera3D::perspective(
+    let mut camera = Camera3D::perspective(
         Vector3::new(0.0, 10.0, 10.0),
         Vector3::new(0.0, 0.0, 0.0),
         Vector3::new(0.0, 1.0, 0.0),
@@ -21,6 +21,40 @@ fn main() {
     rl.set_target_fps(60);
 
     while !rl.window_should_close() {
+
+        let speed = 0.2;
+
+         if rl.is_key_down(KeyboardKey::KEY_UP){
+            camera.position.z -= speed;
+            camera.target.z -= speed;
+         }
+         if rl.is_key_down(KeyboardKey::KEY_DOWN) {
+            camera.position.z += speed;
+            camera.target.z += speed;
+        }
+        
+        if rl.is_key_down(KeyboardKey::KEY_LEFT) {
+            camera.position.x -= speed;
+            camera.target.x -= speed;
+        }
+        if rl.is_key_down(KeyboardKey::KEY_RIGHT) {
+            camera.position.x += speed;
+            camera.target.x += speed;
+        }
+        // Monter/descendre
+        if rl.is_key_down(KeyboardKey::KEY_LEFT_SHIFT) {
+            camera.position.y += speed;
+            camera.target.y += speed;
+        }
+        if rl.is_key_down(KeyboardKey::KEY_LEFT_CONTROL) {
+            camera.position.y -= speed;
+            camera.target.y -= speed;
+        }
+
+
+
+
+
         let mut d = rl.begin_drawing(&thread);
 
         d.clear_background(Color::RAYWHITE);
