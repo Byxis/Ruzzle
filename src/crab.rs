@@ -2,7 +2,7 @@ use crate::crab_animator::CrabAnimation;
 use crate::crab_animator::CrabAnimator;
 use raylib::prelude::*;
 
-const CRAB_SPEED: f32 = 1.0;
+const CRAB_SPEED: f32 = 0.7;
 const MODEL_OFFSET: f32 = 0.2;
 const JUMP_HIGH: f32 = 2.0;
 const JUMP_SPEED: f32 = 4.0;
