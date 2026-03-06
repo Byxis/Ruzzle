@@ -7,6 +7,11 @@ mod menu;
 use menu::Menu;
 use menu::MenuManager;
 
+
+mod menu;
+use menu::Menu;
+
+
 const SCREEN_WIDTH: i32 = 1280;
 const SCREEN_HEIGHT: i32 = 720;
 
@@ -65,10 +70,29 @@ fn main() {
         crab.update_with_camera(&mut rl, &camera, &thread);
 
         let mut d = rl.begin_drawing(&thread);
+
+
+
+
         d.clear_background(Color::BLACK);
         d.clear_background(Color::BLACK);
 
-        {
+        match current_menu{
+            Menu::Title =>{
+                d.draw_text("        Ruzzle      \n \n \nAppuyez sur Entrée", SCREEN_WIDTH/2 -160 , SCREEN_HEIGHT /2 -120, 40, Color::WHITE);
+                
+            }
+            Menu::Select =>{
+                d.draw_rectangle_rec(game_btn, Color::LIGHTGRAY);
+                d.draw_text("Play", 120, 120, 30, Color::BLACK);
+
+                d.draw_rectangle_rec(settings_btn, Color::LIGHTGRAY);
+                d.draw_text("Settings", 120, 220, 30, Color::BLACK);
+
+            }
+            Menu::Settings => d.draw_text("Settings Menu", 100, 100, 40, Color::DARKGRAY),
+            Menu::Game => {
+                        {
             let mut d3d = d.begin_mode3D(camera);
 
             d3d.draw_cube(cube_position, 2.0, 2.0, 2.0, Color::RED);
@@ -80,7 +104,15 @@ fn main() {
             "({:.2}, {:.2}, {:.2})",
             crab.position.x, crab.position.y, crab.position.z
         );
+
+
+        
         d.draw_text(&coordonnees, 10, 40, 20, Color::DARKGRAY);
         d.draw_fps(10, 10);
+    }
+
+            Menu::Loading => d.draw_text("Loading Menu", 100, 100, 40, Color::BLUE),
+        }
+
     }
 }
