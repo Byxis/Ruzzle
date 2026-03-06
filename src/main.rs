@@ -50,7 +50,9 @@ fn main() {
             camera.position.y -= speed;
             camera.target.y -= speed;
         }
-
+        if rl.is_key_down(KeyboardKey::KEY_UP) {
+            camera.position.x += speed;
+        }
 
 
 
@@ -67,13 +69,18 @@ fn main() {
             d3d.draw_grid(10, 1.0);
         }
 
+        let pos = camera.position;
+
+        let text = format!("Position: x = {:.2} y ={:.2} z ={:.2}", pos.x, pos.y, pos.z);
         d.draw_text(
-            "Welcome to the third dimension!",
+            &text,
             10,
             40,
             20,
             Color::DARKGRAY,
         );
         d.draw_fps(10, 10);
+
+
     }
 }
