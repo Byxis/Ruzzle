@@ -53,8 +53,11 @@ fn main() {
             camera.position.y -= speed;
             camera.target.y -= speed;
         }
-        if rl.is_key_down(KeyboardKey::KEY_UP) {
-            camera.position.x += speed;
+        if rl.is_key_pressed(KeyboardKey::KEY_Q) {
+            rl.update_camera_pro(&mut camera, Vector3::zero(), Vector3::new(0.0, 0.0, -45.0), 0.0);
+        }
+        if rl.is_key_pressed(KeyboardKey::KEY_E) {
+            rl.update_camera_pro(&mut camera, Vector3::zero(), Vector3::new(0.0, 0.0, 45.0), 0.0);
         }
 
         let mut d = rl.begin_drawing(&thread);
