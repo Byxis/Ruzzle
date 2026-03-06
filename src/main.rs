@@ -18,21 +18,24 @@ fn main() {
 
     let cube_position = Vector3::new(0.0, 0.0, 0.0);
 
+    let mut show_coords = true;
     rl.set_target_fps(60);
 
     while !rl.window_should_close() {
-
         let speed = 0.2;
+        if rl.is_key_pressed(KeyboardKey::KEY_C) {
+            show_coords = !show_coords;
+        }
 
-         if rl.is_key_down(KeyboardKey::KEY_UP){
+        if rl.is_key_down(KeyboardKey::KEY_UP) {
             camera.position.z -= speed;
             camera.target.z -= speed;
-         }
-         if rl.is_key_down(KeyboardKey::KEY_DOWN) {
+        }
+        if rl.is_key_down(KeyboardKey::KEY_DOWN) {
             camera.position.z += speed;
             camera.target.z += speed;
         }
-        
+
         if rl.is_key_down(KeyboardKey::KEY_LEFT) {
             camera.position.x -= speed;
             camera.target.x -= speed;
@@ -54,9 +57,6 @@ fn main() {
             camera.position.x += speed;
         }
 
-
-
-
         let mut d = rl.begin_drawing(&thread);
 
         d.clear_background(Color::RAYWHITE);
@@ -69,18 +69,14 @@ fn main() {
             d3d.draw_grid(10, 1.0);
         }
 
-        let pos = camera.position;
+        if show_coords {
+            let pos = camera.position;
 
-        let text = format!("Position: x = {:.2} y ={:.2} z ={:.2}", pos.x, pos.y, pos.z);
-        d.draw_text(
-            &text,
-            10,
-            40,
-            20,
-            Color::DARKGRAY,
-        );
+            let text = format!("Position: x = {:.2} y ={:.2} z ={:.2}", pos.x, pos.y, pos.z);
+            d.draw_text(&text, 10, 40, 20, Color::DARKGRAY);
+            d.draw_text("C to close", 10, 60, 20, Color::DARKGRAY);
+        }
+
         d.draw_fps(10, 10);
-
-
     }
 }
