@@ -1,5 +1,13 @@
 use raylib::{ffi::IsKeyPressed, prelude::*};
 
+
+mod camera_controls;
+
+use camera_controls::handle_camera;
+use camera_controls::display_coordinates;
+use camera_controls::handle_coords_toggle;
+
+
 fn main() {
     let screen_width = 800;
     let screen_height = 450;
@@ -19,51 +27,17 @@ fn main() {
     let cube_position = Vector3::new(0.0, 0.0, 0.0);
 
     let mut show_coords = true;
+
+
     rl.set_target_fps(60);
 
     while !rl.window_should_close() {
-        let speed = 0.2;
-        if rl.is_key_pressed(KeyboardKey::KEY_C) {
-            show_coords = !show_coords;
-        }
-
-        if rl.is_key_down(KeyboardKey::KEY_UP) {
-            camera.position.z -= speed;
-            camera.target.z -= speed;
-        }
-        if rl.is_key_down(KeyboardKey::KEY_DOWN) {
-            camera.position.z += speed;
-            camera.target.z += speed;
-        }
-
-        if rl.is_key_down(KeyboardKey::KEY_LEFT) {
-            camera.position.x -= speed;
-            camera.target.x -= speed;
-        }
-        if rl.is_key_down(KeyboardKey::KEY_RIGHT) {
-            camera.position.x += speed;
-            camera.target.x += speed;
-        }
-        // Monter/descendre
-        if rl.is_key_down(KeyboardKey::KEY_LEFT_SHIFT) {
-            camera.position.y += speed;
-            camera.target.y += speed;
-        }
-        if rl.is_key_down(KeyboardKey::KEY_LEFT_CONTROL) {
-            camera.position.y -= speed;
-            camera.target.y -= speed;
-        }
-        if rl.is_key_pressed(KeyboardKey::KEY_Q) {
-            rl.update_camera_pro(&mut camera, Vector3::zero(), Vector3::new(0.0, 0.0, -45.0), 0.0);
-        }
-        if rl.is_key_pressed(KeyboardKey::KEY_E) {
-            rl.update_camera_pro(&mut camera, Vector3::zero(), Vector3::new(0.0, 0.0, 45.0), 0.0);
-        }
-
+        handle_coords_toggle(&rl, &mut show_coords);
+        
+        handle_camera(&rl, &mut camera);
         let mut d = rl.begin_drawing(&thread);
 
         d.clear_background(Color::RAYWHITE);
-
         {
             let mut d3d = d.begin_mode3D(camera);
 
@@ -72,14 +46,8 @@ fn main() {
             d3d.draw_grid(10, 1.0);
         }
 
-        if show_coords {
-            let pos = camera.position;
 
-            let text = format!("Position: x = {:.2} y ={:.2} z ={:.2}", pos.x, pos.y, pos.z);
-            d.draw_text(&text, 10, 40, 20, Color::DARKGRAY);
-            d.draw_text("C to close", 10, 60, 20, Color::DARKGRAY);
-        }
-
+        display_coordinates(&mut d, &mut camera, show_coords);
         d.draw_fps(10, 10);
     }
 }
