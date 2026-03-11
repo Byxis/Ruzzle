@@ -11,7 +11,6 @@ use menu::MenuManager;
 mod menu;
 use menu::Menu;
 
-
 const SCREEN_WIDTH: i32 = 1280;
 const SCREEN_HEIGHT: i32 = 720;
 
@@ -71,9 +70,6 @@ fn main() {
 
         let mut d = rl.begin_drawing(&thread);
 
-
-
-
         d.clear_background(Color::BLACK);
         d.clear_background(Color::BLACK);
 
@@ -92,27 +88,32 @@ fn main() {
             }
             Menu::Settings => d.draw_text("Settings Menu", 100, 100, 40, Color::DARKGRAY),
             Menu::Game => {
-                        {
-            let mut d3d = d.begin_mode3D(camera);
+                {
+                    let mut d3d = d.begin_mode3D(camera);
 
             d3d.draw_cube(cube_position, 2.0, 2.0, 2.0, Color::RED);
             d3d.draw_cube_wires(cube_position, 2.0, 2.0, 2.0, Color::MAROON);
             d3d.draw_grid(10, 1.0);
         }
 
-        let coordonnees = format!(
-            "({:.2}, {:.2}, {:.2})",
-            crab.position.x, crab.position.y, crab.position.z
-        );
+                let coordonnees = format!(
+                    "({:.2}, {:.2}, {:.2})",
+                    crab.position.x, crab.position.y, crab.position.z
+                );
 
+                d.draw_text(&coordonnees, 10, 40, 20, Color::DARKGRAY);
+                d.draw_fps(10, 10);
+            }
 
-        
-        d.draw_text(&coordonnees, 10, 40, 20, Color::DARKGRAY);
-        d.draw_fps(10, 10);
-    }
-
-            Menu::Loading => d.draw_text("Loading Menu", 100, 100, 40, Color::BLUE),
+            Menu::Loading => {
+                draw_text_center(
+                    &mut d,
+                    "Chargement...",
+                    (SCREEN_HEIGHT as i32) / 2 - 60,
+                    50,
+                    Color::WHITE,
+                );
+            }
         }
-
     }
 }
