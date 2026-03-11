@@ -75,7 +75,7 @@ impl Crab {
         let input = self.get_input_dir(rl);
 
         let mut move_vec = (camera_direction * input.z) + (right_direction * input.x);
-        move_vec.normalize();
+        move_vec = move_vec.normalize();
 
         if move_vec.length() > 0.0 {
             self.position += move_vec * CRAB_SPEED * dt;
