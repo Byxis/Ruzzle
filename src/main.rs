@@ -13,6 +13,7 @@ const SCREEN_HEIGHT: i32 = 720;
 fn main() {
     let (mut rl, thread) = raylib::init()
         .size(SCREEN_WIDTH, SCREEN_HEIGHT)
+        .size(SCREEN_WIDTH, SCREEN_HEIGHT)
         .title("Ruzzle")
         .build();
 
@@ -29,10 +30,19 @@ fn main() {
     let camera = Camera3D::perspective(
         Vector3::new(10.0, 10.0, 0.0),
         Vector3::new(0.0, 0.0, 0.5),
+        Vector3::new(10.0, 10.0, 0.0),
+        Vector3::new(0.0, 0.0, 0.5),
         Vector3::new(0.0, 1.0, 0.0),
         45.0,
     );
 
+    let mut crab = Crab::new(
+        &mut rl,
+        &thread,
+        "rsc/crab.glb",
+        Vector3::new(0.0, 0.0, 0.0),
+        0.0,
+    );
     let mut crab = Crab::new(
         &mut rl,
         &thread,
@@ -52,7 +62,24 @@ fn main() {
         crab.update_with_camera(&mut rl, &camera, &thread);
         //Drawing
         let mut d = rl.begin_drawing(&thread);
-        menu_manager.draw(&mut d, &crab, &camera);
-      
+
+        d.clear_background(Color::RAYWHITE);
+
+        {
+            let mut d3d = d.begin_mode3D(camera);
+
+            d3d.draw_cube(cube_position, 2.0, 2.0, 2.0, Color::RED);
+            d3d.draw_cube_wires(cube_position, 2.0, 2.0, 2.0, Color::MAROON);
+            d3d.draw_grid(10, 1.0);
+        }
+
+        d.draw_text(
+            "Welcome to the third dimension!",
+            10,
+            40,
+            20,
+            Color::DARKGRAY,
+        );
+        d.draw_fps(10, 10);
     }
 }
