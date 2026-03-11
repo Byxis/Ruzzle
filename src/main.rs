@@ -1,10 +1,6 @@
 use raylib::prelude::*;
 
-enum BlockType {
-    Fix,
-    Rotation,
-    All,
-}
+mod levels;
 
 fn main() {
     let screen_width = 800;
@@ -54,6 +50,14 @@ fn main() {
         );
         d.draw_fps(10, 10);
     }
+
+    levels::tutorial::load();
+}
+
+enum BlockType {
+    Fix,
+    Rotation,
+    All,
 }
 
 // Block type avec sa fonction d'implementation
