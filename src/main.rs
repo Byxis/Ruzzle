@@ -18,11 +18,13 @@ fn main() {
 
     let mut current_menu = Menu::Title;
 
-    let settings_btn = Rectangle::new(100.0, 200.0, 200.0, 60.0);
-    let game_btn = Rectangle::new(100.0, 300.0, 200.0, 60.0);
 
     let button_width = 200.0;
     let button_height = 60.0;
+    let game_btn = Rectangle::new((SCREEN_WIDTH / 2 - button_width as i32/ 2) as f32, 200.0, button_width, button_height);
+    let settings_btn = Rectangle::new((SCREEN_WIDTH / 2 - button_width as i32/2)  as f32, 300.0, button_width, button_height);
+    let credit_btn = Rectangle::new((SCREEN_WIDTH / 2 - button_width as i32/2) as f32, 400.0, button_width, button_height);
+    
 
     let camera = Camera3D::perspective(
         Vector3::new(10.0, 10.0, 0.0),
@@ -62,6 +64,9 @@ fn main() {
                     if game_btn.check_collision_point_rec(mouse_pos) {
                         current_menu = Menu::Game;
                     }
+                    if credit_btn.check_collision_point_rec(mouse_pos){
+                        current_menu = Menu::Credit;
+                    }
                 }
             }
             Menu::Game => {
@@ -70,7 +75,9 @@ fn main() {
                 }
             }
             Menu::Settings => {
-                // Ajoute ici d'autres transitions
+                if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
+                    current_menu = Menu::Title;
+                }
             }
             Menu::Loading => {
                 if frame_count % 100 == 0 {
@@ -78,7 +85,15 @@ fn main() {
                     frame_count = 0;
                 }
             }
+            Menu::Credit => {
+                if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
+                    current_menu = Menu::Title;
+                }
+            }
+            
         }
+        
+
         crab.update_with_camera(&mut rl, &camera, &thread);
 
         let mut d = rl.begin_drawing(&thread);
@@ -102,9 +117,18 @@ fn main() {
                 );
             }
             Menu::Select => {
+
+
+                draw_text_center(
+                    &mut d,
+                    "RUZZLE",
+                    30,
+                    50,
+                    Color::WHITE,
+                );
                 // Bouton Play
                 d.draw_rectangle_rec(game_btn, Color::LIGHTGRAY);
-                let text_play = "Play";
+                let text_play = "Jouer";
                 let text_width_play = d.measure_text(text_play, 30);
                 d.draw_text(
                     text_play,
@@ -116,12 +140,24 @@ fn main() {
 
                 // Bouton Settings
                 d.draw_rectangle_rec(settings_btn, Color::LIGHTGRAY);
-                let text_settings = "Settings";
+                let text_settings = "Options";
                 let text_width_settings = d.measure_text(text_settings, 30);
                 d.draw_text(
                     text_settings,
                     (settings_btn.x + (button_width - text_width_settings as f32) / 2.0) as i32,
                     (settings_btn.y + (button_height - 30.0) / 2.0) as i32,
+                    30,
+                    Color::BLACK,
+                );
+
+                //Boutton Credit
+                d.draw_rectangle_rec(credit_btn, Color::LIGHTGRAY);
+                let text_settings = "Crédits";
+                let text_width_settings = d.measure_text(text_settings, 30);
+                d.draw_text(
+                    text_settings,
+                    (credit_btn.x + (button_width - text_width_settings as f32) / 2.0) as i32,
+                    (credit_btn.y + (button_height - 30.0) / 2.0) as i32,
                     30,
                     Color::BLACK,
                 );
@@ -153,6 +189,30 @@ fn main() {
                     Color::WHITE,
                 );
             }
+            Menu::Credit => {
+                draw_text_center(
+                    &mut d,
+                    "Jeu réalisé par :",
+                    (SCREEN_HEIGHT as i32) / 2 - 60,
+                    50,
+                    Color::WHITE,
+                );
+                draw_text_center(
+                    &mut d,
+                    "Alexey Serrané, Allessandraaaaaa, Carolayne, Max La Menax, André saitpascodé",
+                    (SCREEN_HEIGHT as i32) / 2,
+                    20,
+                    Color::WHITE,
+                );
+                                draw_text_center(
+                    &mut d,
+                    "Max La Menax, André saitpascodé",
+                    (SCREEN_HEIGHT as i32) / 2 +40,
+                    20,
+                    Color::WHITE,
+                );
+                
+            }
         }
     }
 }
@@ -167,3 +227,21 @@ fn draw_text_center(d: &mut RaylibDrawHandle, text: &str, y: i32, font_size: i32
         color,
     );
 }
+
+
+// fn draw_button_centered(d: &mut RaylibDrawHandle, text: &str, y: f32, font_size: i32, width: f32, height : f32, color: Color, border_color : Color) {
+//     let text_length = d.measure_text(text, font_size);
+    
+//     let x : f32 = (SCREEN_WIDTH as f32) /2.0 - (width /2.0);
+//     let btn = Rectangle::new(x, y, width, height);
+//      d.draw_rectangle_rec(settings_btn, Color::LIGHTGRAY);
+//     d.draw_text(
+//         text,
+//         (SCREEN_WIDTH as i32) / 2 - (text_length / 2),
+//         y,
+//         font_size,
+//         color,
+//     );
+// }
+
+

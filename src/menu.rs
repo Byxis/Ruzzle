@@ -4,5 +4,6 @@ pub enum Menu {
     Settings,
     Game,
     Loading,
+    Credit
 }
 
