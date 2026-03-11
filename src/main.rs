@@ -3,7 +3,6 @@ use raylib::prelude::*;
 mod crab;
 mod crab_animator;
 use crate::crab::Crab;
-use std::time::Instant;
 mod menu;
 use menu::Menu;
 
