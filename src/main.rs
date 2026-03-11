@@ -114,6 +114,30 @@ fn main() {
                     Color::WHITE,
                 );
             }
+            Menu::Credit => {
+                draw_text_center(
+                    &mut d,
+                    "Jeu réalisé par :",
+                    (SCREEN_HEIGHT as i32) / 2 - 60,
+                    50,
+                    Color::WHITE,
+                );
+                draw_text_center(
+                    &mut d,
+                    "Alexey Serrané, Allessandraaaaaa, Carolayne, Max La Menax, André saitpascodé",
+                    (SCREEN_HEIGHT as i32) / 2,
+                    20,
+                    Color::WHITE,
+                );
+                                draw_text_center(
+                    &mut d,
+                    "Max La Menax, André saitpascodé",
+                    (SCREEN_HEIGHT as i32) / 2 +40,
+                    20,
+                    Color::WHITE,
+                );
+                
+            }
         }
     }
 }
