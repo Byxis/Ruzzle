@@ -72,7 +72,7 @@ impl Crab {
         camera_direction.y = 0.0;
 
         let right_direction = camera_direction.cross(Vector3::new(0.0, 1.0, 0.0));
-        let input = self.get_input_dir(rl);
+        let input = self.get_input_direction(rl);
 
         let mut move_vec = (camera_direction * input.z) + (right_direction * input.x);
         move_vec = move_vec.normalize();
@@ -133,19 +133,19 @@ impl Crab {
     //
     //----------------------------------------------------------------
 
-    fn get_input_dir(&self, rl: &RaylibHandle) -> Vector3 {
+    fn get_input_direction(&self, rl: &RaylibHandle) -> Vector3 {
         let mut input_dir = Vector3::new(0.0, 0.0, 0.0);
 
-        if rl.is_key_down(KeyboardKey::KEY_UP) {
+        if rl.is_key_down(KeyboardKey::KEY_W) {
             input_dir.z += 1.0;
         }
-        if rl.is_key_down(KeyboardKey::KEY_DOWN) {
+        if rl.is_key_down(KeyboardKey::KEY_S) {
             input_dir.z -= 1.0;
         }
-        if rl.is_key_down(KeyboardKey::KEY_RIGHT) {
+        if rl.is_key_down(KeyboardKey::KEY_A) {
             input_dir.x += 1.0;
         }
-        if rl.is_key_down(KeyboardKey::KEY_LEFT) {
+        if rl.is_key_down(KeyboardKey::KEY_D) {
             input_dir.x -= 1.0;
         }
         if rl.is_key_down(KeyboardKey::KEY_SPACE) {
