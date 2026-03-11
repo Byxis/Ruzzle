@@ -89,8 +89,14 @@ fn main() {
 
         match current_menu{
             Menu::Title =>{
-                d.draw_text("        Ruzzle      \n \n \nAppuyez sur Entrée", SCREEN_WIDTH/2 -160 , SCREEN_HEIGHT /2 -120, 40, Color::WHITE);
-            }
+                draw_text_center(&mut d, "Ruzzle", (SCREEN_HEIGHT as i32)/ 2 -60, 50, Color::WHITE);
+                draw_text_center(&mut d, "Appuyez sur Entrée", (SCREEN_HEIGHT as i32)/ 2 , 50, Color::WHITE);
+                           }
+
+
+
+
+                           
             Menu::Select =>{
                 // Bouton Play
                 d.draw_rectangle_rec(game_btn, Color::LIGHTGRAY);
@@ -160,5 +166,5 @@ fn draw_text_center(
         font_size,
         color
     );
-
+       
 }
