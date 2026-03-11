@@ -22,7 +22,10 @@ fn main() {
     let mut current_menu = Menu::Title;
     let settings_btn = Rectangle::new(100.0, 200.0, 200.0, 60.0);
     let game_btn = Rectangle::new(100.0, 300.0, 200.0, 60.0);
-
+    let button_width = 200.0;
+    let button_height = 60.0;
+    let spacing = 30.0;
+    let num_buttons = 2;
 
 
     let camera = Camera3D::perspective(
@@ -43,6 +46,7 @@ fn main() {
     rl.set_target_fps(60);
 
     while !rl.window_should_close() {
+        // Handle menu transitions
          match current_menu {
             Menu::Title => {
                 if rl.is_key_pressed(KeyboardKey::KEY_ENTER) {
@@ -63,7 +67,7 @@ fn main() {
                 }
             }
             Menu::Game => {
-                if rl.is_key_pressed(KeyboardKey::KEY_ESCAPE) {
+                if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
                     current_menu = Menu::Title;
                 }
             }
@@ -86,15 +90,31 @@ fn main() {
         match current_menu{
             Menu::Title =>{
                 d.draw_text("        Ruzzle      \n \n \nAppuyez sur Entrée", SCREEN_WIDTH/2 -160 , SCREEN_HEIGHT /2 -120, 40, Color::WHITE);
-                
             }
             Menu::Select =>{
+                // Bouton Play
                 d.draw_rectangle_rec(game_btn, Color::LIGHTGRAY);
-                d.draw_text("Play", 120, 120, 30, Color::BLACK);
+                let text_play = "Play";
+                let text_width_play = d.measure_text(text_play, 30);
+                d.draw_text(
+                    text_play, 
+                    (game_btn.x + (button_width - text_width_play as f32) / 2.0) as i32, 
+                    (game_btn.y + (button_height - 30.0) / 2.0) as i32, 
+                    30, 
+                    Color::BLACK
+                );
 
+                // Bouton Settings
                 d.draw_rectangle_rec(settings_btn, Color::LIGHTGRAY);
-                d.draw_text("Settings", 120, 220, 30, Color::BLACK);
-
+                let text_settings = "Settings";
+                let text_width_settings = d.measure_text(text_settings, 30);
+                d.draw_text(
+                    text_settings, 
+                    (settings_btn.x + (button_width - text_width_settings as f32) / 2.0) as i32, 
+                    (settings_btn.y + (button_height - 30.0) / 2.0) as i32, 
+                    30, 
+                    Color::BLACK
+                );
             }
             Menu::Settings => d.draw_text("Settings Menu", 100, 100, 40, Color::DARKGRAY),
             Menu::Game => {
@@ -120,4 +140,25 @@ fn main() {
         }
 
     }
+}
+
+
+
+
+fn draw_text_center(
+    d: &mut RaylibDrawHandle,
+    text: &str,
+    y : i32,
+    font_size : i32,
+    color : Color
+){
+    let text_length = d.measure_text(text, font_size);
+    d.draw_text(
+        text,
+        (SCREEN_WIDTH as i32)/ 2 - (text_length /2),
+        y,
+        font_size,
+        color
+    );
+
 }
