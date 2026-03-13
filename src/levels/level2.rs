@@ -2,12 +2,12 @@ use raylib::prelude::*;
 
 use crate::blocks;
 
-pub struct Level1 {
+pub struct Level2 {
     pub cubes: Vec<blocks::beach::BlockPrefab>,
     pub camera: Camera3D,
 }
 
-impl Level1 {
+impl Level2 {
     pub fn new() -> Self {
         Self {
             camera: Camera3D::perspective(
@@ -17,9 +17,9 @@ impl Level1 {
                 45.0,
             ),
             cubes: vec![
-                blocks::beach::BlockPrefab::new(1.0, -4.0, 0.0, Color::RED),
-                blocks::beach::BlockPrefab::new(5.0, 2.0, 0.0, Color::BLUE),
-                blocks::beach::BlockPrefab::new(1.0, 3.0, 0.0, Color::GREEN),
+                blocks::beach::BlockPrefab::new(5.0, 4.0, 0.0, Color::RED),
+                blocks::beach::BlockPrefab::new(3.0, 3.0, 0.0, Color::BLUE),
+                blocks::beach::BlockPrefab::new(4.0, 1.0, 0.0, Color::GREEN),
             ],
         }
     }
