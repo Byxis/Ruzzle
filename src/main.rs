@@ -4,15 +4,20 @@ mod crab;
 mod crab_animator;
 use crate::crab::Crab;
 
+mod sound_manager;
+use crate::sound_manager::SoundManager;
+
 const SCREEN_WIDTH: i32 = 1280;
 const SCREEN_HEIGHT: i32 = 720;
 
 fn main() {
+    //app init
     let (mut rl, thread) = raylib::init()
         .size(SCREEN_WIDTH, SCREEN_HEIGHT)
         .title("Ruzzle")
         .build();
 
+    //camera init
     let camera = Camera3D::perspective(
         Vector3::new(10.0, 10.0, 0.0),
         Vector3::new(0.0, 0.0, 0.5),
@@ -20,6 +25,12 @@ fn main() {
         45.0,
     );
 
+    //Sound manager and audio device init
+    let audio = RaylibAudio::init_audio_device(); 
+
+    let sound_manager = SoundManager::new(&mut rl, &thread);
+
+    //crab init
     let mut crab = Crab::new(
         &mut rl,
         &thread,
@@ -30,6 +41,7 @@ fn main() {
 
     rl.set_target_fps(60);
 
+    //frame loop
     while !rl.window_should_close() {
         crab.update_with_camera(&mut rl, &camera, &thread);
 
