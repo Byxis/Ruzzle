@@ -1,10 +1,11 @@
 use raylib::prelude::*;
 
 //files
-const BOING: &str = "rsc/<sound_path>";
-const JUMP: &str = "rsc/<sound_path>";
-const WALKING: &str = "rsc/<sound_path>";
-const MUSIC: &str = "rsc/<music_path>";
+const BOING: &str = "rsc/sounds/boing_effect.mp3";
+const JUMP: &str = "rsc/sounds/jump_effect.mp3";
+const WALKING: &str = "rsc/sounds/walking_effect.mp3";
+const MUSIC: &str = "rsc/sounds/boing_effect.mp3";
+//"rsc/music/ruzzle_music.mp3"
 
 pub struct SoundManager<'a> {
     pub background_music: Music<'a>,
