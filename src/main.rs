@@ -10,6 +10,7 @@ use menu::MenuManager;
 
 mod menu;
 use menu::Menu;
+use menu::MenuManager;
 
 const SCREEN_WIDTH: i32 = 1280;
 const SCREEN_HEIGHT: i32 = 720;
@@ -24,7 +25,14 @@ fn main() {
 
     // let mut current_menu = Menu::Title;
     let mut menu_manager = MenuManager::new();
+    // let mut current_menu = Menu::Title;
+    let mut menu_manager = MenuManager::new();
 
+    // let button_width = 200.0;
+    // let button_height = 60.0;
+    // let game_btn = Rectangle::new((SCREEN_WIDTH / 2 - button_width as i32/ 2) as f32, 200.0, button_width, button_height);
+    // let settings_btn = Rectangle::new((SCREEN_WIDTH / 2 - button_width as i32/2)  as f32, 300.0, button_width, button_height);
+    // let credit_btn = Rectangle::new((SCREEN_WIDTH / 2 - button_width as i32/2) as f32, 400.0, button_width, button_height);
     // let button_width = 200.0;
     // let button_height = 60.0;
     // let game_btn = Rectangle::new((SCREEN_WIDTH / 2 - button_width as i32/ 2) as f32, 200.0, button_width, button_height);
@@ -56,6 +64,7 @@ fn main() {
         0.0,
     );
 
+
     let mut frame_count = 0;
     rl.set_target_fps(60);
 
@@ -78,13 +87,51 @@ fn main() {
                 d.draw_text("        Ruzzle      \n \n \nAppuyez sur Entrée", SCREEN_WIDTH/2 -160 , SCREEN_HEIGHT /2 -120, 40, Color::WHITE);
                 
             }
-            Menu::Select =>{
+            Menu::Select => {
+
+
+                draw_text_center(
+                    &mut d,
+                    "RUZZLE",
+                    30,
+                    50,
+                    Color::WHITE,
+                );
+                // Bouton Play
                 d.draw_rectangle_rec(game_btn, Color::LIGHTGRAY);
-                d.draw_text("Play", 120, 120, 30, Color::BLACK);
+                let text_play = "Jouer";
+                let text_width_play = d.measure_text(text_play, 30);
+                d.draw_text(
+                    text_play,
+                    (game_btn.x + (button_width - text_width_play as f32) / 2.0) as i32,
+                    (game_btn.y + (button_height - 30.0) / 2.0) as i32,
+                    30,
+                    Color::BLACK,
+                );
 
+                // Bouton Settings
                 d.draw_rectangle_rec(settings_btn, Color::LIGHTGRAY);
-                d.draw_text("Settings", 120, 220, 30, Color::BLACK);
+                let text_settings = "Options";
+                let text_width_settings = d.measure_text(text_settings, 30);
+                d.draw_text(
+                    text_settings,
+                    (settings_btn.x + (button_width - text_width_settings as f32) / 2.0) as i32,
+                    (settings_btn.y + (button_height - 30.0) / 2.0) as i32,
+                    30,
+                    Color::BLACK,
+                );
 
+                //Boutton Credit
+                d.draw_rectangle_rec(credit_btn, Color::LIGHTGRAY);
+                let text_settings = "Crédits";
+                let text_width_settings = d.measure_text(text_settings, 30);
+                d.draw_text(
+                    text_settings,
+                    (credit_btn.x + (button_width - text_width_settings as f32) / 2.0) as i32,
+                    (credit_btn.y + (button_height - 30.0) / 2.0) as i32,
+                    30,
+                    Color::BLACK,
+                );
             }
             Menu::Settings => d.draw_text("Settings Menu", 100, 100, 40, Color::DARKGRAY),
             Menu::Game => {
