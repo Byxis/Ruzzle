@@ -5,6 +5,7 @@ mod crab_animator;
 use crate::crab::Crab;
 mod menu;
 use menu::Menu;
+use menu::MenuManager;
 
 const SCREEN_WIDTH: i32 = 1280;
 const SCREEN_HEIGHT: i32 = 720;
@@ -15,14 +16,14 @@ fn main() {
         .title("Ruzzle")
         .build();
 
-    let mut current_menu = Menu::Title;
+    // let mut current_menu = Menu::Title;
+    let mut menu_manager = MenuManager::new();
 
-
-    let button_width = 200.0;
-    let button_height = 60.0;
-    let game_btn = Rectangle::new((SCREEN_WIDTH / 2 - button_width as i32/ 2) as f32, 200.0, button_width, button_height);
-    let settings_btn = Rectangle::new((SCREEN_WIDTH / 2 - button_width as i32/2)  as f32, 300.0, button_width, button_height);
-    let credit_btn = Rectangle::new((SCREEN_WIDTH / 2 - button_width as i32/2) as f32, 400.0, button_width, button_height);
+    // let button_width = 200.0;
+    // let button_height = 60.0;
+    // let game_btn = Rectangle::new((SCREEN_WIDTH / 2 - button_width as i32/ 2) as f32, 200.0, button_width, button_height);
+    // let settings_btn = Rectangle::new((SCREEN_WIDTH / 2 - button_width as i32/2)  as f32, 300.0, button_width, button_height);
+    // let credit_btn = Rectangle::new((SCREEN_WIDTH / 2 - button_width as i32/2) as f32, 400.0, button_width, button_height);
     
 
     let camera = Camera3D::perspective(
@@ -39,58 +40,60 @@ fn main() {
         Vector3::new(0.0, 0.0, 0.0),
         0.0,
     );
+
     let mut frame_count = 0;
     rl.set_target_fps(60);
 
     while !rl.window_should_close() {
         /*--UPDATE--*/
-        frame_count +=1;
+
+        menu_manager.update(&rl);
         // Handle menu transitions
-        match current_menu {
-            Menu::Title => {
-                if rl.is_key_pressed(KeyboardKey::KEY_ENTER) {
-                    current_menu = Menu::Loading;
-                }
-            }
+        // match current_menu {
+        //     Menu::Title => {
+        //         if rl.is_key_pressed(KeyboardKey::KEY_ENTER) {
+        //             current_menu = Menu::Loading;
+        //         }
+        //     }
 
-            Menu::Select => {
-                let mouse_pos = rl.get_mouse_position();
+        //     Menu::Select => {
+        //         let mouse_pos = rl.get_mouse_position();
 
-                if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
-                    if settings_btn.check_collision_point_rec(mouse_pos) {
-                        current_menu = Menu::Settings;
-                    }
-                    if game_btn.check_collision_point_rec(mouse_pos) {
-                        current_menu = Menu::Game;
-                    }
-                    if credit_btn.check_collision_point_rec(mouse_pos){
-                        current_menu = Menu::Credit;
-                    }
-                }
-            }
-            Menu::Game => {
-                if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
-                    current_menu = Menu::Title;
-                }
-            }
-            Menu::Settings => {
-                if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
-                    current_menu = Menu::Title;
-                }
-            }
-            Menu::Loading => {
-                if frame_count % 100 == 0 {
-                    current_menu = Menu::Select;
-                    frame_count = 0;
-                }
-            }
-            Menu::Credit => {
-                if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
-                    current_menu = Menu::Title;
-                }
-            }
+        //         if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
+        //             if settings_btn.check_collision_point_rec(mouse_pos) {
+        //                 current_menu = Menu::Settings;
+        //             }
+        //             if game_btn.check_collision_point_rec(mouse_pos) {
+        //                 current_menu = Menu::Game;
+        //             }
+        //             if credit_btn.check_collision_point_rec(mouse_pos){
+        //                 current_menu = Menu::Credit;
+        //             }
+        //         }
+        //     }
+        //     Menu::Game => {
+        //         if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
+        //             current_menu = Menu::Title;
+        //         }
+        //     }
+        //     Menu::Settings => {
+        //         if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
+        //             current_menu = Menu::Title;
+        //         }
+        //     }
+        //     Menu::Loading => {
+        //         if frame_count % 100 == 0 {
+        //             current_menu = Menu::Select;
+        //             frame_count = 0;
+        //         }
+        //     }
+        //     Menu::Credit => {
+        //         if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
+        //             current_menu = Menu::Title;
+        //         }
+        //     }
             
-        }
+        // }
         
 
         crab.update_with_camera(&mut rl, &camera, &thread);
@@ -98,7 +101,7 @@ fn main() {
         let mut d = rl.begin_drawing(&thread);
 
         d.clear_background(Color::BLACK);
-        match current_menu {
+        match menu_manager.current_menu {
             Menu::Title => {
                 draw_text_center(
                     &mut d,
@@ -126,37 +129,37 @@ fn main() {
                     Color::WHITE,
                 );
                 // Bouton Play
-                d.draw_rectangle_rec(game_btn, Color::LIGHTGRAY);
+                d.draw_rectangle_rec(menu_manager.game_btn, Color::LIGHTGRAY);
                 let text_play = "Jouer";
                 let text_width_play = d.measure_text(text_play, 30);
                 d.draw_text(
                     text_play,
-                    (game_btn.x + (button_width - text_width_play as f32) / 2.0) as i32,
-                    (game_btn.y + (button_height - 30.0) / 2.0) as i32,
+                    (menu_manager.game_btn.x + (200.0 - text_width_play as f32) / 2.0) as i32,
+                    (menu_manager.game_btn.y + (60.0 - 30.0) / 2.0) as i32,
                     30,
                     Color::BLACK,
                 );
 
                 // Bouton Settings
-                d.draw_rectangle_rec(settings_btn, Color::LIGHTGRAY);
+                d.draw_rectangle_rec(menu_manager.settings_btn, Color::LIGHTGRAY);
                 let text_settings = "Options";
                 let text_width_settings = d.measure_text(text_settings, 30);
                 d.draw_text(
                     text_settings,
-                    (settings_btn.x + (button_width - text_width_settings as f32) / 2.0) as i32,
-                    (settings_btn.y + (button_height - 30.0) / 2.0) as i32,
+                    (menu_manager.settings_btn.x + (200.0 - text_width_settings as f32) / 2.0) as i32,
+                    (menu_manager.settings_btn.y + (60.0 - 30.0) / 2.0) as i32,
                     30,
                     Color::BLACK,
                 );
 
                 //Boutton Credit
-                d.draw_rectangle_rec(credit_btn, Color::LIGHTGRAY);
+                d.draw_rectangle_rec(menu_manager.credit_btn, Color::LIGHTGRAY);
                 let text_settings = "Crédits";
                 let text_width_settings = d.measure_text(text_settings, 30);
                 d.draw_text(
                     text_settings,
-                    (credit_btn.x + (button_width - text_width_settings as f32) / 2.0) as i32,
-                    (credit_btn.y + (button_height - 30.0) / 2.0) as i32,
+                    (menu_manager.credit_btn.x + (200.0 - text_width_settings as f32) / 2.0) as i32,
+                    (menu_manager.credit_btn.y + (60.0 - 30.0) / 2.0) as i32,
                     30,
                     Color::BLACK,
                 );
