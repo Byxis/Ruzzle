@@ -25,10 +25,9 @@ fn main() {
         45.0,
     );
 
-    //Sound manager and audio device init
-    let audio = RaylibAudio::init_audio_device(); 
-
-    let sound_manager = SoundManager::new(&mut rl, &thread);
+    // Sound manager and audio device init
+    let audio = RaylibAudio::init_audio_device().expect("Failed to initialize audio device");
+    let mut sound_manager = SoundManager::new(&audio);
 
     //crab init
     let mut crab = Crab::new(
@@ -61,5 +60,8 @@ fn main() {
         );
         d.draw_text(&coordonnees, 10, 40, 20, Color::DARKGRAY);
         d.draw_fps(10, 10);
+
+        //sounds
+        sound_manager.play_background_music();
     }
 }
