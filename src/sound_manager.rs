@@ -8,6 +8,10 @@ const CLICK: &str = "rsc/sounds/click_effect.mp3";
 const MUSIC: &str = "rsc/sounds/boing_effect.mp3"; //"rsc/music/ruzzle_music.mp3"
 //for now replaced music with boing, music will be added when done
 
+//volume
+const DEFAULT_MUSIC_VOLUME: f32 = 0.5; //default volume for music
+const DEFAULT_EFFECT_VOLUME: f32 = 0.5; //default volume for sound effects
+
 pub struct SoundManager<'a> {
     pub background_music: Music<'a>,
     pub walking_sound: Sound<'a>,
