@@ -1,3 +1,5 @@
+use crate::components::collider::Collider;
+use crate::components::transform::Transform3D;
 use crate::crab_animator::CrabAnimation;
 use crate::crab_animator::CrabAnimator;
 use raylib::prelude::*;
@@ -6,10 +8,9 @@ const CRAB_SPEED: f32 = 7.0;
 const MODEL_OFFSET: f32 = 0.2;
 const JUMP_HIGH: f32 = 2.0;
 const JUMP_SPEED: f32 = 4.0;
-
 pub struct Crab {
-    pub position: Vector3,
-    pub rotation: f32,
+    pub transform: Transform3D,
+    pub collider: Collider,
     jump_timer: f32,
     crab_animator: CrabAnimator,
 }
@@ -28,11 +29,14 @@ impl Crab {
         position: Vector3,
         rotation: f32,
     ) -> Self {
+        let mut collider = Collider::new_sphere(1.0);
+        collider.offset = Vector3::new(0.0, 0.5, 0.0);
+
         Self {
-            position: position,
-            rotation: rotation,
+            transform: Transform3D::new(position, rotation),
             jump_timer: 0.0,
             crab_animator: CrabAnimator::new(rl, thread, path),
+            collider: collider,
         }
     }
 
@@ -42,28 +46,18 @@ impl Crab {
     //
     //----------------------------------------------------------------
 
-    pub fn teleport(&mut self, rl: &mut RaylibHandle) {
-        let dt = rl.get_frame_time();
-
-        if rl.is_key_down(KeyboardKey::KEY_RIGHT) {
-            self.position.x += CRAB_SPEED * dt;
-        } else if rl.is_key_down(KeyboardKey::KEY_LEFT) {
-            self.position.x -= CRAB_SPEED * dt;
-        }
-
-        if rl.is_key_down(KeyboardKey::KEY_UP) {
-            self.position.z += CRAB_SPEED * dt;
-        } else if rl.is_key_down(KeyboardKey::KEY_DOWN) {
-            self.position.z -= CRAB_SPEED * dt;
-        }
+    pub fn teleport(&mut self, _transform: Transform3D) {
+        self.transform = _transform;
     }
 
-    pub fn update_with_camera(
+    pub fn calculate_next_transform(
         &mut self,
         rl: &mut RaylibHandle,
         camera: &Camera3D,
         thread: &RaylibThread,
-    ) {
+    ) -> Transform3D {
+        let mut transform3D = self.transform.clone();
+
         self.crab_animator.handle_animation(rl, thread);
         let dt = rl.get_frame_time();
 
@@ -78,10 +72,10 @@ impl Crab {
         move_vec = move_vec.normalize();
 
         if move_vec.length() > 0.0 {
-            self.position += move_vec * CRAB_SPEED * dt;
+            transform3D.position += move_vec * CRAB_SPEED * dt;
 
             let angle_rad = move_vec.x.atan2(move_vec.z);
-            self.rotation = lerp_angle(self.rotation, angle_rad.to_degrees(), 0.12);
+            transform3D.rotation = lerp_angle(transform3D.rotation, angle_rad.to_degrees(), 0.12);
         }
 
         // Y movement (jump mechanic)
@@ -90,15 +84,16 @@ impl Crab {
             self.crab_animator.jump();
         }
 
+        // Animation mechanic
         if self.jump_timer > 0.0 {
             self.jump_timer -= dt * JUMP_SPEED;
-            self.position.y = self.jump_timer.max(0.0).sin() * JUMP_HIGH;
+            transform3D.position.y = self.jump_timer.max(0.0).sin() * JUMP_HIGH;
 
             if self.jump_timer <= 3.0 * dt * JUMP_SPEED {
                 self.crab_animator.land();
             }
         } else {
-            self.position.y = 0.0;
+            transform3D.position.y = 0.0;
 
             if move_vec.length() > 0.0 {
                 self.crab_animator
@@ -114,14 +109,16 @@ impl Crab {
         if self.crab_animator.current == CrabAnimation::Idle && rl.is_key_down(KeyboardKey::KEY_E) {
             self.crab_animator.change_animation(CrabAnimation::Emote);
         }
+
+        return transform3D;
     }
 
     pub fn draw(&self, d3d: &mut RaylibMode3D<'_, impl RaylibDraw>) {
         d3d.draw_model_ex(
             &self.crab_animator.model,
-            self.position + Vector3::new(0.0, MODEL_OFFSET, 0.0),
+            self.transform.position + Vector3::new(0.0, MODEL_OFFSET, 0.0),
             Vector3::new(0.0, 1.0, 0.0),
-            self.rotation,
+            self.transform.rotation,
             Vector3::new(1.0, 1.0, 1.0),
             Color::WHITE,
         );
@@ -142,10 +139,10 @@ impl Crab {
         if rl.is_key_down(KeyboardKey::KEY_S) {
             input_dir.z -= 1.0;
         }
-        if rl.is_key_down(KeyboardKey::KEY_A) {
+        if rl.is_key_down(KeyboardKey::KEY_D) {
             input_dir.x += 1.0;
         }
-        if rl.is_key_down(KeyboardKey::KEY_D) {
+        if rl.is_key_down(KeyboardKey::KEY_A) {
             input_dir.x -= 1.0;
         }
         if rl.is_key_down(KeyboardKey::KEY_SPACE) {
