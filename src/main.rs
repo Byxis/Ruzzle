@@ -39,9 +39,15 @@ fn main() {
     );
 
     rl.set_target_fps(60);
+    //start game music
+    sound_manager.play_background_music();
 
     //frame loop
     while !rl.window_should_close() {
+        //update music
+        sound_manager.update_music_stream();
+
+        //crab position update
         crab.update_with_camera(&mut rl, &camera, &thread);
 
         let mut d = rl.begin_drawing(&thread);
@@ -60,8 +66,6 @@ fn main() {
         );
         d.draw_text(&coordonnees, 10, 40, 20, Color::DARKGRAY);
         d.draw_fps(10, 10);
-
-        //sounds
-        sound_manager.play_background_music();
+        
     }
 }

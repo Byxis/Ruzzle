@@ -37,7 +37,7 @@ impl<'a> SoundManager<'a> {
         
     }
     pub fn play_background_music(&mut self) {
-        //launches background music if not already playing
+        //launches background music if not already playing (only called once)
         if !self.music_playing {
             self.background_music.play_stream();
             self.music_playing = true;
@@ -58,6 +58,11 @@ impl<'a> SoundManager<'a> {
             self.background_music.resume_stream();
             self.music_playing = true;
         }
+    }
+
+    pub fn update_music_stream(&mut self) {
+        //updates the music stream (called every frame)
+        self.background_music.update_stream();
     }
 
     pub fn play_walking_sound(&mut self) {
