@@ -36,7 +36,10 @@ impl<'a> SoundManager<'a> {
 
         
     }
-    pub fn play_background_music(&mut self) {
+
+    //background music controls
+    pub fn start_background_music(&mut self) {
+        //START
         //launches background music if not already playing (only called once)
         if !self.music_playing {
             self.background_music.play_stream();
@@ -45,6 +48,7 @@ impl<'a> SoundManager<'a> {
     }
 
     pub fn pause_background_music(&mut self) {
+        //TOGGLE OFF
         //pauses background music (only if currently playing)
         if self.music_playing {
             self.background_music.pause_stream();
@@ -53,6 +57,7 @@ impl<'a> SoundManager<'a> {
     }
 
     pub fn resume_background_music(&mut self) {
+        //TOGGLE ON
         //resumes background music (only if currently paused)
         if !self.music_playing {
             self.background_music.resume_stream();
@@ -61,10 +66,13 @@ impl<'a> SoundManager<'a> {
     }
 
     pub fn update_music_stream(&mut self) {
+        //CONTINUOUS STREAM UPDATE
         //updates the music stream (called every frame)
         self.background_music.update_stream();
     }
 
+    //sound effects
+    //(to be added to actions that need a sound effect, directly add to action functions)
     pub fn play_walking_sound(&mut self) {
         //plays walking sound effect
         self.walking_sound.play();

@@ -40,7 +40,7 @@ fn main() {
 
     rl.set_target_fps(60);
     //start game music
-    sound_manager.play_background_music();
+    sound_manager.start_background_music();
 
     //frame loop
     while !rl.window_should_close() {
