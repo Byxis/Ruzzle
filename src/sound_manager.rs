@@ -53,12 +53,28 @@ impl<'a> SoundManager<'a> {
         self.background_music.set_volume(volume);
     }
 
+    pub fn set_effect_volume(&mut self, volume: f32) {
+        //TODO : another slider for this one
+        //sets the volume of all sound effects
+        //f32 dans [0.0 ; 1.0]
+        self.walking_sound.set_volume(volume);
+        self.jump_sound.set_volume(volume);
+        self.boing_sound.set_volume(volume);
+        self.click_sound.set_volume(volume);
+    }
+
+    pub fn set_default_volumes(&mut self) {
+        //SET DEFAULT 
+        //sets default volumes for music and sound effects
+        self.set_music_volume(DEFAULT_MUSIC_VOLUME);
+        self.set_effect_volume(DEFAULT_EFFECT_VOLUME);
+    }
+
     //background music controls
     pub fn start_background_music(&mut self) {
         //START
         //launches background music if not already playing (only called once)
         if !self.music_playing {
-            self.set_music_volume(0.5); //default volume
             self.background_music.play_stream();
             self.music_playing = true;
         }
@@ -109,4 +125,5 @@ impl<'a> SoundManager<'a> {
         //plays click sound effect (for menu interactions)
         self.click_sound.play();
     }
+
 }

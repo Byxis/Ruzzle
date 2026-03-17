@@ -39,7 +39,8 @@ fn main() {
     );
 
     rl.set_target_fps(60);
-    //start game music
+    //apply default parameters and start game music
+    sound_manager.set_default_volumes();
     sound_manager.start_background_music();
 
     //frame loop
