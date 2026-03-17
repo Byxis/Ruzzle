@@ -17,9 +17,10 @@ pub struct BlockPrefab {
     pub base_color: crate::Color,
     pub block_type: BlockType,
     pub rotation: Vector3,
-    pub target_rotation_x: f32,
-    pub target_rotation_y: f32,
+    pub current_orientation: Quaternion,
+    pub target_orientation: Quaternion,
     pub is_rotating: bool,
+    pub rotation_progress: f32,
 }
 
 impl BlockPrefab {
@@ -31,28 +32,37 @@ impl BlockPrefab {
             base_color: color,
             block_type: block_type,
             rotation: Vector3::zero(),
-            target_rotation_x: 0.0,
-            target_rotation_y: 0.0,
+            current_orientation: Quaternion::identity(),
+            target_orientation: Quaternion::identity(),
+            rotation_progress: 1.0,
             is_rotating: false,
         }
     }
 
     // Fonction qui dessine le cube en fonction de ses paramètres
     pub fn draw(&self, d: &mut crate::RaylibMode3D<crate::RaylibDrawHandle>) {
+        // On calcule l'orientation intermédiaire pour l'animation
+        let animated_orientation = self
+            .current_orientation
+            .slerp(self.target_orientation, self.rotation_progress);
+
+        // Conversion en matrice 4x4
+        let mat = animated_orientation.to_matrix();
+
+        let matrix_array: [f32; 16] = [
+            mat.m0, mat.m4, mat.m8, mat.m12, // Colonne 1
+            mat.m1, mat.m5, mat.m9, mat.m13, // Colonne 2
+            mat.m2, mat.m6, mat.m10, mat.m14, // Colonne 3
+            mat.m3, mat.m7, mat.m11, mat.m15, // Colonne 4
+        ];
+
         unsafe {
             raylib::ffi::rlPushMatrix();
-
-            // 1. Déplacement à la position du cube dans le monde
             raylib::ffi::rlTranslatef(self.position.x, self.position.y, self.position.z);
 
-            // 2. ON APPLIQUE D'ABORD LA ROTATION HORIZONTALE (Monde)
-            // Cela garantit que "gauche/droite" tourne toujours autour du poteau vertical du monde
-            raylib::ffi::rlRotatef(self.rotation.y, 0.0, 1.0, 0.0);
+            // On passe le pointeur vers le début de notre tableau
+            raylib::ffi::rlMultMatrixf(matrix_array.as_ptr());
 
-            // 3. ENSUITE ON APPLIQUE LA ROTATION VERTICALE
-            raylib::ffi::rlRotatef(self.rotation.x, 1.0, 0.0, 0.0);
-
-            // 4. Dessin
             d.draw_cube(
                 Vector3::zero(),
                 self.size.x,
@@ -101,38 +111,12 @@ impl BlockPrefab {
             return;
         }
 
-        let speed = 400.0 * dt;
-        let mut moved = false;
+        self.rotation_progress += 3.0 * dt; // Vitesse de l'animation
 
-        // --- Gestion Axe X ---
-        let diff_x = self.target_rotation_x - self.rotation.x;
-        if diff_x.abs() > 0.1 {
-            // Si l'écart est significatif
-            if diff_x.abs() <= speed {
-                self.rotation.x = self.target_rotation_x; // On arrive pile dessus
-            } else {
-                self.rotation.x += diff_x.signum() * speed;
-                moved = true;
-            }
-        }
-
-        // --- Gestion Axe Y ---
-        let diff_y = self.target_rotation_y - self.rotation.y;
-        if diff_y.abs() > 0.1 {
-            if diff_y.abs() <= speed {
-                self.rotation.y = self.target_rotation_y; // On arrive pile dessus
-            } else {
-                self.rotation.y += diff_y.signum() * speed;
-                moved = true;
-            }
-        }
-
-        // Si aucun mouvement n'a été effectué sur les deux axes, on arrête
-        if !moved {
+        if self.rotation_progress >= 1.0 {
+            self.rotation_progress = 1.0;
+            self.current_orientation = self.target_orientation;
             self.is_rotating = false;
-            // On s'assure que les valeurs sont parfaitement égales à la cible
-            self.rotation.x = self.target_rotation_x;
-            self.rotation.y = self.target_rotation_y;
         }
     }
 }

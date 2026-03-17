@@ -62,7 +62,7 @@ impl Level1 {
     pub fn update(&mut self, rl: &RaylibHandle) {
         let dt = rl.get_frame_time();
 
-        //Met à jour l'animation des cubes
+        // Met à jour l'animation des cubes
         for cube in self.cubes.iter_mut() {
             cube.update_animation(dt);
         }
@@ -73,25 +73,41 @@ impl Level1 {
 
             // On ne permet de cliquer que si le cube ne tourne pas déjà
             if !cube.is_rotating {
-                if cube.block_type == BlockType::All || cube.block_type == BlockType::RotationH {
-                    if rl.is_key_pressed(KeyboardKey::KEY_RIGHT) {
-                        cube.target_rotation_y += 90.0;
-                        cube.is_rotating = true;
-                    }
-                    if rl.is_key_pressed(KeyboardKey::KEY_LEFT) {
-                        cube.target_rotation_y -= 90.0;
-                        cube.is_rotating = true;
-                    }
+                let mut rotation_to_apply = None;
+
+                if rl.is_key_pressed(KeyboardKey::KEY_RIGHT) {
+                    // Rotation de 90° autour de l'axe Y du MONDE
+                    rotation_to_apply = Some(Quaternion::from_axis_angle(
+                        Vector3::new(0.0, 1.0, 0.0),
+                        90.0f32.to_radians(),
+                    ));
                 }
-                if cube.block_type == BlockType::All || cube.block_type == BlockType::RotationV {
-                    if rl.is_key_pressed(KeyboardKey::KEY_UP) {
-                        cube.target_rotation_x -= 90.0;
-                        cube.is_rotating = true;
-                    }
-                    if rl.is_key_pressed(KeyboardKey::KEY_DOWN) {
-                        cube.target_rotation_x += 90.0;
-                        cube.is_rotating = true;
-                    }
+                if rl.is_key_pressed(KeyboardKey::KEY_LEFT) {
+                    rotation_to_apply = Some(Quaternion::from_axis_angle(
+                        Vector3::new(0.0, 1.0, 0.0),
+                        -90.0f32.to_radians(),
+                    ));
+                }
+                if rl.is_key_pressed(KeyboardKey::KEY_UP) {
+                    // Rotation de 90° autour de l'axe X du MONDE
+                    rotation_to_apply = Some(Quaternion::from_axis_angle(
+                        Vector3::new(1.0, 0.0, 0.0),
+                        -90.0f32.to_radians(),
+                    ));
+                }
+                if rl.is_key_pressed(KeyboardKey::KEY_DOWN) {
+                    rotation_to_apply = Some(Quaternion::from_axis_angle(
+                        Vector3::new(1.0, 0.0, 0.0),
+                        90.0f32.to_radians(),
+                    ));
+                }
+
+                if let Some(rot) = rotation_to_apply {
+                    cube.is_rotating = true;
+                    cube.rotation_progress = 0.0;
+                    // IMPORTANT : rot * current_orientation = Rotation MONDE
+                    // current_orientation * rot = Rotation LOCALE
+                    cube.target_orientation = rot * cube.current_orientation;
                 }
             }
         }
