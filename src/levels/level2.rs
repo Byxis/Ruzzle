@@ -17,9 +17,27 @@ impl Level2 {
                 45.0,
             ),
             cubes: vec![
-                blocks::beach::BlockPrefab::new(5.0, 4.0, 0.0, Color::RED),
-                blocks::beach::BlockPrefab::new(3.0, 3.0, 0.0, Color::BLUE),
-                blocks::beach::BlockPrefab::new(4.0, 1.0, 0.0, Color::GREEN),
+                blocks::beach::BlockPrefab::new(
+                    5.0,
+                    4.0,
+                    0.0,
+                    Color::RED,
+                    blocks::beach::BlockType::All,
+                ),
+                blocks::beach::BlockPrefab::new(
+                    3.0,
+                    3.0,
+                    0.0,
+                    Color::BLUE,
+                    blocks::beach::BlockType::Fixe,
+                ),
+                blocks::beach::BlockPrefab::new(
+                    4.0,
+                    1.0,
+                    0.0,
+                    Color::GREEN,
+                    blocks::beach::BlockType::RotationH,
+                ),
             ],
         }
     }

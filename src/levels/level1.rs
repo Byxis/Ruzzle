@@ -1,10 +1,12 @@
 use raylib::prelude::*;
 
 use crate::blocks;
+use crate::blocks::beach::BlockType;
 
 pub struct Level1 {
     pub cubes: Vec<blocks::beach::BlockPrefab>,
     pub camera: Camera3D,
+    pub selected_cube: Option<usize>,
 }
 
 impl Level1 {
@@ -17,10 +19,11 @@ impl Level1 {
                 45.0,
             ),
             cubes: vec![
-                blocks::beach::BlockPrefab::new(1.0, -4.0, 0.0, Color::RED),
-                blocks::beach::BlockPrefab::new(5.0, 2.0, 0.0, Color::BLUE),
-                blocks::beach::BlockPrefab::new(1.0, 3.0, 0.0, Color::GREEN),
+                blocks::beach::BlockPrefab::new(1.0, -4.0, 0.0, Color::RED, BlockType::All),
+                blocks::beach::BlockPrefab::new(5.0, 2.0, 0.0, Color::BLUE, BlockType::Fixe),
+                blocks::beach::BlockPrefab::new(1.0, 3.0, 0.0, Color::GREEN, BlockType::RotationH),
             ],
+            selected_cube: None,
         }
     }
 
@@ -32,14 +35,19 @@ impl Level1 {
         let is_clicked = d.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT);
         let camera = self.camera;
 
-        for cube in self.cubes.iter_mut() {
+        for (i, cube) in self.cubes.iter_mut().enumerate() {
             if cube.is_mouse_over(&d, &camera) {
                 cube.color = Color::YELLOW;
                 if is_clicked {
+                    self.selected_cube = Some(i);
                     println!("Bloc cliqué !");
                 }
             } else {
-                cube.color = cube.base_color;
+                if Some(i) == self.selected_cube {
+                    cube.color = Color::ORANGE;
+                } else {
+                    cube.color = cube.base_color;
+                }
             }
         }
 
@@ -48,5 +56,44 @@ impl Level1 {
             cube.draw(&mut d3d);
         }
         d3d.draw_grid(10, 1.0);
+    }
+
+    // Fonction appelée lors de la boucle pour gérer les mouvements des blocks durant le niveau
+    pub fn update(&mut self, rl: &RaylibHandle) {
+        let dt = rl.get_frame_time();
+
+        //Met à jour l'animation des cubes
+        for cube in self.cubes.iter_mut() {
+            cube.update_animation(dt);
+        }
+
+        // Gére l'entrée utilisateur pour le cube sélectionné
+        if let Some(index) = self.selected_cube {
+            let cube = &mut self.cubes[index];
+
+            // On ne permet de cliquer que si le cube ne tourne pas déjà
+            if !cube.is_rotating {
+                if cube.block_type == BlockType::All || cube.block_type == BlockType::RotationH {
+                    if rl.is_key_pressed(KeyboardKey::KEY_RIGHT) {
+                        cube.target_rotation_y += 90.0;
+                        cube.is_rotating = true;
+                    }
+                    if rl.is_key_pressed(KeyboardKey::KEY_LEFT) {
+                        cube.target_rotation_y -= 90.0;
+                        cube.is_rotating = true;
+                    }
+                }
+                if cube.block_type == BlockType::All || cube.block_type == BlockType::RotationV {
+                    if rl.is_key_pressed(KeyboardKey::KEY_UP) {
+                        cube.target_rotation_x -= 90.0;
+                        cube.is_rotating = true;
+                    }
+                    if rl.is_key_pressed(KeyboardKey::KEY_DOWN) {
+                        cube.target_rotation_x += 90.0;
+                        cube.is_rotating = true;
+                    }
+                }
+            }
+        }
     }
 }
