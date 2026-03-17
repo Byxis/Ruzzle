@@ -5,6 +5,7 @@ const BOING: &str = "rsc/sounds/boing_effect.mp3";
 const JUMP: &str = "rsc/sounds/jump_effect.mp3";
 const WALKING: &str = "rsc/sounds/walking_effect.mp3";
 const CLICK: &str = "rsc/sounds/click_effect.mp3";
+const ROTATE: &str = "rsc/sounds/rotate_effect.mp3";
 const MUSIC: &str = "rsc/sounds/boing_effect.mp3"; //"rsc/music/ruzzle_music.mp3"
 //for now replaced music with boing, music will be added when done
 
@@ -18,6 +19,7 @@ pub struct SoundManager<'a> {
     pub jump_sound: Sound<'a>,
     pub boing_sound: Sound<'a>,
     pub click_sound: Sound<'a>,
+    pub rotate_sound: Sound<'a>,
     pub music_playing: bool,
 }
 
@@ -33,6 +35,8 @@ impl<'a> SoundManager<'a> {
             .expect("Failed to load boing sound");
         let click_sound: Sound<'a> = audio.new_sound(CLICK)
             .expect("Failed to load click sound");
+        let rotate_sound: Sound<'a> = audio.new_sound(ROTATE)
+            .expect("Failed to load rotate sound");
 
         SoundManager {
             background_music,
@@ -124,6 +128,11 @@ impl<'a> SoundManager<'a> {
     pub fn play_click_sound(&mut self) {
         //plays click sound effect (for menu interactions)
         self.click_sound.play();
+    }
+
+    pub fn play_rotate_sound(&mut self) {
+        //plays rotate sound effect (for block rotation)
+        self.rotate_sound.play();
     }
 
 }
