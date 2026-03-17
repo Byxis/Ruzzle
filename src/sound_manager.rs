@@ -111,16 +111,17 @@ impl<'a> SoundManager<'a> {
     //sound effects
     //(to be added to actions that need a sound effect, directly add to action functions)
     pub fn play_walking_sound(&mut self) {
-        //plays walking sound effect
+        //plays walking sound effect (for crab movement)
         self.walking_sound.play();
     }
 
     pub fn play_jump_sound(&mut self) {
-        //plays jump sound effect
+        //plays jump sound effect (for crab jump)
         self.jump_sound.play();
     }
 
     pub fn play_boing_sound(&mut self) {
+        //TODO : decide what to use it for
         //plays boing sound effect
         self.boing_sound.play();
     }
