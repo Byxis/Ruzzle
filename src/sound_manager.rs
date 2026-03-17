@@ -1,11 +1,11 @@
 use raylib::prelude::*;
 
-//files
+//sound files
 const BOING: &str = "rsc/sounds/boing_effect.mp3";
 const JUMP: &str = "rsc/sounds/jump_effect.mp3";
 const WALKING: &str = "rsc/sounds/walking_effect.mp3";
-const MUSIC: &str = "rsc/sounds/boing_effect.mp3";
-//"rsc/music/ruzzle_music.mp3"
+const MUSIC: &str = "rsc/sounds/boing_effect.mp3"; //"rsc/music/ruzzle_music.mp3"
+//for now replaced music with boing, music will be added when done
 
 pub struct SoundManager<'a> {
     pub background_music: Music<'a>,
