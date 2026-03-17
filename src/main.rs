@@ -4,22 +4,25 @@ mod crab;
 mod crab_animator;
 use crate::crab::Crab;
 mod menu;
-use menu::Menu;
 use menu::MenuManager;
-
-
-const SCREEN_WIDTH: i32 = 1280;
-const SCREEN_HEIGHT: i32 = 720;
+mod config;
+use config::Config;
 
 fn main() {
+    let config = Config::new();
     let (mut rl, thread) = raylib::init()
-        .size(SCREEN_WIDTH, SCREEN_HEIGHT)
+        .size(config.screen_width, config.screen_height)
         .title("Ruzzle")
         .build();
 
     // let mut current_menu = Menu::Title;
-    let mut menu_manager = MenuManager::new();
-
+    let mut menu_manager = MenuManager::new(config);
+     if rl.get_screen_width() != menu_manager.config.screen_width 
+        || rl.get_screen_height() != menu_manager.config.screen_height {
+        unsafe {
+            raylib::ffi::SetConfigFlags(raylib::ffi::ConfigFlags::FLAG_WINDOW_RESIZABLE as u32);
+        }
+    }
 
 
     let camera = Camera3D::perspective(
@@ -39,7 +42,6 @@ fn main() {
     );
 
 
-    let mut frame_count = 0;
     rl.set_target_fps(60);
 
     while !rl.window_should_close() {

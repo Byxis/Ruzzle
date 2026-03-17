@@ -2,6 +2,8 @@ use raylib::{ffi::KeyboardKey, RaylibHandle};
 use raylib::prelude::*;
 
 use crate::crab::Crab;
+
+use crate::config::Config;
 pub enum Menu {
     Title,
     Select,
@@ -20,10 +22,11 @@ pub struct MenuManager {
     pub game_btn: Rectangle,
     pub settings_btn: Rectangle,
     pub credit_btn: Rectangle,
+    pub config: Config,
 }
 
 impl MenuManager {
-    pub fn new() -> Self {
+    pub fn new(config:Config) -> Self {
 
         let button_width = 200.0;
         let button_height = 60.0;
@@ -39,6 +42,7 @@ impl MenuManager {
             game_btn,
             settings_btn,
             credit_btn,
+            config,
         }
     }
 
@@ -85,6 +89,7 @@ impl MenuManager {
             Menu::Credit => {
                 if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
                     self.current_menu = Menu::Title;
+                    
                 }
             }
         }
