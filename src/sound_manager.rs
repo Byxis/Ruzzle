@@ -13,6 +13,7 @@ pub struct SoundManager<'a> {
     pub walking_sound: Sound<'a>,
     pub jump_sound: Sound<'a>,
     pub boing_sound: Sound<'a>,
+    pub click_sound: Sound<'a>,
     pub music_playing: bool,
 }
 
