@@ -41,12 +41,20 @@ impl<'a> SoundManager<'a> {
 
         
     }
+    //volume control
+    pub fn set_music_volume(&mut self, volume: f32) {
+        //TODO : make a slider for this thing
+        //sets the volume of the background music
+        //f32 dans [0.0 ; 1.0]
+        self.background_music.set_volume(volume);
+    }
 
     //background music controls
     pub fn start_background_music(&mut self) {
         //START
         //launches background music if not already playing (only called once)
         if !self.music_playing {
+            self.set_music_volume(0.5); //default volume
             self.background_music.play_stream();
             self.music_playing = true;
         }
