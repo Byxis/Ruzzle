@@ -71,120 +71,14 @@ fn main() {
     while !rl.window_should_close() {
         /*--UPDATE--*/
         //Updating the game 
+        //Updating the game 
         menu_manager.update(&rl);
         
+        
         crab.update_with_camera(&mut rl, &camera, &thread);
-
-        crab.update_with_camera(&mut rl, &camera, &thread);
-
+        //Drawing
         let mut d = rl.begin_drawing(&thread);
-
-        d.clear_background(Color::BLACK);
-        d.clear_background(Color::BLACK);
-
-        match current_menu{
-            Menu::Title =>{
-                d.draw_text("        Ruzzle      \n \n \nAppuyez sur Entrée", SCREEN_WIDTH/2 -160 , SCREEN_HEIGHT /2 -120, 40, Color::WHITE);
-                
-            }
-            Menu::Select => {
-
-
-                draw_text_center(
-                    &mut d,
-                    "RUZZLE",
-                    30,
-                    50,
-                    Color::WHITE,
-                );
-                // Bouton Play
-                d.draw_rectangle_rec(game_btn, Color::LIGHTGRAY);
-                let text_play = "Jouer";
-                let text_width_play = d.measure_text(text_play, 30);
-                d.draw_text(
-                    text_play,
-                    (game_btn.x + (button_width - text_width_play as f32) / 2.0) as i32,
-                    (game_btn.y + (button_height - 30.0) / 2.0) as i32,
-                    30,
-                    Color::BLACK,
-                );
-
-                // Bouton Settings
-                d.draw_rectangle_rec(settings_btn, Color::LIGHTGRAY);
-                let text_settings = "Options";
-                let text_width_settings = d.measure_text(text_settings, 30);
-                d.draw_text(
-                    text_settings,
-                    (settings_btn.x + (button_width - text_width_settings as f32) / 2.0) as i32,
-                    (settings_btn.y + (button_height - 30.0) / 2.0) as i32,
-                    30,
-                    Color::BLACK,
-                );
-
-                //Boutton Credit
-                d.draw_rectangle_rec(credit_btn, Color::LIGHTGRAY);
-                let text_settings = "Crédits";
-                let text_width_settings = d.measure_text(text_settings, 30);
-                d.draw_text(
-                    text_settings,
-                    (credit_btn.x + (button_width - text_width_settings as f32) / 2.0) as i32,
-                    (credit_btn.y + (button_height - 30.0) / 2.0) as i32,
-                    30,
-                    Color::BLACK,
-                );
-            }
-            Menu::Settings => d.draw_text("Settings Menu", 100, 100, 40, Color::DARKGRAY),
-            Menu::Game => {
-                {
-                    let mut d3d = d.begin_mode3D(camera);
-
-            d3d.draw_cube(cube_position, 2.0, 2.0, 2.0, Color::RED);
-            d3d.draw_cube_wires(cube_position, 2.0, 2.0, 2.0, Color::MAROON);
-            d3d.draw_grid(10, 1.0);
-        }
-
-                let coordonnees = format!(
-                    "({:.2}, {:.2}, {:.2})",
-                    crab.position.x, crab.position.y, crab.position.z
-                );
-
-                d.draw_text(&coordonnees, 10, 40, 20, Color::DARKGRAY);
-                d.draw_fps(10, 10);
-            }
-
-            Menu::Loading => {
-                draw_text_center(
-                    &mut d,
-                    "Chargement...",
-                    (SCREEN_HEIGHT as i32) / 2 - 60,
-                    50,
-                    Color::WHITE,
-                );
-            }
-            Menu::Credit => {
-                draw_text_center(
-                    &mut d,
-                    "Jeu réalisé par :",
-                    (SCREEN_HEIGHT as i32) / 2 - 60,
-                    50,
-                    Color::WHITE,
-                );
-                draw_text_center(
-                    &mut d,
-                    "Alexey Serrané, Allessandraaaaaa, Carolayne, Max La Menax, André saitpascodé",
-                    (SCREEN_HEIGHT as i32) / 2,
-                    20,
-                    Color::WHITE,
-                );
-                                draw_text_center(
-                    &mut d,
-                    "Max La Menax, André saitpascodé",
-                    (SCREEN_HEIGHT as i32) / 2 +40,
-                    20,
-                    Color::WHITE,
-                );
-                
-            }
-        }
+        menu_manager.draw(&mut d, &crab, &camera);
+      
     }
 }
