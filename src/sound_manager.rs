@@ -6,8 +6,7 @@ const JUMP: &str = "rsc/sounds/jump_effect.mp3";
 const WALKING: &str = "rsc/sounds/walking_effect.mp3";
 const CLICK: &str = "rsc/sounds/click_effect.mp3";
 const ROTATE: &str = "rsc/sounds/rotate_effect.mp3";
-const MUSIC: &str = "rsc/sounds/boing_effect.mp3"; //"rsc/music/ruzzle_music.mp3"
-//for now replaced music with boing, music will be added when done
+const MUSIC: &str = "rsc/sounds/8bit_crab_rave.mp3";
 
 //volume
 const DEFAULT_MUSIC_VOLUME: f32 = 0.5; //default volume for music
@@ -66,6 +65,7 @@ impl<'a> SoundManager<'a> {
         self.jump_sound.set_volume(volume);
         self.boing_sound.set_volume(volume);
         self.click_sound.set_volume(volume);
+        self.rotate_sound.set_volume(volume);
     }
 
     pub fn set_default_volumes(&mut self) {
