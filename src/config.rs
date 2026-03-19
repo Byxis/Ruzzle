@@ -6,8 +6,8 @@ pub struct Config {
 impl Config {
     pub fn new() -> Self {
         Config {
-            screen_width : 1280,
-            screen_height : 720,
+            screen_width : 1920,
+            screen_height : 1080,
         }
     }
     pub fn update(&mut self, new_screen_width : i32, new_screen_height : i32,){

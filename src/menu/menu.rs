@@ -32,8 +32,6 @@ pub struct Button {
     pub id : HoveredButton,
 }
 
-const SCREEN_WIDTH: i32 = 1280;
-const SCREEN_HEIGHT: i32 = 720;
 
 pub struct MenuManager {
     pub current_menu: Menu,
@@ -45,21 +43,30 @@ pub struct MenuManager {
 
 impl MenuManager {
     pub fn new(config: Config) -> Self {
-        let button_width = 200.0;
-        let button_height = 60.0;
+        // let button_width = 200.0;
+        // let button_height = 60.0;
+        let button_width = (config.screen_width as f32)  * 0.2 ;
+        let button_height = (config.screen_height as f32) * 0.1 ;
+
         let my_buttons = vec![
             Button{
-                rectangle : Rectangle::new((SCREEN_WIDTH / 2 - button_width as i32 / 2) as f32,200.0,button_width,button_height),
+                rectangle : Rectangle::new((config.screen_width / 2 - button_width as i32 / 2) as f32,
+                 (config.screen_height as f32) * 0.3,
+                 button_width,button_height),
                 label : "Jouer".to_string(),
                 id : HoveredButton::Game
             },
             Button{
-                rectangle : Rectangle::new((SCREEN_WIDTH / 2 - button_width as i32 / 2) as f32, 300.0,button_width,button_height),
+                rectangle : Rectangle::new((config.screen_width / 2 - button_width as i32 / 2) as f32,
+                  (config.screen_height as f32) * 0.5,
+                 button_width,button_height),
                 label : "Options".to_string(),
                 id : HoveredButton::Settings
             },
             Button{
-            rectangle : Rectangle::new((SCREEN_WIDTH / 2 - button_width as i32 / 2) as f32, 400.0,button_width,button_height),
+            rectangle : Rectangle::new((config.screen_width / 2 - button_width as i32 / 2) as f32,
+              (config.screen_height as f32) * 0.7,
+             button_width,button_height),
             label : "Crédits".to_string(),
             id : HoveredButton::Credit
             }
@@ -129,34 +136,41 @@ impl MenuManager {
     pub fn draw(&self, mut d: &mut RaylibDrawHandle, crab: &Crab, camera: &Camera3D) {
         d.clear_background(Color::BLACK);
 
-        let color_hovered = Color::RED;
+        let color_hovered = Color::DARKORANGE;
         let color_button = Color::DARKGRAY;
+        let font_size_h1 = (self.config.screen_height / 14) as i32;
+        let font_size_h2 = (self.config.screen_height / 23) as i32;
         match self.current_menu {
             Menu::Title => {
+                
                 draw_text_center(
                     &mut d,
                     "Ruzzle",
-                    (SCREEN_HEIGHT as i32) / 2 - 60,
-                    50,
+                    self.config.screen_width,
+                    (self.config.screen_height as i32) / 2 - (self.config.screen_height / 10) as i32,
+                    font_size_h1 ,
                     Color::WHITE,
                 );
                 draw_text_center(
                     &mut d,
                     "Appuyez sur Entrée",
-                    (SCREEN_HEIGHT as i32) / 2,
-                    50,
+                    self.config.screen_width,
+                    (self.config.screen_height as i32) / 2,
+                    font_size_h1,
                     Color::WHITE,
                 );
             }
             Menu::Select => {
-                draw_text_center(&mut d, "RUZZLE", 30, 50, Color::WHITE);
+                draw_text_center(&mut d, "RUZZLE",self.config.screen_width, (self.config.screen_height /10) as i32,
+                 font_size_h1, Color::WHITE);
                 for button in &self.buttons{
                     let is_hovered = self.hovered_button == button.id;
-                    draw_button(d, button.rectangle, &button.label, color_hovered, color_button, is_hovered);
+                    draw_button(d, button.rectangle, &button.label, color_hovered, color_button, is_hovered, font_size_h2);
                 }
                         
                 }
-            Menu::Settings => d.draw_text("Settings Menu", 100, 100, 40, Color::DARKGRAY),
+            Menu::Settings => d.draw_text("Settings Menu", (self.config.screen_height / 13) as i32, (self.config.screen_height / 7) as i32,
+             font_size_h1, Color::DARKGRAY),
             Menu::Game => {
                 {
                     let mut d3d = d.begin_mode3D(camera);
@@ -170,7 +184,7 @@ impl MenuManager {
                     crab.position.x, crab.position.y, crab.position.z
                 );
 
-                d.draw_text(&coordonnees, 10, 40, 20, Color::DARKGRAY);
+                d.draw_text(&coordonnees, 10, 40, (self.config.screen_height /36 as i32), Color::DARKGRAY);
                 d.draw_fps(10, 10);
             }
 
@@ -178,8 +192,9 @@ impl MenuManager {
                 draw_text_center(
                     &mut d,
                     "Chargement...",
-                    (SCREEN_HEIGHT as i32) / 2 - 60,
-                    50,
+                    self.config.screen_width,
+                    (self.config.screen_height as i32) / 2 - (self.config.screen_height /12 as i32),
+                    font_size_h1,
                     Color::WHITE,
                 );
             }
@@ -187,22 +202,25 @@ impl MenuManager {
                 draw_text_center(
                     &mut d,
                     "Jeu réalisé par :",
-                    (SCREEN_HEIGHT as i32) / 2 - 60,
-                    50,
+                    self.config.screen_width,
+                    (self.config.screen_height as i32) / 2 - (self.config.screen_height /12 as i32),
+                    font_size_h1,
                     Color::WHITE,
                 );
                 draw_text_center(
                     &mut d,
                     "Alexey Serrané, Allessandraaaaaa, Carolayne, Max La Menax, André saitpascodé",
-                    (SCREEN_HEIGHT as i32) / 2,
-                    20,
+                    self.config.screen_width,
+                    (self.config.screen_height as i32) / 2,
+                    (self.config.screen_height /36 as i32),
                     Color::WHITE,
                 );
                 draw_text_center(
                     &mut d,
                     "Max La Menax, André saitpascodé",
-                    (SCREEN_HEIGHT as i32) / 2 + 40,
-                    20,
+                    self.config.screen_width,
+                    (self.config.screen_height as i32) / 2 + (self.config.screen_height /18 as i32),
+                    (self.config.screen_height /12 as i32),
                     Color::WHITE,
                 );
             }
@@ -211,36 +229,36 @@ impl MenuManager {
 }
 
 
-fn draw_button(d: &mut RaylibDrawHandle, button : Rectangle, text : &str, color_hovered  : Color,color : Color, hovered : bool, ){
+fn draw_button(d: &mut RaylibDrawHandle, button : Rectangle, text : &str, color_hovered  : Color, color : Color, hovered : bool, font_size: i32 ){
 
                         //let text_play = "Jouer";
-                        let text_width_play = d.measure_text(text, 30);
+                        let text_width_play = d.measure_text(text, font_size);
                         if hovered{
                             d.draw_rectangle_rec(button, color_hovered);
                             d.draw_text(
                             text,
-                            (button.x + (button.width- text_width_play as f32) / 2.0) as i32,
-                            (button.y + (60.0 - 30.0) / 2.0) as i32,
-                            30,
+                            (button.x + (button.width- text_width_play as f32) / 1.8) as i32,
+                            (button.y + (button.height - (button.height /2.0 )) / 2.0) as i32,
+                            font_size,
                             Color::WHITE,
                         );
                         }else{
                             d.draw_rectangle_rec(button, color);
                             d.draw_text(
                             text,
-                            (button.x + (200.0 - text_width_play as f32) / 2.0) as i32,
-                            (button.y + (60.0 - 30.0) / 2.0) as i32,
-                            30,
+                            (button.x + (button.width- text_width_play as f32) / 2.0) as i32,
+                            (button.y + (button.height - (button.height /2.0 )) / 2.0) as i32,
+                            font_size,
                             Color::BLACK
                         );
                         }
                         
 }
-fn draw_text_center(d: &mut RaylibDrawHandle, text: &str, y: i32, font_size: i32, color: Color) {
+fn draw_text_center(d: &mut RaylibDrawHandle, text: &str, x : i32,  y: i32, font_size: i32, color: Color) {
     let text_length = d.measure_text(text, font_size);
     d.draw_text(
         text,
-        (SCREEN_WIDTH as i32) / 2 - (text_length / 2),
+        (x / 2) - (text_length / 2),
         y,
         font_size,
         color,
