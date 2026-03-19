@@ -21,7 +21,7 @@ impl SoundEffect {
     }
 }
 
-enum BackgroundMusic {
+pub enum BackgroundMusic {
     CrabRave, //(default music)
     //TODO : other music choices ?
 }
@@ -39,7 +39,7 @@ const DEFAULT_MUSIC_VOLUME: f32 = 0.5; //default volume for music
 const DEFAULT_EFFECT_VOLUME: f32 = 0.5; //default volume for sound effects
 
 pub struct SoundManager<'a> {
-    background_music: Music<'a>,
+    background_music: Option<Music<'a>>,
     music_volume: f32,
     pub music_playing: bool,
     effect_volume: f32,
@@ -47,12 +47,11 @@ pub struct SoundManager<'a> {
 
 impl<'a> SoundManager<'a> {
     pub fn new(audio: &'a RaylibAudio) -> Self {
-        let background_music = audio.new_music(BackgroundMusic::CrabRave.path()).expect("Failed to load background music");
-        
+
         SoundManager {
-            background_music,
+            background_music: None, //init later (allows for future track choice)
             music_volume: DEFAULT_MUSIC_VOLUME,
-            effect_volume: DEFAULT_EFFECT_VOLUME,
+            effect_volume: DEFAULT_EFFECT_VOLUME, //volumes set to default
             music_playing: false,
         }
     }
@@ -60,15 +59,17 @@ impl<'a> SoundManager<'a> {
     pub fn set_music_volume(&mut self, volume: f32) {
         //TODO : make a slider for this thing
         //sets the volume of the background music
-        //f32 dans [0.0 ; 1.0]
-        self.background_music.set_volume(volume);
+        //f32 in [0.0 ; 1.0]
+        if let Some(ref mut music) = self.background_music {
+            music.set_volume(volume);
+        }
         self.music_volume = volume;
     }
 
     pub fn set_effect_volume(&mut self, volume: f32) {
         //TODO : another slider for this one
         //sets the volume of all sound effects
-        //f32 dans [0.0 ; 1.0]
+        //f32 in [0.0 ; 1.0]
         self.effect_volume = volume;
     }
 
@@ -83,14 +84,15 @@ impl<'a> SoundManager<'a> {
     pub fn set_background_music(&mut self, audio: &'a RaylibAudio, music: BackgroundMusic) {
         //SET BACKGROUND MUSIC
         //sets the background music to the specified track
-        self.background_music = audio.new_music(music.path()).expect("Failed to load background music");
-        self.background_music.set_volume(self.music_volume); //maintain current volume when changing music
+        self.background_music = Some(audio.new_music(music.path()).expect("Failed to load background music"));
+        self.background_music.as_mut().unwrap().set_volume(self.music_volume); //maintain current volume when changing music
+        //background music as Option needs unwrapping 
     }
     pub fn start_background_music(&mut self) {
         //START
         //launches background music if not already playing (only called once)
         if !self.music_playing {
-            self.background_music.play_stream();
+            self.background_music.as_mut().unwrap().play_stream();
             self.music_playing = true;
         }
     }
@@ -99,7 +101,7 @@ impl<'a> SoundManager<'a> {
         //TOGGLE OFF
         //pauses background music (only if currently playing)
         if self.music_playing {
-            self.background_music.pause_stream();
+            self.background_music.as_mut().unwrap().pause_stream();
             self.music_playing = false;
         }
     }
@@ -108,7 +110,7 @@ impl<'a> SoundManager<'a> {
         //TOGGLE ON
         //resumes background music (only if currently paused)
         if !self.music_playing {
-            self.background_music.resume_stream();
+            self.background_music.as_mut().unwrap().resume_stream();
             self.music_playing = true;
         }
     }
@@ -116,17 +118,24 @@ impl<'a> SoundManager<'a> {
     pub fn update_music_stream(&mut self) {
         //CONTINUOUS STREAM UPDATE
         //updates the music stream (called every frame)
-        self.background_music.update_stream();
+        if let Some(ref mut music) = self.background_music {
+            music.update_stream();
+        }
     }
 
     //sound effects
     //(to be added to actions that need a sound effect, directly add to action functions)
     fn load_sound(audio: &'a RaylibAudio, effect: SoundEffect) -> Sound {
+        //LOAD SOUND EFFECT
+        //loads the specified sound effect and returns it (to be played immediately after)
         let effect_path = effect.path();
         audio.new_sound(effect.path()).expect(&format!("Failed to load {effect_path}"))
     }
 
     pub fn play_sound_effect(&mut self, audio: &'a RaylibAudio, effect: SoundEffect) {
+        //PLAY SOUND EFFECT
+        //plays the specified sound effect at the current effect volume
+        //loads the sound effect and plays it immediately
         SoundManager::load_sound(audio, effect).play();
     }
 
