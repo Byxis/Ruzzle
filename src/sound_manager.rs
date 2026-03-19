@@ -44,6 +44,7 @@ impl<'a> SoundManager<'a> {
             jump_sound,
             boing_sound,
             click_sound,
+            rotate_sound,
             music_playing: false,
         }
 
