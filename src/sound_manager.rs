@@ -4,7 +4,7 @@ use raylib::prelude::*;
 
 //enum for sound files
 #[derive(PartialEq, Eq, Hash, Clone, Copy)] //makes it usable in cache (as HashMap key)
-enum SoundEffect {
+pub enum SoundEffect {
     Boing,
     Jump,
     Walking,

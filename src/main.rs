@@ -6,7 +6,7 @@ use crate::crab::Crab;
 
 mod sound_manager;
 use crate::sound_manager::SoundManager;
-use crate::sound_manager::{BackgroundMusic}; //access allowed for now (TODO : find a way to choose without making it public)
+use crate::sound_manager::{BackgroundMusic, SoundEffect}; //access allowed for now (TODO : find a way to choose without making it public)
 
 const SCREEN_WIDTH: i32 = 1280;
 const SCREEN_HEIGHT: i32 = 720;
@@ -43,6 +43,8 @@ fn main() {
     //apply default parameters and start game music
     sound_manager.set_background_music(&audio, BackgroundMusic::CrabRave);
     sound_manager.start_background_music();
+
+    let mut a = 1;
 
     //frame loop
     while !rl.window_should_close() {
