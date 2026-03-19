@@ -1,6 +1,9 @@
+use std::collections::HashMap;
+
 use raylib::prelude::*;
 
 //enum for sound files
+#[derive(PartialEq, Eq, Hash, Clone, Copy)] //makes it usable in cache (as HashMap key)
 enum SoundEffect {
     Boing,
     Jump,
@@ -42,6 +45,7 @@ pub struct SoundManager<'a> {
     background_music: Option<Music<'a>>,
     music_volume: f32,
     pub music_playing: bool,
+    effects_cache: HashMap<SoundEffect, Sound<'a>>, //cache for lazy loading and memory of sound effects
     effect_volume: f32,
 }
 
@@ -51,6 +55,7 @@ impl<'a> SoundManager<'a> {
         SoundManager {
             background_music: None, //init later (allows for future track choice)
             music_volume: DEFAULT_MUSIC_VOLUME,
+            effects_cache: HashMap::new(), //initialize the effects cache
             effect_volume: DEFAULT_EFFECT_VOLUME, //volumes set to default
             music_playing: false,
         }
@@ -125,18 +130,25 @@ impl<'a> SoundManager<'a> {
 
     //sound effects
     //(to be added to actions that need a sound effect, directly add to action functions)
-    fn load_sound(audio: &'a RaylibAudio, effect: SoundEffect) -> Sound {
+    fn load_sound(&mut self, audio: &'a RaylibAudio, effect: SoundEffect) {
         //LOAD SOUND EFFECT
         //loads the specified sound effect and returns it (to be played immediately after)
         let effect_path = effect.path();
-        audio.new_sound(effect.path()).expect(&format!("Failed to load {effect_path}"))
+        let new_sound: Sound<'a> = audio.new_sound(effect.path()).expect(&format!("Failed to load {effect_path}"));
+        self.effects_cache.insert(effect, new_sound);
     }
 
     pub fn play_sound_effect(&mut self, audio: &'a RaylibAudio, effect: SoundEffect) {
         //PLAY SOUND EFFECT
-        //plays the specified sound effect at the current effect volume
-        //loads the sound effect and plays it immediately
-        SoundManager::load_sound(audio, effect).play();
+        //plays the specified sound effect from the cache at the current effect volume
+        //loads the sound effect if not already in the cache (lazy loading)
+        if !self.effects_cache.contains_key(&effect) {
+            SoundManager::load_sound(self, audio, effect);
+        }
+        //play sound effect from the cache
+        let cached_effect = self.effects_cache.get(&effect).unwrap();
+        cached_effect.set_volume(self.effect_volume);
+        cached_effect.play();
     }
 
     
