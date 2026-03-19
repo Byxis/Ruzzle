@@ -13,11 +13,21 @@ pub enum Menu {
     Loading,
     Credit,
 }
+
+
+#[derive(Copy, Clone, PartialEq)]
 pub enum HoveredButton {
     None,
     Game,
     Settings,
     Credit,
+}
+
+
+pub struct Button {
+    pub rectangle : Rectangle,
+    pub label : String,
+    pub id : HoveredButton,
 }
 
 const SCREEN_WIDTH: i32 = 1280;
@@ -26,9 +36,7 @@ const SCREEN_HEIGHT: i32 = 720;
 pub struct MenuManager {
     pub current_menu: Menu,
     pub frame_count: i32,
-    pub game_btn: Rectangle,
-    pub settings_btn: Rectangle,
-    pub credit_btn: Rectangle,
+    pub buttons : Vec<Button>,
     pub config: Config,
     pub hovered_button: HoveredButton,
 }
@@ -37,31 +45,29 @@ impl MenuManager {
     pub fn new(config: Config) -> Self {
         let button_width = 200.0;
         let button_height = 60.0;
-        let game_btn = Rectangle::new(
-            (SCREEN_WIDTH / 2 - button_width as i32 / 2) as f32,
-            200.0,
-            button_width,
-            button_height,
-        );
-        let settings_btn = Rectangle::new(
-            (SCREEN_WIDTH / 2 - button_width as i32 / 2) as f32,
-            300.0,
-            button_width,
-            button_height,
-        );
-        let credit_btn = Rectangle::new(
-            (SCREEN_WIDTH / 2 - button_width as i32 / 2) as f32,
-            400.0,
-            button_width,
-            button_height,
-        );
+        let my_buttons = vec![
+            Button{
+                rectangle : Rectangle::new((SCREEN_WIDTH / 2 - button_width as i32 / 2) as f32,200.0,button_width,button_height),
+                label : "Jouer".to_string(),
+                id : HoveredButton::Game
+            },
+            Button{
+                rectangle : Rectangle::new((SCREEN_WIDTH / 2 - button_width as i32 / 2) as f32, 300.0,button_width,button_height),
+                label : "Options".to_string(),
+                id : HoveredButton::Settings
+            },
+            Button{
+            rectangle : Rectangle::new((SCREEN_WIDTH / 2 - button_width as i32 / 2) as f32, 400.0,button_width,button_height),
+            label : "Crédits".to_string(),
+            id : HoveredButton::Credit
+            }
+        ];
+
 
         MenuManager {
             current_menu: Menu::Title,
             frame_count: 0,
-            game_btn,
-            settings_btn,
-            credit_btn,
+            buttons : my_buttons,
             config,
             hovered_button: HoveredButton::None,
         }
@@ -77,28 +83,23 @@ impl MenuManager {
             }
             Menu::Select => {
                 let mouse_pos = rl.get_mouse_position();
-
-                if self.game_btn.check_collision_point_rec(mouse_pos) {
-                    self.hovered_button = HoveredButton::Game;
-                } else if self.settings_btn.check_collision_point_rec(mouse_pos) {
-                    self.hovered_button = HoveredButton::Settings;
-                } else if self.credit_btn.check_collision_point_rec(mouse_pos) {
-                    self.hovered_button = HoveredButton::Credit;
-                } else {
-                    self.hovered_button = HoveredButton::None;
-                }
-                if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
-                    if self.settings_btn.check_collision_point_rec(mouse_pos) {
-                        self.current_menu = Menu::Settings;
-                    }
-                    if self.game_btn.check_collision_point_rec(mouse_pos) {
-                        self.current_menu = Menu::Game;
-                    }
-                    if self.credit_btn.check_collision_point_rec(mouse_pos) {
-                        self.current_menu = Menu::Credit;
+                self.hovered_button = HoveredButton::None; 
+                for button in & self.buttons{
+                    if button.rectangle.check_collision_point_rec(mouse_pos){
+                        self.hovered_button = button.id;
+                        if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
+                                match button.id {
+                                    HoveredButton::Game => self.current_menu = Menu::Game,
+                                    HoveredButton::Settings => self.current_menu = Menu::Settings,
+                                    HoveredButton::Credit => self.current_menu = Menu::Credit,
+                                    HoveredButton::None => {},
+                                }
+                        }
+                        }
                     }
                 }
-            }
+            
+        
             Menu::Game => {
                 if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
                     self.current_menu = Menu::Title;
@@ -147,30 +148,12 @@ impl MenuManager {
             }
             Menu::Select => {
                 draw_text_center(&mut d, "RUZZLE", 30, 50, Color::WHITE);
-                // Bouton Play
-                match self.hovered_button {
-                    HoveredButton::None => {
-                        draw_button(d, self.game_btn, "Jouer", color_hovered, color_button, false);
-                        draw_button(d, self.settings_btn, "Options", color_hovered, color_button, false);
-                        draw_button(d, self.credit_btn, "Crédits", color_hovered, color_button, false);
-                    }
-                    HoveredButton::Game => {
-                        draw_button(d, self.game_btn, "Jouer", color_hovered, color_button, true);
-                        draw_button(d, self.settings_btn, "Options", color_hovered, color_button, false);
-                        draw_button(d, self.credit_btn, "Crédits", color_hovered, color_button, false);
-                    }
-                    HoveredButton::Settings => {
-                        draw_button(d, self.game_btn, "Jouer", color_hovered, color_button, false);
-                        draw_button(d, self.settings_btn, "Options", color_hovered, color_button, true);
-                        draw_button(d, self.credit_btn, "Crédits", color_hovered, color_button, false);
-                    }
-                    HoveredButton::Credit => {
-                       draw_button(d, self.game_btn, "Jouer", color_hovered, color_button, false);
-                        draw_button(d, self.settings_btn, "Options", color_hovered, color_button, false);
-                        draw_button(d, self.credit_btn, "Crédits", color_hovered, color_button, true);
-                    }
+                for button in &self.buttons{
+                    let is_hovered = self.hovered_button == button.id;
+                    draw_button(d, button.rectangle, &button.label, color_hovered, color_button, is_hovered);
                 }
-            }
+                        
+                }
             Menu::Settings => d.draw_text("Settings Menu", 100, 100, 40, Color::DARKGRAY),
             Menu::Game => {
                 {
