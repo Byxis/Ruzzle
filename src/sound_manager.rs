@@ -12,17 +12,18 @@ enum SoundEffect {
 impl SoundEffect {
     fn path(&self) -> &'static str {
         match self {
-            Self::Boing => "rsc/sounds/boing_effect.mp3",
-            Self::Jump => "rsc/sounds/jump_effect.mp3",
-            Self::Walking => "rsc/sounds/walking_effect.mp3",
-            Self::Click => "rsc/sounds/click_effect.mp3",
-            Self::Rotate => "rsc/sounds/rotate_effect.mp3",
+            Self::Boing => "rsc/sounds/boing_effect.mp3", //(to be decided)
+            Self::Jump => "rsc/sounds/jump_effect.mp3", //(for crab jump)
+            Self::Walking => "rsc/sounds/walking_effect.mp3", //(for crab movement)
+            Self::Click => "rsc/sounds/click_effect.mp3", //(for menu interactions)
+            Self::Rotate => "rsc/sounds/rotate_effect.mp3", //(for block rotation)
         }
     }
 }
 
 enum BackgroundMusic {
-    CrabRave,
+    CrabRave, //(default music)
+    //TODO : other music choices ?
 }
 
 impl BackgroundMusic {
@@ -38,41 +39,22 @@ const DEFAULT_MUSIC_VOLUME: f32 = 0.5; //default volume for music
 const DEFAULT_EFFECT_VOLUME: f32 = 0.5; //default volume for sound effects
 
 pub struct SoundManager<'a> {
-    pub background_music: Music<'a>,
-    pub walking_sound: Sound<'a>,
-    pub jump_sound: Sound<'a>,
-    pub boing_sound: Sound<'a>,
-    pub click_sound: Sound<'a>,
-    pub rotate_sound: Sound<'a>,
+    background_music: Music<'a>,
+    music_volume: f32,
     pub music_playing: bool,
+    effect_volume: f32,
 }
 
 impl<'a> SoundManager<'a> {
     pub fn new(audio: &'a RaylibAudio) -> Self {
-        let background_music: Music<'a> = audio.new_music(BackgroundMusic::CrabRave.path())
-            .expect("Failed to load background music");
-        let walking_sound: Sound<'a> = audio.new_sound(SoundEffect::Walking.path())
-            .expect("Failed to load walking sound");
-        let jump_sound: Sound<'a> = audio.new_sound(SoundEffect::Jump.path())
-            .expect("Failed to load jump sound");
-        let boing_sound: Sound<'a> = audio.new_sound(SoundEffect::Boing.path())
-            .expect("Failed to load boing sound");
-        let click_sound: Sound<'a> = audio.new_sound(SoundEffect::Click.path())
-            .expect("Failed to load click sound");
-        let rotate_sound: Sound<'a> = audio.new_sound(SoundEffect::Rotate.path())
-            .expect("Failed to load rotate sound");
-
+        let background_music = audio.new_music(BackgroundMusic::CrabRave.path()).expect("Failed to load background music");
+        
         SoundManager {
             background_music,
-            walking_sound,
-            jump_sound,
-            boing_sound,
-            click_sound,
-            rotate_sound,
+            music_volume: DEFAULT_MUSIC_VOLUME,
+            effect_volume: DEFAULT_EFFECT_VOLUME,
             music_playing: false,
         }
-
-        
     }
     //volume control
     pub fn set_music_volume(&mut self, volume: f32) {
@@ -80,27 +62,30 @@ impl<'a> SoundManager<'a> {
         //sets the volume of the background music
         //f32 dans [0.0 ; 1.0]
         self.background_music.set_volume(volume);
+        self.music_volume = volume;
     }
 
     pub fn set_effect_volume(&mut self, volume: f32) {
         //TODO : another slider for this one
         //sets the volume of all sound effects
         //f32 dans [0.0 ; 1.0]
-        self.walking_sound.set_volume(volume);
-        self.jump_sound.set_volume(volume);
-        self.boing_sound.set_volume(volume);
-        self.click_sound.set_volume(volume);
-        self.rotate_sound.set_volume(volume);
+        self.effect_volume = volume;
     }
 
     pub fn set_default_volumes(&mut self) {
         //SET DEFAULT 
-        //sets default volumes for music and sound effects
+        //sets default volumes for music and sound effects (acts as reset)
         self.set_music_volume(DEFAULT_MUSIC_VOLUME);
         self.set_effect_volume(DEFAULT_EFFECT_VOLUME);
     }
 
     //background music controls
+    pub fn set_background_music(&mut self, audio: &'a RaylibAudio, music: BackgroundMusic) {
+        //SET BACKGROUND MUSIC
+        //sets the background music to the specified track
+        self.background_music = audio.new_music(music.path()).expect("Failed to load background music");
+        self.background_music.set_volume(self.music_volume); //maintain current volume when changing music
+    }
     pub fn start_background_music(&mut self) {
         //START
         //launches background music if not already playing (only called once)
@@ -136,30 +121,15 @@ impl<'a> SoundManager<'a> {
 
     //sound effects
     //(to be added to actions that need a sound effect, directly add to action functions)
-    pub fn play_walking_sound(&mut self) {
-        //plays walking sound effect (for crab movement)
-        self.walking_sound.play();
+    fn load_sound(audio: &'a RaylibAudio, effect: SoundEffect) -> Sound {
+        let effect_path = effect.path();
+        audio.new_sound(effect.path()).expect(&format!("Failed to load {effect_path}"))
     }
 
-    pub fn play_jump_sound(&mut self) {
-        //plays jump sound effect (for crab jump)
-        self.jump_sound.play();
+    pub fn play_sound_effect(&mut self, audio: &'a RaylibAudio, effect: SoundEffect) {
+        SoundManager::load_sound(audio, effect).play();
     }
 
-    pub fn play_boing_sound(&mut self) {
-        //TODO : decide what to use it for
-        //plays boing sound effect
-        self.boing_sound.play();
-    }
-
-    pub fn play_click_sound(&mut self) {
-        //plays click sound effect (for menu interactions)
-        self.click_sound.play();
-    }
-
-    pub fn play_rotate_sound(&mut self) {
-        //plays rotate sound effect (for block rotation)
-        self.rotate_sound.play();
-    }
+    
 
 }
