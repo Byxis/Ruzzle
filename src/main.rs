@@ -3,8 +3,12 @@ use raylib::prelude::*;
 mod crab;
 mod crab_animator;
 use crate::crab::Crab;
+
 mod menu;
-use menu::MenuManager;
+use crate::menu::menu::MenuManager;
+
+
+
 mod config;
 use config::Config;
 
