@@ -6,7 +6,7 @@ use crate::crab::Crab;
 
 mod sound_manager;
 use crate::sound_manager::SoundManager;
-use crate::sound_manager::{BackgroundMusic, SoundEffect}; //access allowed for now (TODO : find a way to choose without making it public)
+use crate::sound_manager::{BackgroundMusic, SoundEffect}; //access allowed for now (TODO : find a way to choose without making it public ?)
 
 const SCREEN_WIDTH: i32 = 1280;
 const SCREEN_HEIGHT: i32 = 720;
@@ -26,7 +26,7 @@ fn main() {
         45.0,
     );
 
-    // Sound manager and audio device init
+    // Sound manager and RaylibAudio device init
     let audio = RaylibAudio::init_audio_device().expect("Failed to initialize audio device");
     let mut sound_manager = SoundManager::new(&audio);
 
@@ -40,7 +40,8 @@ fn main() {
     );
 
     rl.set_target_fps(60);
-    //apply default parameters and start game music
+
+    //Apply default sound parameters and start game music
     sound_manager.set_background_music(&audio, BackgroundMusic::CrabRave);
     sound_manager.start_background_music();
 
@@ -48,7 +49,7 @@ fn main() {
 
     //frame loop
     while !rl.window_should_close() {
-        //update music
+        //Update background music stream (for continuous playing)
         sound_manager.update_music_stream();
 
         //crab position update

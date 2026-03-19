@@ -2,7 +2,17 @@ use std::collections::HashMap;
 
 use raylib::prelude::*;
 
-//enum for sound files
+//------------------------------------------------------------------------------
+//SOUND MANAGER
+//This module manages all sound-related functionalities, including background music and sound effects.
+//It provides functions to set and control background music, as well as to load and play cached sound effects on demand.
+//------------------------------------------------------------------------------
+
+//SOUND EFFECTS AND BACKGROUND MUSIC ENUMS
+//These enums define the available sound effects and background music tracks in the game, along with their file paths for loading.
+//TODO : make it into a config file ?
+
+//Sound effects enum with file paths
 #[derive(PartialEq, Eq, Hash, Clone, Copy)] //makes it usable in cache (as HashMap key)
 pub enum SoundEffect {
     Boing,
@@ -24,6 +34,7 @@ impl SoundEffect {
     }
 }
 
+//Background music enum with file paths
 pub enum BackgroundMusic {
     CrabRave, //(default music)
     //TODO : other music choices ?
@@ -37,10 +48,14 @@ impl BackgroundMusic {
     }
 }
 
-//volume
+//DEFAULT VOLUME SETTINGS
+//TODO : also add it to config file ?
 const DEFAULT_MUSIC_VOLUME: f32 = 0.5; //default volume for music
 const DEFAULT_EFFECT_VOLUME: f32 = 0.5; //default volume for sound effects
 
+//SOUND MANAGER STRUCT
+//This struct encapsulates all sound-related data and functionalities, 
+//including the current background music, volume levels, and a cache for sound effects to optimize loading and playback.
 pub struct SoundManager<'a> {
     background_music: Option<Music<'a>>,
     music_volume: f32,
@@ -60,7 +75,7 @@ impl<'a> SoundManager<'a> {
             music_playing: false,
         }
     }
-    //volume control
+    //Volume controls
     pub fn set_music_volume(&mut self, volume: f32) {
         //TODO : make a slider for this thing
         //sets the volume of the background music
@@ -85,7 +100,7 @@ impl<'a> SoundManager<'a> {
         self.set_effect_volume(DEFAULT_EFFECT_VOLUME);
     }
 
-    //background music controls
+    //Background music controls
     pub fn set_background_music(&mut self, audio: &'a RaylibAudio, music: BackgroundMusic) {
         //SET BACKGROUND MUSIC
         //sets the background music to the specified track
@@ -128,7 +143,7 @@ impl<'a> SoundManager<'a> {
         }
     }
 
-    //sound effects
+    //Sound effects controls
     //(to be added to actions that need a sound effect, directly add to action functions)
     fn load_sound(&mut self, audio: &'a RaylibAudio, effect: SoundEffect) {
         //LOAD SOUND EFFECT
@@ -143,11 +158,11 @@ impl<'a> SoundManager<'a> {
         //plays the specified sound effect from the cache at the current effect volume
         //loads the sound effect if not already in the cache (lazy loading)
         if !self.effects_cache.contains_key(&effect) {
-            SoundManager::load_sound(self, audio, effect);
+            SoundManager::load_sound(self, audio, effect); //load sound effect if not in cache
         }
         //play sound effect from the cache
         let cached_effect = self.effects_cache.get(&effect).unwrap();
-        cached_effect.set_volume(self.effect_volume);
+        cached_effect.set_volume(self.effect_volume); //set volume to current setting for effects
         cached_effect.play();
     }
 
