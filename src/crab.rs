@@ -4,10 +4,32 @@ use crate::crab_animator::CrabAnimation;
 use crate::crab_animator::CrabAnimator;
 use raylib::prelude::*;
 
+//----------------------------------------------------------------
+//
+//                          Static Constants
+//
+//----------------------------------------------------------------
+
 const CRAB_SPEED: f32 = 7.0;
 const MODEL_OFFSET: f32 = 0.2;
 const JUMP_HIGH: f32 = 2.0;
 const JUMP_SPEED: f32 = 4.0;
+
+/// Represents a crab character in the game world.
+///
+/// Contains a transform and collider for positioning and collision detection,
+/// as well as an animator for controlling the crab's animation.
+///
+/// # Examples
+///
+/// ```
+/// use ruzzle::crab::Crab;
+/// use raylib::prelude::*;
+///
+/// let mut rl = RaylibHandle::new();
+/// let thread = &rl.get_thread();
+/// let crab = Crab::new(&mut rl, thread, "path/to/model", Vector3::new(0.0, 0.0, 0.0), 0.0);
+/// ```
 pub struct Crab {
     pub transform: Transform3D,
     pub collider: Collider,
@@ -18,10 +40,12 @@ pub struct Crab {
 impl Crab {
     //----------------------------------------------------------------
     //
-    // Constructor
+    //                          Constructor
     //
     //----------------------------------------------------------------
 
+    /// Creates a new `Crab` instance with the given parameters.
+    /// The collider is initialized with a sphere shape and an offset of (0.0, 0.5, 0.0).
     pub fn new(
         rl: &mut RaylibHandle,
         thread: &RaylibThread,
@@ -42,21 +66,23 @@ impl Crab {
 
     //----------------------------------------------------------------
     //
-    // Crab Behavior
+    //                         Crab Behavior
     //
     //----------------------------------------------------------------
 
-    pub fn teleport(&mut self, _transform: Transform3D) {
-        self.transform = _transform;
+    /// Teleports the crab to the given transform.
+    pub fn teleport(&mut self, transform: Transform3D) {
+        self.transform = transform;
     }
 
+    /// Calculates the next transform for the crab based on the camera and input.
     pub fn calculate_next_transform(
         &mut self,
         rl: &mut RaylibHandle,
         camera: &Camera3D,
         thread: &RaylibThread,
     ) -> Transform3D {
-        let mut transform3D = self.transform.clone();
+        let mut transform = self.transform.clone();
 
         self.crab_animator.handle_animation(rl, thread);
         let dt = rl.get_frame_time();
@@ -72,10 +98,10 @@ impl Crab {
         move_vec = move_vec.normalize();
 
         if move_vec.length() > 0.0 {
-            transform3D.position += move_vec * CRAB_SPEED * dt;
+            transform.position += move_vec * CRAB_SPEED * dt;
 
             let angle_rad = move_vec.x.atan2(move_vec.z);
-            transform3D.rotation = lerp_angle(transform3D.rotation, angle_rad.to_degrees(), 0.12);
+            transform.rotation = self.lerp_angle(transform.rotation, angle_rad.to_degrees(), 0.12);
         }
 
         // Y movement (jump mechanic)
@@ -87,13 +113,13 @@ impl Crab {
         // Animation mechanic
         if self.jump_timer > 0.0 {
             self.jump_timer -= dt * JUMP_SPEED;
-            transform3D.position.y = self.jump_timer.max(0.0).sin() * JUMP_HIGH;
+            transform.position.y = self.jump_timer.max(0.0).sin() * JUMP_HIGH;
 
             if self.jump_timer <= 3.0 * dt * JUMP_SPEED {
                 self.crab_animator.land();
             }
         } else {
-            transform3D.position.y = 0.0;
+            transform.position.y = 0.0;
 
             if move_vec.length() > 0.0 {
                 self.crab_animator
@@ -110,9 +136,10 @@ impl Crab {
             self.crab_animator.change_animation(CrabAnimation::Emote);
         }
 
-        return transform3D;
+        return transform;
     }
 
+    /// Draws the crab model using the given `RaylibMode3D` draw handle.
     pub fn draw(&self, d3d: &mut RaylibMode3D<'_, impl RaylibDraw>) {
         d3d.draw_model_ex(
             &self.crab_animator.model,
@@ -126,10 +153,11 @@ impl Crab {
 
     //----------------------------------------------------------------
     //
-    // Utility Functions
+    //                      Utility Functions
     //
     //----------------------------------------------------------------
 
+    /// Returns the input direction based on the current keyboard state.
     fn get_input_direction(&self, rl: &RaylibHandle) -> Vector3 {
         let mut input_dir = Vector3::new(0.0, 0.0, 0.0);
 
@@ -151,12 +179,13 @@ impl Crab {
 
         return input_dir;
     }
-}
 
-fn lerp_angle(from: f32, to: f32, weight: f32) -> f32 {
-    let mut diff = (to - from + 180.0) % 360.0 - 180.0;
-    if diff < -180.0 {
-        diff += 360.0;
+    /// Linearly interpolates between two angles.
+    fn lerp_angle(&self, from: f32, to: f32, weight: f32) -> f32 {
+        let mut diff = (to - from + 180.0) % 360.0 - 180.0;
+        if diff < -180.0 {
+            diff += 360.0;
+        }
+        from + diff * weight
     }
-    from + diff * weight
 }
