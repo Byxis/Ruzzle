@@ -1,12 +1,37 @@
 use raylib::prelude::*;
 
-//sound files
-const BOING: &str = "rsc/sounds/boing_effect.mp3";
-const JUMP: &str = "rsc/sounds/jump_effect.mp3";
-const WALKING: &str = "rsc/sounds/walking_effect.mp3";
-const CLICK: &str = "rsc/sounds/click_effect.mp3";
-const ROTATE: &str = "rsc/sounds/rotate_effect.mp3";
-const MUSIC: &str = "rsc/sounds/8bit_crab_rave.mp3";
+//enum for sound files
+enum SoundEffect {
+    Boing,
+    Jump,
+    Walking,
+    Click,
+    Rotate,
+}
+
+impl SoundEffect {
+    fn path(&self) -> &'static str {
+        match self {
+            Self::Boing => "rsc/sounds/boing_effect.mp3",
+            Self::Jump => "rsc/sounds/jump_effect.mp3",
+            Self::Walking => "rsc/sounds/walking_effect.mp3",
+            Self::Click => "rsc/sounds/click_effect.mp3",
+            Self::Rotate => "rsc/sounds/rotate_effect.mp3",
+        }
+    }
+}
+
+enum BackgroundMusic {
+    CrabRave,
+}
+
+impl BackgroundMusic {
+    fn path(&self) -> &'static str {
+        match self {
+            Self::CrabRave => "rsc/sounds/8bit_crab_rave.mp3",
+        }
+    }
+}
 
 //volume
 const DEFAULT_MUSIC_VOLUME: f32 = 0.5; //default volume for music
@@ -24,17 +49,17 @@ pub struct SoundManager<'a> {
 
 impl<'a> SoundManager<'a> {
     pub fn new(audio: &'a RaylibAudio) -> Self {
-        let background_music: Music<'a> = audio.new_music(MUSIC)
+        let background_music: Music<'a> = audio.new_music(BackgroundMusic::CrabRave.path())
             .expect("Failed to load background music");
-        let walking_sound: Sound<'a> = audio.new_sound(WALKING)
+        let walking_sound: Sound<'a> = audio.new_sound(SoundEffect::Walking.path())
             .expect("Failed to load walking sound");
-        let jump_sound: Sound<'a> = audio.new_sound(JUMP)
+        let jump_sound: Sound<'a> = audio.new_sound(SoundEffect::Jump.path())
             .expect("Failed to load jump sound");
-        let boing_sound: Sound<'a> = audio.new_sound(BOING)
+        let boing_sound: Sound<'a> = audio.new_sound(SoundEffect::Boing.path())
             .expect("Failed to load boing sound");
-        let click_sound: Sound<'a> = audio.new_sound(CLICK)
+        let click_sound: Sound<'a> = audio.new_sound(SoundEffect::Click.path())
             .expect("Failed to load click sound");
-        let rotate_sound: Sound<'a> = audio.new_sound(ROTATE)
+        let rotate_sound: Sound<'a> = audio.new_sound(SoundEffect::Rotate.path())
             .expect("Failed to load rotate sound");
 
         SoundManager {
