@@ -27,7 +27,7 @@ impl Map {
     pub fn collides_with(&self, other: &Collider, other_position: Vector3) -> bool {
         self.colliders
             .iter()
-            .any(|c| c.collides_with(self.transform.position, other))
+            .any(|c| c.collides_with(self.transform.position, other, other_position))
     }
 
     pub fn draw(&self, d3d: &mut RaylibMode3D<'_, impl RaylibDraw>) {

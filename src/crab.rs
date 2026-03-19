@@ -29,7 +29,7 @@ impl Crab {
         position: Vector3,
         rotation: f32,
     ) -> Self {
-        let mut collider = Collider::new_sphere(1.0);
+        let mut collider = Collider::with_sphere(1.0);
         collider.offset = Vector3::new(0.0, 0.5, 0.0);
 
         Self {

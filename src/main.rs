@@ -35,9 +35,9 @@ fn main() {
     let mut map = Map::new(&mut rl, &thread, "rsc/map.glb");
     map.set_position(Vector3::new(0.0, -0.2, 0.0));
 
-    map.add_collider(Collider::new_box_from_size(16.0, 0.2, 16.0));
+    map.add_collider(Collider::with_box_from_size(16.0, 0.2, 16.0));
 
-    map.add_collider(Collider::new_box_from_size_offset(
+    map.add_collider(Collider::with_box_from_size_offset(
         1.0,
         5.0,
         1.0,
