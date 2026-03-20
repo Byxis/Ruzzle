@@ -2,7 +2,9 @@ use raylib::prelude::*;
 
 mod crab;
 mod crab_animator;
+mod discord;
 use crate::crab::Crab;
+use crate::discord::rpc::discord_rpc;
 
 const SCREEN_WIDTH: i32 = 1280;
 const SCREEN_HEIGHT: i32 = 720;
@@ -12,6 +14,8 @@ fn main() {
         .size(SCREEN_WIDTH, SCREEN_HEIGHT)
         .title("Ruzzle")
         .build();
+
+    let _drpc = discord_rpc();
 
     let camera = Camera3D::perspective(
         Vector3::new(10.0, 10.0, 0.0),
