@@ -45,7 +45,7 @@ fn main() {
     sound_manager.set_background_music(&audio, BackgroundMusic::CrabRave);
     sound_manager.start_background_music();
 
-    //for sound effect test purposes
+    //for sound effecttest purposes
     let mut a = 1;
 
     //frame loop

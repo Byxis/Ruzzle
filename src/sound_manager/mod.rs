@@ -44,6 +44,8 @@ impl BackgroundMusic {
     fn path(&self) -> &'static str {
         match self {
             Self::CrabRave => "rsc/sounds/8bit_crab_rave.mp3",
+            _ => "rsc/sounds/8bit_crab_rave.mp3", //crab rave is default music
+            
         }
     }
 }
