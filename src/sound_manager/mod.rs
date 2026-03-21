@@ -30,6 +30,7 @@ impl SoundEffect {
             Self::Walking => "rsc/sounds/walking_effect.mp3", //(for crab movement)
             Self::Click => "rsc/sounds/click_effect.mp3", //(for menu interactions)
             Self::Rotate => "rsc/sounds/rotate_effect.mp3", //(for block rotation)
+            _ => "rsc/sounds/boing_effect.mp3", //boing is default sound effect
         }
     }
 }
