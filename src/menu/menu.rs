@@ -139,7 +139,8 @@ impl MenuManager {
                 let mouse_pos = rl.get_mouse_position();
                 if self.button_fullscreen.rectangle.check_collision_point_rec(mouse_pos){
                     if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT){
-                        
+
+                //TODO : put an option to put in fullscreen but properly or somehting to resize the game 
                     }
                 }
                 if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
@@ -207,7 +208,7 @@ impl MenuManager {
                 draw_text_center(d, "Settings Menu", self.config.screen_width,
                  (self.config.screen_height / 7) as i32,
                   font_size_h2, Color::WHITE);
-                
+                //TODO : put a full screen image or somehting to resize the game 
                  draw_button(d, self.button_fullscreen.rectangle, 
                     &self.button_fullscreen.label, 
                     color_hovered, Color::RED, false, font_size_h2 /3);
