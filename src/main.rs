@@ -49,14 +49,12 @@ fn main() {
     rl.set_target_fps(60);
 
     while !rl.window_should_close() {
-        /*--UPDATE--*/
-        //Updating the game 
         //Updating the game 
         menu_manager.update(&rl);
         
         
         crab.update_with_camera(&mut rl, &camera, &thread);
-        //Drawing
+        //Drawing the game
         let mut d = rl.begin_drawing(&thread);
         menu_manager.draw(&mut d, &crab, &camera);
       
