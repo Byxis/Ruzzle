@@ -32,6 +32,12 @@ pub enum SelectMenuHoveredButtons {
 /// it's hovered currently or not.
 /// It's purpose is to clicked on. 
 /// 
+/// # Arguments 
+/// * rectanggle 
+/// * label as String
+/// * id as SelectMenuHoveredButtons #FIXME : i need to find a way to be more abstract on the button
+/// 
+/// 
 /// #Examples : 
 /// 
 /// Create a button displaying hello
@@ -55,7 +61,15 @@ impl Button {
     
 }
 
-
+/// The Game Manager is designed to display the current state of the game. 
+/// It takes into arugment only the Config enum, and is in called in the main application.
+/// It has the current_menu, and enum with the different menu possible, the frame_count used for artificial loading time,
+/// the buttons which is a vec of buttons for the select menu, the button for the fullscreen, the config taken as an argument to know
+/// how to display things accordingly to the screen size, and the hovered button to know which one is  an hovered button.
+/// 
+/// It is used with two functions : 
+/// * update to affect game logic and variables
+/// * draw to draw the graphical elements
 pub struct MenuManager {
     pub current_menu: Menu,
     pub frame_count: i32,
@@ -66,13 +80,8 @@ pub struct MenuManager {
 }
 
 
-//// Menu Manager : creates a Menu
-/// #Arguments : 
-/// * Config (enum Config)
 impl MenuManager {
     pub fn new(config: Config) -> Self {
-        // let button_width = 200.0;
-        // let button_height = 60.0;
         let button_width = (config.screen_width as f32)  * 0.2 ;
         let button_height = (config.screen_height as f32) * 0.1 ;
         
@@ -118,70 +127,142 @@ impl MenuManager {
     }
     
     
-    
-    
+    /// Update the current state of the game, and the state variables
+    /// Borrow Raylibhandle Pointer
+    ///  #Arguments 
+    ///  * rl - raylib handler, handle the raylib librairie
     pub fn update(&mut self, rl: &RaylibHandle) {
-        // Update the current state of the game, and the state variables
-        //Borrow Raylibhandle Pointer
-        // #Arguments 
-        // * rl - raylib handler, handle the raylib librairie
         self.frame_count += 1;
         match self.current_menu {
-            Menu::Title => {
-                if rl.is_key_pressed(KeyboardKey::KEY_ENTER) {
-                    self.current_menu = Menu::Loading;
-                }
-            }
-            Menu::Select => {
-                let mouse_pos = rl.get_mouse_position();
-                self.hovered_button = SelectMenuHoveredButtons::None; 
-                for button in & self.buttons{
-                    if button.rectangle.check_collision_point_rec(mouse_pos){
-                        self.hovered_button = button.id;
-                        if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
-                            match button.id {
-                                SelectMenuHoveredButtons::Game => self.current_menu = Menu::Game,
-                                SelectMenuHoveredButtons::Settings => self.current_menu = Menu::Settings,
-                                SelectMenuHoveredButtons::Credit => self.current_menu = Menu::Credit,
-                                SelectMenuHoveredButtons::None => {},
-                            }
-                        }
-                    }
-                }
-            }
+            Menu::Title => self.update_title(rl),
+            Menu::Select => self.update_select(rl),
+            Menu::Game => self.update_game(rl),
+            Menu::Settings => self.update_settings(rl),
+            Menu::Loading => self.update_loading(rl),
+            Menu::Credit => self.update_credit(rl),
+        }
+    }
+
+
+
+    // pub fn update(&mut self, rl: &RaylibHandle) {
+    //     self.frame_count += 1;
+    //     match self.current_menu {
+    //         Menu::Title => {
+    //             if rl.is_key_pressed(KeyboardKey::KEY_ENTER) {
+    //                 self.current_menu = Menu::Loading;
+    //             }
+    //         }
+    //         Menu::Select => {
+    //             let mouse_pos = rl.get_mouse_position();
+    //             self.hovered_button = SelectMenuHoveredButtons::None; 
+    //             for button in & self.buttons{
+    //                 if button.rectangle.check_collision_point_rec(mouse_pos){
+    //                     self.hovered_button = button.id;
+    //                     if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
+    //                         match button.id {
+    //                             SelectMenuHoveredButtons::Game => self.current_menu = Menu::Game,
+    //                             SelectMenuHoveredButtons::Settings => self.current_menu = Menu::Settings,
+    //                             SelectMenuHoveredButtons::Credit => self.current_menu = Menu::Credit,
+    //                             SelectMenuHoveredButtons::None => {},
+    //                         }
+    //                     }
+    //                 }
+    //             }
+    //         }
             
             
-            Menu::Game => {
-                if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
-                    self.current_menu = Menu::Title;
-                }
-            }
-            Menu::Settings => {
-                let mouse_pos = rl.get_mouse_position();
-                if self.button_fullscreen.rectangle.check_collision_point_rec(mouse_pos){
-                    if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT){
+    //         Menu::Game => {
+    //             if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
+    //                 self.current_menu = Menu::Title;
+    //             }
+    //         }
+    //         Menu::Settings => {
+    //             let mouse_pos = rl.get_mouse_position();
+    //             if self.button_fullscreen.rectangle.check_collision_point_rec(mouse_pos){
+    //                 if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT){
                         
-                        //TODO : put an option to put in fullscreen but properly or somehting to resize the game 
-                    }
-                }
-                if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
-                    self.current_menu = Menu::Title;
+    //                     // TODO : put an option to put in fullscreen but properly or somehting to resize the game 
+    //                 }
+    //             }
+    //             if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
+    //                 self.current_menu = Menu::Title;
                     
-                }
-            }
-            Menu::Loading => {
-                if self.frame_count % 100 == 0 {
-                    self.current_menu = Menu::Select;
-                    self.frame_count = 0;
-                }
-            }
-            Menu::Credit => {
-                if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
-                    self.current_menu = Menu::Title;
+    //             }
+    //         }
+    //         Menu::Loading => {
+    //             if self.frame_count % 100 == 0 {
+    //                 self.current_menu = Menu::Select;
+    //                 self.frame_count = 0;
+    //             }
+    //         }
+    //         Menu::Credit => {
+    //             if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
+    //                 self.current_menu = Menu::Title;
+    //             }
+    //         }
+    //     }
+    // }
+
+
+    fn update_title(&mut self, rl: &RaylibHandle) {
+        if rl.is_key_pressed(KeyboardKey::KEY_ENTER) {
+            self.current_menu = Menu::Loading;
+        }
+    }
+
+    fn update_select(&mut self, rl: &RaylibHandle) {
+        let mouse_pos = rl.get_mouse_position();
+        self.hovered_button = SelectMenuHoveredButtons::None;
+        for button in &self.buttons {
+            if button.rectangle.check_collision_point_rec(mouse_pos) {
+                self.hovered_button = button.id;
+                if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
+                    match button.id {
+                        SelectMenuHoveredButtons::Game => self.current_menu = Menu::Game,
+                        SelectMenuHoveredButtons::Settings => self.current_menu = Menu::Settings,
+                        SelectMenuHoveredButtons::Credit => self.current_menu = Menu::Credit,
+                        SelectMenuHoveredButtons::None => {},
+                    }
                 }
             }
         }
     }
+
+    fn update_game(&mut self, rl: &RaylibHandle) {
+        if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
+            self.current_menu = Menu::Title;
+        }
+    }
+
+    fn update_settings(&mut self, rl: &RaylibHandle) {
+        let mouse_pos = rl.get_mouse_position();
+        if self.button_fullscreen.rectangle.check_collision_point_rec(mouse_pos) {
+            if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
+                // TODO : put an option to put in fullscreen but properly or something to resize the game
+            }
+        }
+        if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
+            self.current_menu = Menu::Title;
+        }
+    }
+
+    fn update_loading(&mut self, rl: &RaylibHandle) {
+        if self.frame_count % 100 == 0 {
+            self.current_menu = Menu::Select;
+            self.frame_count = 0;
+        }
+    }
+
+    fn update_credit(&mut self, rl: &RaylibHandle) {
+        if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
+            self.current_menu = Menu::Title;
+        }
+    }
+
+
+
+
     //
     pub fn draw(&self, mut d: &mut RaylibDrawHandle, crab: &Crab, camera: &Camera3D) {
         //Draw the graphical elements 
