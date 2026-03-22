@@ -19,9 +19,51 @@ impl Level1 {
                 45.0,
             ),
             cubes: vec![
-                blocks::beach::BlockPrefab::new(1.0, -4.0, 0.0, Color::RED, BlockType::All),
-                blocks::beach::BlockPrefab::new(5.0, 2.0, 0.0, Color::BLUE, BlockType::Fixe),
-                blocks::beach::BlockPrefab::new(1.0, 3.0, 0.0, Color::GREEN, BlockType::RotationH),
+                blocks::beach::BlockPrefab::new(
+                    Vector3 {
+                        x: 1.0,
+                        y: -4.0,
+                        z: 0.0,
+                    },
+                    Some(Vector3 {
+                        x: 5.0,
+                        y: -4.0,
+                        z: 0.0,
+                    }),
+                    Color::RED,
+                    None,
+                    BlockType::All,
+                ),
+                blocks::beach::BlockPrefab::new(
+                    Vector3 {
+                        x: 4.0,
+                        y: 3.0,
+                        z: 0.0,
+                    },
+                    None,
+                    Color::BLUE,
+                    Some(Vector3 {
+                        x: 2.0,
+                        y: 2.0,
+                        z: 2.0,
+                    }),
+                    BlockType::Fixe,
+                ),
+                blocks::beach::BlockPrefab::new(
+                    Vector3 {
+                        x: 1.0,
+                        y: 3.0,
+                        z: 0.0,
+                    },
+                    Some(Vector3 {
+                        x: 3.0,
+                        y: 3.0,
+                        z: 3.0,
+                    }),
+                    Color::GREEN,
+                    None,
+                    BlockType::RotationH,
+                ),
             ],
             selected_cube: None,
         }
@@ -54,6 +96,7 @@ impl Level1 {
         let mut d3d = d.begin_mode3D(&self.camera);
         for cube in &self.cubes {
             cube.draw(&mut d3d);
+            cube.draw_drag_guides(&mut d3d);
         }
         d3d.draw_grid(10, 1.0);
     }
@@ -61,6 +104,7 @@ impl Level1 {
     // Fonction appelée lors de la boucle pour gérer les mouvements des blocks durant le niveau
     pub fn update(&mut self, rl: &RaylibHandle) {
         let dt = rl.get_frame_time();
+        let mouse_pos = rl.get_mouse_position();
 
         // Met à jour l'animation des cubes
         for cube in self.cubes.iter_mut() {
@@ -75,38 +119,109 @@ impl Level1 {
             if !cube.is_rotating {
                 let mut rotation_to_apply = None;
 
-                if rl.is_key_pressed(KeyboardKey::KEY_RIGHT) {
-                    // Rotation de 90° autour de l'axe Y du MONDE
-                    rotation_to_apply = Some(Quaternion::from_axis_angle(
-                        Vector3::new(0.0, 1.0, 0.0),
-                        90.0f32.to_radians(),
-                    ));
+                if cube.block_type == BlockType::Drag {
+                    if rl.is_mouse_button_down(MouseButton::MOUSE_BUTTON_LEFT) {
+                        // On active le drag si on maintient le click
+                        if !cube.is_dragging {
+                            cube.drag_timer += dt;
+                            if cube.drag_timer > 0.15 {
+                                cube.is_dragging = true;
+                            }
+                        }
+
+                        // Si mode drag
+                        if cube.is_dragging {
+                            let mouse_ray =
+                                rl.get_screen_to_world_ray(rl.get_mouse_position(), &self.camera);
+
+                            let axis = cube.end_pos - cube.start_pos;
+                            let axis_len_sq = axis.dot(axis);
+
+                            if axis_len_sq > 0.0 {
+                                let mut plane_normal = self.camera.target - self.camera.position;
+                                plane_normal.normalize();
+
+                                let denom = mouse_ray.direction.dot(plane_normal);
+
+                                if denom.abs() > 0.0001 {
+                                    let t_plane = (cube.start_pos - mouse_ray.position)
+                                        .dot(plane_normal)
+                                        / denom;
+                                    let world_mouse_pos =
+                                        mouse_ray.position + (mouse_ray.direction * t_plane);
+
+                                    let v = world_mouse_pos - cube.start_pos;
+                                    let t_axis = v.dot(axis) / axis_len_sq;
+
+                                    let t_clamped = t_axis.clamp(0.0, 1.0);
+                                    let direction = cube.end_pos - cube.start_pos;
+                                    cube.position = cube.start_pos + (direction * t_clamped);
+                                }
+                            }
+                        }
+                    } else {
+                        // Changement des positions start et end après un snap
+                        if cube.is_dragging {
+                            let axis = cube.end_pos - cube.start_pos;
+                            let current_v = cube.position - cube.start_pos;
+                            let axis_len_sq = axis.dot(axis);
+
+                            let progress = if axis_len_sq > 0.0 {
+                                current_v.dot(axis) / axis_len_sq
+                            } else {
+                                0.0
+                            };
+
+                            if progress > 0.5 {
+                                cube.position = cube.end_pos;
+                                let old_start = cube.start_pos;
+                                cube.start_pos = cube.end_pos;
+                                cube.end_pos = old_start;
+                            } else {
+                                cube.position = cube.start_pos;
+                            }
+                        }
+                        self.selected_cube = None;
+                        cube.is_dragging = false;
+                        cube.drag_timer = 0.0;
+                    }
                 }
-                if rl.is_key_pressed(KeyboardKey::KEY_LEFT) {
-                    rotation_to_apply = Some(Quaternion::from_axis_angle(
-                        Vector3::new(0.0, 1.0, 0.0),
-                        -90.0f32.to_radians(),
-                    ));
+
+                if cube.block_type == BlockType::All || cube.block_type == BlockType::RotationH {
+                    if rl.is_key_pressed(KeyboardKey::KEY_RIGHT) {
+                        // Rotation de 90° autour de l'axe Y
+                        rotation_to_apply = Some(Quaternion::from_axis_angle(
+                            Vector3::new(0.0, 1.0, 0.0),
+                            90.0f32.to_radians(),
+                        ));
+                    }
+                    if rl.is_key_pressed(KeyboardKey::KEY_LEFT) {
+                        rotation_to_apply = Some(Quaternion::from_axis_angle(
+                            Vector3::new(0.0, 1.0, 0.0),
+                            -90.0f32.to_radians(),
+                        ));
+                    }
                 }
-                if rl.is_key_pressed(KeyboardKey::KEY_UP) {
-                    // Rotation de 90° autour de l'axe X du MONDE
-                    rotation_to_apply = Some(Quaternion::from_axis_angle(
-                        Vector3::new(1.0, 0.0, 0.0),
-                        -90.0f32.to_radians(),
-                    ));
-                }
-                if rl.is_key_pressed(KeyboardKey::KEY_DOWN) {
-                    rotation_to_apply = Some(Quaternion::from_axis_angle(
-                        Vector3::new(1.0, 0.0, 0.0),
-                        90.0f32.to_radians(),
-                    ));
+
+                if cube.block_type == BlockType::All || cube.block_type == BlockType::RotationV {
+                    if rl.is_key_pressed(KeyboardKey::KEY_UP) {
+                        // Rotation de 90° autour de l'axe X
+                        rotation_to_apply = Some(Quaternion::from_axis_angle(
+                            Vector3::new(1.0, 0.0, 0.0),
+                            -90.0f32.to_radians(),
+                        ));
+                    }
+                    if rl.is_key_pressed(KeyboardKey::KEY_DOWN) {
+                        rotation_to_apply = Some(Quaternion::from_axis_angle(
+                            Vector3::new(1.0, 0.0, 0.0),
+                            90.0f32.to_radians(),
+                        ));
+                    }
                 }
 
                 if let Some(rot) = rotation_to_apply {
                     cube.is_rotating = true;
                     cube.rotation_progress = 0.0;
-                    // IMPORTANT : rot * current_orientation = Rotation MONDE
-                    // current_orientation * rot = Rotation LOCALE
                     cube.target_orientation = rot * cube.current_orientation;
                 }
             }

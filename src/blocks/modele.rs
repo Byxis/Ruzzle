@@ -6,7 +6,6 @@ pub enum BlockType {
     Fixe,
     RotationV,
     RotationH,
-    Drag,
     All,
 }
 
@@ -21,25 +20,13 @@ pub struct BlockPrefab {
     pub target_orientation: Quaternion,
     pub is_rotating: bool,
     pub rotation_progress: f32,
-    pub start_pos: Vector3, // Position A
-    pub end_pos: Vector3,   // Position B
-    pub is_dragging: bool,
-    pub drag_timer: f32,
 }
 
 impl BlockPrefab {
-    pub fn new(
-        pos: Vector3,
-        end_pos: Option<Vector3>,
-        color: crate::Color,
-        size: Option<Vector3>,
-        block_type: BlockType,
-    ) -> Self {
+    pub fn new(x: f32, y: f32, z: f32, color: crate::Color, block_type: BlockType) -> Self {
         Self {
-            position: pos,
-            start_pos: pos,
-            end_pos: end_pos.unwrap_or(crate::Vector3::new(pos.x, pos.y, pos.z)), // Permet de mettre une valeur si None
-            size: size.unwrap_or(crate::Vector3::new(1.0, 1.0, 1.0)),
+            position: crate::Vector3::new(x, y, z),
+            size: crate::Vector3::new(1.0, 1.0, 1.0),
             color: color,
             base_color: color,
             block_type: block_type,
@@ -47,8 +34,6 @@ impl BlockPrefab {
             target_orientation: Quaternion::identity(),
             rotation_progress: 1.0,
             is_rotating: false,
-            is_dragging: false,
-            drag_timer: 0.0,
         }
     }
 
@@ -91,46 +76,6 @@ impl BlockPrefab {
             );
 
             raylib::ffi::rlPopMatrix();
-        }
-    }
-
-    // Affiche les aides visuelles
-    pub fn draw_drag_guides(&self, d: &mut RaylibMode3D<RaylibDrawHandle>) {
-        if !self.is_dragging {
-            return;
-        }
-        let axis = self.end_pos - self.start_pos;
-        let current_v = self.position - self.start_pos;
-        let progress = current_v.dot(axis) / axis.dot(axis);
-
-        let dot_color = if progress > 0.5 {
-            Color::LIME
-        } else {
-            Color::WHITE
-        };
-
-        // 1. Dessiner le cube fantôme à la position de fin (semi-transparent)
-        d.draw_cube(
-            self.end_pos,
-            self.size.x,
-            self.size.y,
-            self.size.z,
-            self.base_color.fade(0.3),
-        );
-        d.draw_cube_wires(
-            self.end_pos,
-            self.size.x,
-            self.size.y,
-            self.size.z,
-            dot_color,
-        );
-
-        // 2. Dessiner les petits points de trajectoire
-        let segments = 10;
-        for i in 0..=segments {
-            let t = i as f32 / segments as f32;
-            let dot_pos = self.start_pos.lerp(self.end_pos, t);
-            d.draw_sphere(dot_pos, 0.05, Color::WHITE);
         }
     }
 
