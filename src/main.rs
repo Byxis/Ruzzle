@@ -6,19 +6,19 @@ use crate::crab::Crab;
 
 mod sound_manager;
 use crate::sound_manager::sound_manager::SoundManager;
-use crate::sound_manager::sound_manager::{BackgroundMusic, SoundEffect}; //access allowed for now (TODO : find a way to choose without making it public ?)
+use crate::sound_manager::sound_manager::{BackgroundMusic, SoundEffect}; // Access allowed for now (TODO : find a way to choose without making it public ?)
 
 const SCREEN_WIDTH: i32 = 1280;
 const SCREEN_HEIGHT: i32 = 720;
 
 fn main() {
-    //app init
+    // App init
     let (mut rl, thread) = raylib::init()
         .size(SCREEN_WIDTH, SCREEN_HEIGHT)
         .title("Ruzzle")
         .build();
 
-    //camera init
+    // Camera init
     let camera = Camera3D::perspective(
         Vector3::new(10.0, 10.0, 0.0),
         Vector3::new(0.0, 0.0, 0.5),
@@ -30,7 +30,7 @@ fn main() {
     let audio = RaylibAudio::init_audio_device().expect("Failed to initialize audio device");
     let mut sound_manager = SoundManager::new(&audio);
 
-    //crab init
+    // Crab init
     let mut crab = Crab::new(
         &mut rl,
         &thread,
@@ -41,27 +41,27 @@ fn main() {
 
     rl.set_target_fps(60);
 
-    //Apply default sound parameters and start game music
+    // Apply default sound parameters and start game music
     sound_manager.set_background_music(&audio, BackgroundMusic::CrabRave);
     sound_manager.start_background_music();
 
-    //for sound effecttest purposes
+    // For sound effecttest purposes
     let mut a = 1;
 
-    //frame loop
+    // Frame loop
     while !rl.window_should_close() {
         //Update background music stream (for continuous playing)
         sound_manager.update_music_stream();
 
-        //TEST : play sound effect on 150th frame
+        // TEST : play sound effect on 150th frame
         if a == 150 {
             sound_manager.play_sound_effect(&audio, SoundEffect::Boing);
         }
 
         a += 1;
-        //test end
+        // Test end
 
-        //crab position update
+        // Crab position update
         crab.update_with_camera(&mut rl, &camera, &thread);
 
         let mut d = rl.begin_drawing(&thread);
