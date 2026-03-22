@@ -45,12 +45,12 @@ fn main() {
     sound_manager.set_background_music(&audio, BackgroundMusic::CrabRave);
     sound_manager.start_background_music();
 
-    // For sound effecttest purposes
+    // TEST : set variable to play sound effect at 150th frame
     let mut a = 1;
 
     // Frame loop
     while !rl.window_should_close() {
-        //Update background music stream (for continuous playing)
+        // Update background music stream (for continuous playing)
         sound_manager.update_music_stream();
 
         // TEST : play sound effect on 150th frame
@@ -59,7 +59,7 @@ fn main() {
         }
 
         a += 1;
-        // Test end
+        // TEST end 
 
         // Crab position update
         crab.update_with_camera(&mut rl, &camera, &thread);
