@@ -20,7 +20,7 @@ fn main() {
         .build();
 
     // let mut current_menu = Menu::Title;
-    let mut menu_manager = MenuManager::new(config);
+    let mut menu_manager = MenuManager::new(config, &mut rl, &thread);
      if rl.get_screen_width() != menu_manager.config.screen_width 
         || rl.get_screen_height() != menu_manager.config.screen_height {
         unsafe {

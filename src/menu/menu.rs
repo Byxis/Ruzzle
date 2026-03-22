@@ -28,7 +28,7 @@ pub enum SelectMenuHoveredButtons {
     Credit,
 }
 
-/// A Button is a Rectangle conbined with the text displayed in it and the enum stating if
+/// A Button is a Rectangle combined with the text displayed in it and the enum stating if
 /// it's hovered currently or not.
 /// It's purpose is to clicked on. 
 /// 
@@ -77,14 +77,20 @@ pub struct MenuManager {
     pub button_fullscreen : Button,
     pub config: Config,
     pub hovered_button: SelectMenuHoveredButtons,
+    pub bg_loading: Option<Texture2D>,
 }
 
 
 impl MenuManager {
-    pub fn new(config: Config) -> Self {
+    pub fn new(config: Config, rl :  &mut RaylibHandle, thread: &RaylibThread) -> Self {
         let button_width = (config.screen_width as f32)  * 0.2 ;
         let button_height = (config.screen_height as f32) * 0.1 ;
-        
+
+
+
+        let bg_loading = rl.load_texture(thread, "assets/bg_loading.png").ok();
+
+
         let my_buttons_select = vec![
         Button{
             rectangle : Rectangle::new((config.screen_width / 2 - button_width as i32 / 2) as f32,
@@ -123,6 +129,7 @@ impl MenuManager {
             button_fullscreen : button_fullscreen,
             config,
             hovered_button: SelectMenuHoveredButtons::None,
+            bg_loading,
         }
     }
     
@@ -286,14 +293,19 @@ impl MenuManager {
     fn draw_loading(&self, d: &mut RaylibDrawHandle) {
         let font_size_h1 = (self.config.screen_height / 14) as i32;
         
-        draw_text_center(
-            d,
-            "Chargement...",
-            self.config.screen_width,
-            (self.config.screen_height as i32) / 2 - (self.config.screen_height / 12) as i32,
-            font_size_h1,
-            Color::WHITE,
-        );
+        if let Some(texture) = &self.bg_loading {
+            let x = self.config.screen_width / 2 - texture.width / 2;
+            let y = self.config.screen_height/ 2 - texture.height /2;
+            d.draw_texture(texture, x, y, Color::WHITE);
+        }
+        // draw_text_center(
+        //     d,
+        //     "Chargement...",
+        //     self.config.screen_width,
+        //     (self.config.screen_height as i32) / 2 - (self.config.screen_height / 12) as i32,
+        //     font_size_h1,
+        //     Color::WHITE,
+        // );
     }
 
     fn draw_credit(&self, d: &mut RaylibDrawHandle) {
