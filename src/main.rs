@@ -5,8 +5,7 @@ mod crab_animator;
 use crate::crab::Crab;
 
 mod sound_manager;
-use crate::sound_manager::sound_manager::SoundManager;
-use crate::sound_manager::sound_manager::{BackgroundMusic, SoundEffect}; // Access allowed for now (TODO : find a way to choose without making it public ?)
+use crate::sound_manager::sound_manager::{SoundManager, BackgroundMusic, SoundEffect}; // Access allowed for now (TODO : find a way to choose without making it public ?)
 
 const SCREEN_WIDTH: i32 = 1280;
 const SCREEN_HEIGHT: i32 = 720;
