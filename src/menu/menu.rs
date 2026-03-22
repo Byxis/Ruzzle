@@ -144,67 +144,7 @@ impl MenuManager {
     }
 
 
-
-    // pub fn update(&mut self, rl: &RaylibHandle) {
-    //     self.frame_count += 1;
-    //     match self.current_menu {
-    //         Menu::Title => {
-    //             if rl.is_key_pressed(KeyboardKey::KEY_ENTER) {
-    //                 self.current_menu = Menu::Loading;
-    //             }
-    //         }
-    //         Menu::Select => {
-    //             let mouse_pos = rl.get_mouse_position();
-    //             self.hovered_button = SelectMenuHoveredButtons::None; 
-    //             for button in & self.buttons{
-    //                 if button.rectangle.check_collision_point_rec(mouse_pos){
-    //                     self.hovered_button = button.id;
-    //                     if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
-    //                         match button.id {
-    //                             SelectMenuHoveredButtons::Game => self.current_menu = Menu::Game,
-    //                             SelectMenuHoveredButtons::Settings => self.current_menu = Menu::Settings,
-    //                             SelectMenuHoveredButtons::Credit => self.current_menu = Menu::Credit,
-    //                             SelectMenuHoveredButtons::None => {},
-    //                         }
-    //                     }
-    //                 }
-    //             }
-    //         }
-            
-            
-    //         Menu::Game => {
-    //             if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
-    //                 self.current_menu = Menu::Title;
-    //             }
-    //         }
-    //         Menu::Settings => {
-    //             let mouse_pos = rl.get_mouse_position();
-    //             if self.button_fullscreen.rectangle.check_collision_point_rec(mouse_pos){
-    //                 if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT){
-                        
-    //                     // TODO : put an option to put in fullscreen but properly or somehting to resize the game 
-    //                 }
-    //             }
-    //             if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
-    //                 self.current_menu = Menu::Title;
-                    
-    //             }
-    //         }
-    //         Menu::Loading => {
-    //             if self.frame_count % 100 == 0 {
-    //                 self.current_menu = Menu::Select;
-    //                 self.frame_count = 0;
-    //             }
-    //         }
-    //         Menu::Credit => {
-    //             if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
-    //                 self.current_menu = Menu::Title;
-    //             }
-    //         }
-    //     }
-    // }
-
-
+    /// Update fonctions
     fn update_title(&mut self, rl: &RaylibHandle) {
         if rl.is_key_pressed(KeyboardKey::KEY_ENTER) {
             self.current_menu = Menu::Loading;
@@ -260,117 +200,237 @@ impl MenuManager {
         }
     }
 
+         ///Draw the graphical elements 
+        ///
+        /// # Arguments : 
+        /// * d : rayLIbDrawHandle, borrows it to draw graphical elemetns 
+        /// * c : crab : Crab (alexei's crabito) 
+        /// * camera : Camera3D (not used for now)
+
+    
+    // pub fn draw(&self, mut d: &mut RaylibDrawHandle, crab: &Crab, camera: &Camera3D) {
+       
+    //     d.clear_background(Color::BLACK);
+        
+    //     let color_hovered = Color::DARKORANGE;
+    //     let color_button = Color::DARKGRAY;
+    //     let font_size_h1 = (self.config.screen_height / 14) as i32;
+    //     let font_size_h2 = (self.config.screen_height / 23) as i32;
+    //     match self.current_menu {
+    //         Menu::Title => {
+                
+    //             draw_text_center(
+    //                 &mut d,
+    //                 "Ruzzle",
+    //                 self.config.screen_width,
+    //                 (self.config.screen_height as i32) / 2 - (self.config.screen_height / 10) as i32,
+    //                 font_size_h1 ,
+    //                 Color::WHITE,
+    //             );
+    //             draw_text_center(
+    //                 &mut d,
+    //                 "Appuyez sur Entrée",
+    //                 self.config.screen_width,
+    //                 (self.config.screen_height as i32) / 2,
+    //                 font_size_h1,
+    //                 Color::WHITE,
+    //             );
+    //         }
+    //         Menu::Select => {
+    //             draw_text_center(&mut d, "RUZZLE",self.config.screen_width, (self.config.screen_height /10) as i32,
+    //             font_size_h1, Color::WHITE);
+    //             for button in &self.buttons{
+    //                 let is_hovered = self.hovered_button == button.id;
+    //                 draw_button(d, button.rectangle, &button.label, color_hovered, color_button, is_hovered, font_size_h2);
+    //             }
+                
+    //         }
+    //         Menu::Settings => {
+    //             draw_text_center(d, "Settings Menu", self.config.screen_width,
+    //             (self.config.screen_height / 7) as i32,
+    //             font_size_h2, Color::WHITE);
+    //             //TODO : put a full screen image or somehting to resize the game 
+    //             draw_button(d, self.button_fullscreen.rectangle, 
+    //                 &self.button_fullscreen.label, 
+    //                 color_hovered, Color::RED, false, font_size_h2 /3);
+    //             }
+                
+    //             Menu::Game => {
+    //                 {
+    //                     let mut d3d = d.begin_mode3D(camera);
+                        
+    //                     d3d.draw_grid(10, 1.0);
+    //                     crab.draw(&mut d3d);
+    //                 }
+                    
+    //                 let coordonnees = format!(
+    //                     "({:.2}, {:.2}, {:.2})",
+    //                     crab.position.x, crab.position.y, crab.position.z
+    //                 );
+                    
+    //                 d.draw_text(&coordonnees, 10, 40, (self.config.screen_height /36 as i32), Color::DARKGRAY);
+    //                 d.draw_fps(10, 10);
+    //             }
+                
+    //             Menu::Loading => {
+    //                 draw_text_center(
+    //                     &mut d,
+    //                     "Chargement...",
+    //                     self.config.screen_width,
+    //                     (self.config.screen_height as i32) / 2 - (self.config.screen_height /12 as i32),
+    //                     font_size_h1,
+    //                     Color::WHITE,
+    //                 );
+    //             }
+    //             Menu::Credit => {
+    //                 draw_text_center(
+    //                     &mut d,
+    //                     "Jeu réalisé par :",
+    //                     self.config.screen_width,
+    //                     (self.config.screen_height as i32) / 2 - (self.config.screen_height /12 as i32),
+    //                     font_size_h1,
+    //                     Color::WHITE,
+    //                 );
+    //                 draw_text_center(
+    //                     &mut d,
+    //                     "Alexey Serrané, Allessandraaaaaa, Carolayne, Max La Menax, André saitpascodé",
+    //                     self.config.screen_width,
+    //                     (self.config.screen_height as i32) / 2,
+    //                     (self.config.screen_height /36 as i32),
+    //                     Color::WHITE,
+    //                 );
+    //                 draw_text_center(
+    //                     &mut d,
+    //                     "Max La Menax, André saitpascodé",
+    //                     self.config.screen_width,
+    //                     (self.config.screen_height as i32) / 2 + (self.config.screen_height /18 as i32),
+    //                     (self.config.screen_height /12 as i32),
+    //                     Color::WHITE,
+    //                 );
+    //             }
+    //         }
+    //     }
 
 
-
-    //
-    pub fn draw(&self, mut d: &mut RaylibDrawHandle, crab: &Crab, camera: &Camera3D) {
-        //Draw the graphical elements 
-        //
-        // # Arguments : 
-        // * d : rayLIbDrawHandle, borrows it to draw graphical elemetns 
-        // * c : crab : Crab (alexei's crabito) 
-        // * camera : Camera3D (not used for now)
+        pub fn draw(&self, mut d: &mut RaylibDrawHandle, crab: &Crab, camera: &Camera3D) {
         d.clear_background(Color::BLACK);
         
-        let color_hovered = Color::DARKORANGE;
-        let color_button = Color::DARKGRAY;
+        match self.current_menu {
+            Menu::Title => self.draw_title(d),
+            Menu::Select => self.draw_select(d),
+            Menu::Settings => self.draw_settings(d),
+            Menu::Game => self.draw_game(d, crab, camera),
+            Menu::Loading => self.draw_loading(d),
+            Menu::Credit => self.draw_credit(d),
+        }
+    }
+
+    fn draw_title(&self, d: &mut RaylibDrawHandle) {
+        let font_size_h1 = (self.config.screen_height / 14) as i32;
+        
+        draw_text_center(
+            d,
+            "Ruzzle",
+            self.config.screen_width,
+            (self.config.screen_height as i32) / 2 - (self.config.screen_height / 10) as i32,
+            font_size_h1,
+            Color::WHITE,
+        );
+        draw_text_center(
+            d,
+            "Appuyez sur Entrée",
+            self.config.screen_width,
+            (self.config.screen_height as i32) / 2,
+            font_size_h1,
+            Color::WHITE,
+        );
+    }
+
+    fn draw_select(&self, d: &mut RaylibDrawHandle) {
         let font_size_h1 = (self.config.screen_height / 14) as i32;
         let font_size_h2 = (self.config.screen_height / 23) as i32;
-        match self.current_menu {
-            Menu::Title => {
-                
-                draw_text_center(
-                    &mut d,
-                    "Ruzzle",
-                    self.config.screen_width,
-                    (self.config.screen_height as i32) / 2 - (self.config.screen_height / 10) as i32,
-                    font_size_h1 ,
-                    Color::WHITE,
-                );
-                draw_text_center(
-                    &mut d,
-                    "Appuyez sur Entrée",
-                    self.config.screen_width,
-                    (self.config.screen_height as i32) / 2,
-                    font_size_h1,
-                    Color::WHITE,
-                );
-            }
-            Menu::Select => {
-                draw_text_center(&mut d, "RUZZLE",self.config.screen_width, (self.config.screen_height /10) as i32,
-                font_size_h1, Color::WHITE);
-                for button in &self.buttons{
-                    let is_hovered = self.hovered_button == button.id;
-                    draw_button(d, button.rectangle, &button.label, color_hovered, color_button, is_hovered, font_size_h2);
-                }
-                
-            }
-            Menu::Settings => {
-                draw_text_center(d, "Settings Menu", self.config.screen_width,
-                (self.config.screen_height / 7) as i32,
-                font_size_h2, Color::WHITE);
-                //TODO : put a full screen image or somehting to resize the game 
-                draw_button(d, self.button_fullscreen.rectangle, 
-                    &self.button_fullscreen.label, 
-                    color_hovered, Color::RED, false, font_size_h2 /3);
-                }
-                
-                Menu::Game => {
-                    {
-                        let mut d3d = d.begin_mode3D(camera);
-                        
-                        d3d.draw_grid(10, 1.0);
-                        crab.draw(&mut d3d);
-                    }
-                    
-                    let coordonnees = format!(
-                        "({:.2}, {:.2}, {:.2})",
-                        crab.position.x, crab.position.y, crab.position.z
-                    );
-                    
-                    d.draw_text(&coordonnees, 10, 40, (self.config.screen_height /36 as i32), Color::DARKGRAY);
-                    d.draw_fps(10, 10);
-                }
-                
-                Menu::Loading => {
-                    draw_text_center(
-                        &mut d,
-                        "Chargement...",
-                        self.config.screen_width,
-                        (self.config.screen_height as i32) / 2 - (self.config.screen_height /12 as i32),
-                        font_size_h1,
-                        Color::WHITE,
-                    );
-                }
-                Menu::Credit => {
-                    draw_text_center(
-                        &mut d,
-                        "Jeu réalisé par :",
-                        self.config.screen_width,
-                        (self.config.screen_height as i32) / 2 - (self.config.screen_height /12 as i32),
-                        font_size_h1,
-                        Color::WHITE,
-                    );
-                    draw_text_center(
-                        &mut d,
-                        "Alexey Serrané, Allessandraaaaaa, Carolayne, Max La Menax, André saitpascodé",
-                        self.config.screen_width,
-                        (self.config.screen_height as i32) / 2,
-                        (self.config.screen_height /36 as i32),
-                        Color::WHITE,
-                    );
-                    draw_text_center(
-                        &mut d,
-                        "Max La Menax, André saitpascodé",
-                        self.config.screen_width,
-                        (self.config.screen_height as i32) / 2 + (self.config.screen_height /18 as i32),
-                        (self.config.screen_height /12 as i32),
-                        Color::WHITE,
-                    );
-                }
-            }
+        let color_hovered = Color::DARKORANGE;
+        let color_button = Color::DARKGRAY;
+        
+        draw_text_center(d, "RUZZLE", self.config.screen_width, (self.config.screen_height / 10) as i32,
+            font_size_h1, Color::WHITE);
+        
+        for button in &self.buttons {
+            let is_hovered = self.hovered_button == button.id;
+            draw_button(d, button.rectangle, &button.label, color_hovered, color_button, is_hovered, font_size_h2);
         }
+    }
+
+    fn draw_settings(&self, d: &mut RaylibDrawHandle) {
+        let font_size_h2 = (self.config.screen_height / 23) as i32;
+        
+        draw_text_center(d, "Settings Menu", self.config.screen_width,
+            (self.config.screen_height / 7) as i32,
+            font_size_h2, Color::WHITE);
+        
+        draw_button(d, self.button_fullscreen.rectangle, 
+            &self.button_fullscreen.label, 
+            Color::DARKORANGE, Color::RED, false, font_size_h2 / 3);
+    }
+
+    fn draw_game(&self, d: &mut RaylibDrawHandle, crab: &Crab, camera: &Camera3D) {
+        {
+            let mut d3d = d.begin_mode3D(camera);
+            d3d.draw_grid(10, 1.0);
+            crab.draw(&mut d3d);
+        }
+        
+        let coordonnees = format!(
+            "({:.2}, {:.2}, {:.2})",
+            crab.position.x, crab.position.y, crab.position.z
+        );
+        
+        d.draw_text(&coordonnees, 10, 40, (self.config.screen_height / 36) as i32, Color::DARKGRAY);
+        d.draw_fps(10, 10);
+    }
+
+    fn draw_loading(&self, d: &mut RaylibDrawHandle) {
+        let font_size_h1 = (self.config.screen_height / 14) as i32;
+        
+        draw_text_center(
+            d,
+            "Chargement...",
+            self.config.screen_width,
+            (self.config.screen_height as i32) / 2 - (self.config.screen_height / 12) as i32,
+            font_size_h1,
+            Color::WHITE,
+        );
+    }
+
+    fn draw_credit(&self, d: &mut RaylibDrawHandle) {
+        let font_size_h1 = (self.config.screen_height / 14) as i32;
+        
+        draw_text_center(
+            d,
+            "Jeu réalisé par :",
+            self.config.screen_width,
+            (self.config.screen_height as i32) / 2 - (self.config.screen_height / 12) as i32,
+            font_size_h1,
+            Color::WHITE,
+        );
+        draw_text_center(
+            d,
+            "Alexey Serrané, Allessandraaaaaa, Carolayne, Max La Menax, André saitpascodé",
+            self.config.screen_width,
+            (self.config.screen_height as i32) / 2,
+            (self.config.screen_height / 36) as i32,
+            Color::WHITE,
+        );
+        draw_text_center(
+            d,
+            "Max La Menax, André saitpascodé",
+            self.config.screen_width,
+            (self.config.screen_height as i32) / 2 + (self.config.screen_height / 18) as i32,
+            (self.config.screen_height / 12) as i32,
+            Color::WHITE,
+        );
+    }
+
     }
     
     
@@ -414,4 +474,3 @@ impl MenuManager {
             color,
         );
     }
-    
