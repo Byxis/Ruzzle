@@ -20,6 +20,7 @@ pub enum Menu {
 
 
 #[derive(Copy, Clone, PartialEq)]
+/// Enum for the differents buttons in the select menu, allowing to know what's hovered by the mouse. 
 pub enum SelectMenuHoveredButtons {
     None,
     Game,
@@ -27,11 +28,31 @@ pub enum SelectMenuHoveredButtons {
     Credit,
 }
 
-//// Struct for the button.
+/// A Button is a Rectangle conbined with the text displayed in it and the enum stating if
+/// it's hovered currently or not.
+/// It's purpose is to clicked on. 
+/// 
+/// #Examples : 
+/// 
+/// Create a button displaying hello
+/// let rec = Rectangle::new((config.screen_width / 2 - button_width as i32 / 2) as f32, (config.screen_height as f32) * 0.3,  button_width,button_height)
+/// let Button = Button::new(rec, "Hello guys".to_string(), SelectMenuHoveredButtons::None)
+/// 
 pub struct Button {
     pub rectangle : Rectangle,
     pub label : String,
     pub id : SelectMenuHoveredButtons,
+}
+impl Button {
+
+    pub fn new (rectangle : Rectangle, label : String, id : SelectMenuHoveredButtons) -> Self{
+        Button {
+            rectangle : rectangle,
+            label : label, 
+            id : id,
+        }
+    }
+    
 }
 
 
