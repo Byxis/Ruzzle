@@ -298,14 +298,6 @@ impl MenuManager {
             let y = self.config.screen_height/ 2 - texture.height /2;
             d.draw_texture(texture, x, y, Color::WHITE);
         }
-        // draw_text_center(
-        //     d,
-        //     "Chargement...",
-        //     self.config.screen_width,
-        //     (self.config.screen_height as i32) / 2 - (self.config.screen_height / 12) as i32,
-        //     font_size_h1,
-        //     Color::WHITE,
-        // );
     }
 
     fn draw_credit(&self, d: &mut RaylibDrawHandle) {
