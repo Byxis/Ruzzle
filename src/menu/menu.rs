@@ -20,7 +20,7 @@ pub enum Menu {
 
 
 #[derive(Copy, Clone, PartialEq)]
-pub enum HoveredButton {
+pub enum SelectMenuHoveredButtons {
     None,
     Game,
     Settings,
@@ -31,7 +31,7 @@ pub enum HoveredButton {
 pub struct Button {
     pub rectangle : Rectangle,
     pub label : String,
-    pub id : HoveredButton,
+    pub id : SelectMenuHoveredButtons,
 }
 
 
@@ -41,7 +41,7 @@ pub struct MenuManager {
     pub buttons : Vec<Button>,
     pub button_fullscreen : Button,
     pub config: Config,
-    pub hovered_button: HoveredButton,
+    pub hovered_button: SelectMenuHoveredButtons,
 }
 
 
@@ -61,21 +61,21 @@ impl MenuManager {
             (config.screen_height as f32) * 0.3,
             button_width,button_height),
             label : "Jouer".to_string(),
-            id : HoveredButton::Game
+            id : SelectMenuHoveredButtons::Game
         },
         Button{
             rectangle : Rectangle::new((config.screen_width / 2 - button_width as i32 / 2) as f32,
             (config.screen_height as f32) * 0.5,
             button_width,button_height),
             label : "Options".to_string(),
-            id : HoveredButton::Settings
+            id : SelectMenuHoveredButtons::Settings
         },
         Button{
             rectangle : Rectangle::new((config.screen_width / 2 - button_width as i32 / 2) as f32,
             (config.screen_height as f32) * 0.7,
             button_width,button_height),
             label : "Crédits".to_string(),
-            id : HoveredButton::Credit
+            id : SelectMenuHoveredButtons::Credit
         }
         ];
         let button_fullscreen  = Button{
@@ -83,7 +83,7 @@ impl MenuManager {
             0.0,
             config.screen_width as f32  * 0.1, config.screen_width as f32 / 10.0),
             label : "Plein écran".to_string(),
-            id : HoveredButton::None
+            id : SelectMenuHoveredButtons::None
         };
         
         MenuManager {
@@ -92,7 +92,7 @@ impl MenuManager {
             buttons : my_buttons_select,
             button_fullscreen : button_fullscreen,
             config,
-            hovered_button: HoveredButton::None,
+            hovered_button: SelectMenuHoveredButtons::None,
         }
     }
     
@@ -113,16 +113,16 @@ impl MenuManager {
             }
             Menu::Select => {
                 let mouse_pos = rl.get_mouse_position();
-                self.hovered_button = HoveredButton::None; 
+                self.hovered_button = SelectMenuHoveredButtons::None; 
                 for button in & self.buttons{
                     if button.rectangle.check_collision_point_rec(mouse_pos){
                         self.hovered_button = button.id;
                         if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
                             match button.id {
-                                HoveredButton::Game => self.current_menu = Menu::Game,
-                                HoveredButton::Settings => self.current_menu = Menu::Settings,
-                                HoveredButton::Credit => self.current_menu = Menu::Credit,
-                                HoveredButton::None => {},
+                                SelectMenuHoveredButtons::Game => self.current_menu = Menu::Game,
+                                SelectMenuHoveredButtons::Settings => self.current_menu = Menu::Settings,
+                                SelectMenuHoveredButtons::Credit => self.current_menu = Menu::Credit,
+                                SelectMenuHoveredButtons::None => {},
                             }
                         }
                     }
