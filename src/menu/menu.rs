@@ -8,7 +8,7 @@ use crate::crab::Crab;
 
 use crate::config::Config;
 
-//// Enum for the differents states displayed currently by the application
+/// Enum for the differents states displayed currently by the application
 pub enum Menu {
     Title,
     Select,
