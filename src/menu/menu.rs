@@ -69,7 +69,7 @@ pub struct MenuManager {
     pub current_menu: Menu,
     pub frame_count: i32,
     pub buttons: Vec<Button>,
-    pub button_fullscreen: Button,
+    pub back_button: Button,
     pub config: Config,
     pub hovered_button: SelectMenuHoveredButtons,
     pub bg_loading: Option<Texture2D>,
@@ -114,14 +114,14 @@ impl MenuManager {
                 id: SelectMenuHoveredButtons::Credit,
             },
         ];
-        let button_fullscreen = Button {
+        let back_button = Button {
             rectangle: Rectangle::new(
                 (config.screen_width - (config.screen_width as f32 * 0.1) as i32) as f32,
                 0.0,
                 config.screen_width as f32 * 0.1,
-                config.screen_width as f32 / 10.0,
+                config.screen_width as f32 * 0.1,
             ),
-            label: "Plein écran".to_string(),
+            label: "Retour".to_string(),
             id: SelectMenuHoveredButtons::None,
         };
 
@@ -129,7 +129,7 @@ impl MenuManager {
             current_menu: Menu::Title,
             frame_count: 0,
             buttons: my_buttons_select,
-            button_fullscreen: button_fullscreen,
+            back_button: back_button,
             config,
             hovered_button: SelectMenuHoveredButtons::None,
             bg_loading,
@@ -191,12 +191,12 @@ impl MenuManager {
     fn update_settings(&mut self, rl: &RaylibHandle) {
         let mouse_pos = rl.get_mouse_position();
         if self
-            .button_fullscreen
+            .back_button
             .rectangle
             .check_collision_point_rec(mouse_pos)
         {
             if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
-                // TODO : put an option to put in fullscreen but properly or something to resize the game
+                self.current_menu = Menu::Select;
             }
         }
         if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
@@ -212,6 +212,16 @@ impl MenuManager {
     }
 
     fn update_credit(&mut self, rl: &RaylibHandle) {
+        let mouse_pos = rl.get_mouse_position();
+        if self
+            .back_button
+            .rectangle
+            .check_collision_point_rec(mouse_pos)
+        {
+            if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
+                self.current_menu = Menu::Select;
+            }
+        }
         if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
             self.current_menu = Menu::Title;
         }
@@ -300,10 +310,10 @@ impl MenuManager {
 
         draw_button(
             d,
-            self.button_fullscreen.rectangle,
-            &self.button_fullscreen.label,
+            self.back_button.rectangle,
+            &self.back_button.label,
             Color::DARKORANGE,
-            Color::RED,
+            Color::DARKGRAY,
             false,
             font_size_h2 / 3,
         );
@@ -367,6 +377,16 @@ impl MenuManager {
             (self.config.screen_height as i32) / 2 + (self.config.screen_height / 18) as i32,
             (self.config.screen_height / 12) as i32,
             Color::WHITE,
+        );
+
+        draw_button(
+            d,
+            self.back_button.rectangle,
+            &self.back_button.label,
+            Color::DARKORANGE,
+            Color::DARKGRAY,
+            false,
+            self.config.screen_height / 30,
         );
     }
 }
