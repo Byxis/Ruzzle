@@ -18,6 +18,7 @@ pub struct Map {
     pub model: Model,
     pub colliders: Vec<Collider>,
     pub transform: Transform3D,
+    pub spawn_point: Transform3D,
 }
 
 impl Map {
@@ -28,12 +29,17 @@ impl Map {
             model: rl.load_model(thread, path).expect("Failed to load model"),
             colliders: Vec::new(),
             transform: Transform3D::IDENTITY,
+            spawn_point: Transform3D::IDENTITY,
         }
     }
 
     /// Sets the position of the map's transform.
     pub fn set_position(&mut self, new_position: Vector3) {
         self.transform.position = new_position;
+    }
+
+    pub fn set_spawn_point(&mut self, spawn_point: Transform3D) {
+        self.spawn_point = spawn_point;
     }
 
     /// Adds a collider to the map.
@@ -75,6 +81,25 @@ impl Map {
             {
                 position += push_vec;
             }
+        }
+        position
+    }
+
+    /// Returns `true` if the given collider is grounded (touching a map collider below).
+    pub fn is_grounded(&self, collider: &Collider, position: Vector3) -> bool {
+        let ground_check_pos = position - Vector3::new(0.0, 0.05, 0.0);
+        self.collides_with(collider, ground_check_pos)
+    }
+
+    /// Check if the given position is out of the map bounds, and returns the spawn point position in that case.
+    pub fn handle_out_of_map(&self, position: Vector3) -> Vector3 {
+        if position.x < -50.0
+            || position.x > 50.0
+            || position.z < -50.0
+            || position.z > 50.0
+            || position.y < -20.0
+        {
+            return self.spawn_point.position;
         }
         position
     }

@@ -14,6 +14,7 @@ const CRAB_SPEED: f32 = 7.0;
 const MODEL_OFFSET: f32 = 0.2;
 const JUMP_HIGH: f32 = 2.0;
 const JUMP_SPEED: f32 = 4.0;
+const GRAVITY: f32 = 9.81;
 
 /// Represents a crab character in the game world.
 ///
@@ -34,7 +35,9 @@ pub struct Crab {
     pub transform: Transform3D,
     pub collider: Collider,
     jump_timer: f32,
+    jump_start_y: f32,
     crab_animator: CrabAnimator,
+    has_landed: bool,
 }
 
 impl Crab {
@@ -46,7 +49,23 @@ impl Crab {
 
     /// Creates a new `Crab` instance with the given parameters.
     /// The collider is initialized with a sphere shape and an offset of (0.0, 0.5, 0.0).
-    pub fn new(
+    pub fn new(rl: &mut RaylibHandle, thread: &RaylibThread, path: &str) -> Self {
+        let mut collider = Collider::with_sphere(1.0);
+        collider.offset = Vector3::new(0.0, 0.5, 0.0);
+
+        Self {
+            transform: Transform3D::IDENTITY,
+            jump_timer: 0.0,
+            jump_start_y: 0.0,
+            crab_animator: CrabAnimator::new(rl, thread, path),
+            has_landed: false,
+            collider: collider,
+        }
+    }
+
+    /// Creates a new `Crab` instance with the given parameters.
+    /// The collider is initialized with a sphere shape and an offset of (0.0, 0.5, 0.0).
+    pub fn with_position(
         rl: &mut RaylibHandle,
         thread: &RaylibThread,
         path: &str,
@@ -59,7 +78,9 @@ impl Crab {
         Self {
             transform: Transform3D::new(position, rotation),
             jump_timer: 0.0,
+            jump_start_y: 0.0,
             crab_animator: CrabAnimator::new(rl, thread, path),
+            has_landed: false,
             collider: collider,
         }
     }
@@ -81,6 +102,8 @@ impl Crab {
         rl: &mut RaylibHandle,
         camera: &Camera3D,
         thread: &RaylibThread,
+        is_grounded: bool,
+        will_grounded: bool,
     ) -> Transform3D {
         let mut transform = self.transform.clone();
 
@@ -105,21 +128,27 @@ impl Crab {
         }
 
         // Y movement (jump mechanic)
-        if rl.is_key_down(KeyboardKey::KEY_SPACE) && self.jump_timer <= 0.0 {
+        if rl.is_key_down(KeyboardKey::KEY_SPACE) && self.jump_timer <= 0.0 && is_grounded {
             self.jump_timer = std::f32::consts::PI;
+            self.jump_start_y = transform.position.y;
+            self.has_landed = false;
             self.crab_animator.jump();
         }
 
         // Animation mechanic
         if self.jump_timer > 0.0 {
             self.jump_timer -= dt * JUMP_SPEED;
-            transform.position.y = self.jump_timer.max(0.0).sin() * JUMP_HIGH;
+            let jump_displacement = self.jump_timer.max(0.0).sin() * JUMP_HIGH;
+            transform.position.y = self.jump_start_y + jump_displacement;
 
-            if self.jump_timer <= 3.0 * dt * JUMP_SPEED {
+            let is_descending = self.jump_timer < std::f32::consts::PI / 2.0;
+
+            if is_descending && will_grounded && !self.has_landed {
                 self.crab_animator.land();
+                self.has_landed = true;
             }
         } else {
-            transform.position.y = 0.0;
+            transform.position.y -= GRAVITY * dt;
 
             if move_vec.length() > 0.0 {
                 self.crab_animator
@@ -137,6 +166,11 @@ impl Crab {
         }
 
         return transform;
+    }
+
+    /// Get crab effective position (position - model offset)
+    pub fn effective_position(&self) -> Vector3 {
+        self.transform.position - Vector3::new(0.0, MODEL_OFFSET, 0.0)
     }
 
     /// Draws the crab model using the given `RaylibMode3D` draw handle.

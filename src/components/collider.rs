@@ -111,7 +111,7 @@ impl Collider {
     ) -> bool {
         // Check if the aabb are far away first
         let (self_min, self_max) = self.get_aabb(base_position);
-        let (other_min, other_max) = other.get_aabb(base_position);
+        let (other_min, other_max) = other.get_aabb(other_base_pos);
 
         if !(self_min.x < other_max.x
             && self_max.x > other_min.x
