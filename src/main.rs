@@ -11,13 +11,11 @@ const SCREEN_WIDTH: i32 = 1280;
 const SCREEN_HEIGHT: i32 = 720;
 
 fn main() {
-    // App init
     let (mut rl, thread) = raylib::init()
         .size(SCREEN_WIDTH, SCREEN_HEIGHT)
         .title("Ruzzle")
         .build();
 
-    // Camera init
     let camera = Camera3D::perspective(
         Vector3::new(10.0, 10.0, 0.0),
         Vector3::new(0.0, 0.0, 0.5),
@@ -25,11 +23,9 @@ fn main() {
         45.0,
     );
 
-    // Sound manager and RaylibAudio device init
     let audio = RaylibAudio::init_audio_device().expect("Failed to initialize audio device");
     let mut sound_manager = SoundManager::new(&audio);
 
-    // Crab init
     let mut crab = Crab::new(
         &mut rl,
         &thread,
