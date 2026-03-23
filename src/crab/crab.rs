@@ -1,7 +1,7 @@
 use crate::components::collider::Collider;
 use crate::components::transform::Transform3D;
-use crate::crab_animator::CrabAnimation;
-use crate::crab_animator::CrabAnimator;
+use crate::crab::crab_animator::CrabAnimation;
+use crate::crab::crab_animator::CrabAnimator;
 use raylib::prelude::*;
 
 //----------------------------------------------------------------

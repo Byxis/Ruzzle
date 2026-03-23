@@ -3,11 +3,11 @@ use raylib::prelude::*;
 
 mod components;
 mod crab;
-mod crab_animator;
+
 use crate::components::collider::Collider;
 use crate::components::map::Map;
 use crate::components::transform::Transform3D;
-use crate::crab::Crab;
+use crate::crab::crab::Crab;
 
 const SCREEN_WIDTH: i32 = 1280;
 const SCREEN_HEIGHT: i32 = 720;
