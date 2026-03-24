@@ -19,7 +19,7 @@ use crate::components::transform::Transform3D;
 /// ```
 #[derive(Clone, Copy)]
 pub enum CollisionShape {
-    Box { half_size: Vector3 },
+    Box { half_size: Vector3 }, // half_size is the half-extents of the box in each dimensions.
     Sphere { radius: f32 },
 }
 
@@ -46,7 +46,8 @@ pub struct Collider {
 }
 
 impl Collider {
-    /// Creates a box collider with the given half size.
+    /// Creates a box collider with the given half size, the half-extents of the box in each dimensions.
+    /// To create a box collider with a full size, use [`with_box_from_size`].
     pub fn with_box(half_size: Vector3) -> Self {
         Self {
             offset: Vector3::ZERO,
