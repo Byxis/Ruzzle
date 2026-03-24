@@ -32,7 +32,7 @@ impl Level1 {
                     }),
                     Color::RED,
                     None,
-                    BlockType::All,
+                    BlockType::Drag,
                 ),
                 blocks::beach::BlockPrefab::new(
                     Vector3 {
@@ -47,7 +47,7 @@ impl Level1 {
                         y: 2.0,
                         z: 2.0,
                     }),
-                    BlockType::Fixe,
+                    BlockType::All,
                 ),
                 blocks::beach::BlockPrefab::new(
                     Vector3 {
@@ -187,6 +187,7 @@ impl Level1 {
                     }
                 }
 
+                // Si c'est un ncube qui peut tourner horizontalement
                 if cube.block_type == BlockType::All || cube.block_type == BlockType::RotationH {
                     if rl.is_key_pressed(KeyboardKey::KEY_RIGHT) {
                         // Rotation de 90° autour de l'axe Y
@@ -203,6 +204,7 @@ impl Level1 {
                     }
                 }
 
+                // Si c'est un cube qui peut tourner verticalement
                 if cube.block_type == BlockType::All || cube.block_type == BlockType::RotationV {
                     if rl.is_key_pressed(KeyboardKey::KEY_UP) {
                         // Rotation de 90° autour de l'axe X

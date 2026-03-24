@@ -54,7 +54,7 @@ impl BlockPrefab {
 
     // Fonction qui dessine le cube en fonction de ses paramètres
     pub fn draw(&self, d: &mut crate::RaylibMode3D<crate::RaylibDrawHandle>) {
-        // On calcule l'orientation intermédiaire pour l'animation
+        // On calcule l'orientation pour l'animation
         let animated_orientation = self
             .current_orientation
             .slerp(self.target_orientation, self.rotation_progress);
@@ -109,13 +109,13 @@ impl BlockPrefab {
             Color::WHITE
         };
 
-        // 1. Dessiner le cube fantôme à la position de fin (semi-transparent)
+        // Dessiner le cube fantôme à la position de fin (semi-transparent)
         d.draw_cube(
             self.end_pos,
             self.size.x,
             self.size.y,
             self.size.z,
-            self.base_color.fade(0.3),
+            self.base_color.alpha(0.3),
         );
         d.draw_cube_wires(
             self.end_pos,
@@ -125,7 +125,7 @@ impl BlockPrefab {
             dot_color,
         );
 
-        // 2. Dessiner les petits points de trajectoire
+        // Dessiner les petits points de trajectoire
         let segments = 10;
         for i in 0..=segments {
             let t = i as f32 / segments as f32;
