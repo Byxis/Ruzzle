@@ -2,21 +2,35 @@ use raylib::math::glam::Vec3;
 use raylib::prelude::*;
 
 mod components;
-mod crab;
-
 use crate::components::collider::Collider;
 use crate::components::map::Map;
 use crate::components::transform::Transform3D;
+
+mod crab;
 use crate::crab::crab::Crab;
 
-const SCREEN_WIDTH: i32 = 1280;
-const SCREEN_HEIGHT: i32 = 720;
+mod menu;
+use crate::menu::menu::MenuManager;
+
+mod config;
+use config::Config;
 
 fn main() {
+    let config = Config::new();
     let (mut rl, thread) = raylib::init()
-        .size(SCREEN_WIDTH, SCREEN_HEIGHT)
+        .size(config.screen_width, config.screen_height)
         .title("Ruzzle")
         .build();
+
+    // let mut current_menu = Menu::Title;
+    let mut menu_manager = MenuManager::new(config, &mut rl, &thread);
+    if rl.get_screen_width() != menu_manager.config.screen_width
+        || rl.get_screen_height() != menu_manager.config.screen_height
+    {
+        unsafe {
+            raylib::ffi::SetConfigFlags(raylib::ffi::ConfigFlags::FLAG_WINDOW_RESIZABLE as u32);
+        }
+    }
 
     let camera = Camera3D::perspective(
         Vector3::new(10.0, 10.0, 0.0),
@@ -51,37 +65,13 @@ fn main() {
     rl.set_target_fps(60);
 
     while !rl.window_should_close() {
-        let is_grounded = map.is_grounded(&crab.collider, crab.effective_position());
-        let will_grounded = map.is_grounded(
-            &crab.collider,
-            crab.effective_position() - Vector3::new(0.0, 0.4, 0.0),
-        );
+        //Updating the game
+        menu_manager.update(&mut rl, &thread, &map, &mut crab, &camera);
 
-        let mut t =
-            crab.calculate_next_transform(&mut rl, &camera, &thread, is_grounded, will_grounded);
-
-        t.position = map.resolve_collisions(&crab.collider, t.position);
-        t.position = map.handle_out_of_map(t.position);
-        crab.teleport(t);
-
+        //Drawing the game
         let mut d = rl.begin_drawing(&thread);
         d.clear_background(Color::BLACK);
 
-        {
-            let mut d3d = d.begin_mode3D(camera);
-
-            d3d.draw_grid(10, 1.0);
-            crab.draw(&mut d3d);
-            crab.collider.draw(&mut d3d, crab.transform);
-
-            map.draw(&mut d3d);
-        }
-
-        let coordonnees = format!(
-            "({:.2}, {:.2}, {:.2})",
-            crab.transform.position.x, crab.transform.position.y, crab.transform.position.z
-        );
-        d.draw_text(&coordonnees, 10, 40, 20, Color::DARKGRAY);
-        d.draw_fps(10, 10);
+        menu_manager.draw(&mut d, &map, &mut crab, &camera);
     }
 }
