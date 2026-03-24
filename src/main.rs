@@ -74,10 +74,7 @@ fn main() {
             crab.draw(&mut d3d);
             crab.collider.draw(&mut d3d, crab.transform);
 
-            if !d3d.is_key_down(KeyboardKey::KEY_Q) {
-                map.draw(&mut d3d);
-            }
-            map.draw_collider(&mut d3d);
+            map.draw(&mut d3d);
         }
 
         let coordonnees = format!(
