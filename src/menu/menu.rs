@@ -70,13 +70,13 @@ pub struct MenuManager {
     pub frame_count: i32,
     pub buttons: Vec<Button>,
     pub button_fullscreen: Button,
-    pub config: Config,
+    pub config: &Config,
     pub hovered_button: SelectMenuHoveredButtons,
     pub bg_loading: Option<Texture2D>,
 }
 
 impl MenuManager {
-    pub fn new(config: Config, rl: &mut RaylibHandle, thread: &RaylibThread) -> Self {
+    pub fn new(config: &Config, rl: &mut RaylibHandle, thread: &RaylibThread) -> Self {
         let button_width = (config.screen_width as f32) * 0.2;
         let button_height = (config.screen_height as f32) * 0.1;
 

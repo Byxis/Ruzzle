@@ -62,11 +62,11 @@ pub struct SoundManager<'a> {
     pub music_playing: bool,
     effects_cache: HashMap<SoundEffect, Sound<'a>>, // Cache for lazy loading and memory of sound effects
     effect_volume: f32,
-    default_config: Config, // To access default values
+    default_config: &'a Config, // To access default values
 }
 
 impl<'a> SoundManager<'a> {
-    pub fn new(audio: &'a RaylibAudio, config: Config) -> Self {
+    pub fn new(audio: &'a RaylibAudio, config: &'a Config) -> Self {
         SoundManager {
             background_music: None, // Initialize later (allows for future track choice)
             music_volume: config.music_volume,

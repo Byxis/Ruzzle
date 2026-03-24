@@ -51,6 +51,9 @@ fn main() {
 
     rl.set_target_fps(60);
 
+    sound_manager.set_background_music(&audio, BackgroundMusic::CrabRave);
+    sound_manager.start_background_music();
+
     while !rl.window_should_close() {
         //Updating the game
         menu_manager.update(&rl);
