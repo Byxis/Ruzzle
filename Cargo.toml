@@ -5,4 +5,7 @@ edition = "2021"
 
 [dependencies]
 device_query = "4.0.1"
-raylib = { version = "5.5" }
+raylib = { version = "5.7.0" }
+
+[patch.crates-io]
+raylib = { path = "libs/raylib-rs/raylib" }
