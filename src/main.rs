@@ -45,6 +45,10 @@ fn main() {
         0.0,
     );
 
+    let audio = RaylibAudio::init_audio_device().expect("Failed to initialize audio device");
+    let mut sound_manager = SoundManager::new(&audio, config); // Cannot do that because value already taken by menu manager
+    
+
     rl.set_target_fps(60);
 
     while !rl.window_should_close() {
