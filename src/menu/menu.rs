@@ -2,8 +2,9 @@ use raylib::ffi::{CSSPalette, GetScreenHeight, RaylibPalette, ToggleFullscreen};
 use raylib::prelude::*;
 use raylib::{ffi::KeyboardKey, RaylibHandle};
 
+use crate::components::map::Map;
 use crate::config::Config;
-use crate::crab::Crab;
+use crate::crab::crab::Crab;
 
 /// Enum for the differents states displayed currently by the application
 pub enum Menu {
@@ -140,12 +141,19 @@ impl MenuManager {
     /// Borrow Raylibhandle Pointer
     ///  #Arguments
     ///  * rl - raylib handler, handle the raylib librairie
-    pub fn update(&mut self, rl: &RaylibHandle) {
+    pub fn update(
+        &mut self,
+        rl: &mut RaylibHandle,
+        thread: &RaylibThread,
+        map: &Map,
+        crab: &mut Crab,
+        camera: &Camera3D,
+    ) {
         self.frame_count += 1;
         match self.current_menu {
             Menu::Title => self.update_title(rl),
             Menu::Select => self.update_select(rl),
-            Menu::Game => self.update_game(rl),
+            Menu::Game => self.update_game(rl, thread, map, crab, camera),
             Menu::Settings => self.update_settings(rl),
             Menu::Loading => self.update_loading(rl),
             Menu::Credit => self.update_credit(rl),
@@ -182,10 +190,29 @@ impl MenuManager {
         }
     }
 
-    fn update_game(&mut self, rl: &RaylibHandle) {
+    fn update_game(
+        &mut self,
+        rl: &mut RaylibHandle,
+        thread: &RaylibThread,
+        map: &Map,
+        crab: &mut Crab,
+        camera: &Camera3D,
+    ) {
         if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
             self.current_menu = Menu::Title;
         }
+
+        let is_grounded = map.is_grounded(&crab.collider, crab.effective_position());
+        let will_grounded = map.is_grounded(
+            &crab.collider,
+            crab.effective_position() - Vector3::new(0.0, 0.4, 0.0),
+        );
+
+        let mut t = crab.calculate_next_transform(rl, &camera, &thread, is_grounded, will_grounded);
+
+        t.position = map.resolve_collisions(&crab.collider, t.position);
+        t.position = map.handle_out_of_map(t.position);
+        crab.teleport(t);
     }
 
     fn update_settings(&mut self, rl: &RaylibHandle) {
@@ -223,14 +250,20 @@ impl MenuManager {
     /// * d : rayLIbDrawHandle, borrows it to draw graphical elemetns
     /// * c : crab : Crab (alexei's crabito)
     /// * camera : Camera3D (not used for now)
-    pub fn draw(&self, mut d: &mut RaylibDrawHandle, crab: &Crab, camera: &Camera3D) {
+    pub fn draw(
+        &self,
+        mut d: &mut RaylibDrawHandle,
+        map: &Map,
+        crab: &mut Crab,
+        camera: &Camera3D,
+    ) {
         d.clear_background(Color::BLACK);
 
         match self.current_menu {
             Menu::Title => self.draw_title(d),
             Menu::Select => self.draw_select(d),
             Menu::Settings => self.draw_settings(d),
-            Menu::Game => self.draw_game(d, crab, camera),
+            Menu::Game => self.draw_game(d, crab, map, camera),
             Menu::Loading => self.draw_loading(d),
             Menu::Credit => self.draw_credit(d),
         }
@@ -309,16 +342,17 @@ impl MenuManager {
         );
     }
 
-    fn draw_game(&self, d: &mut RaylibDrawHandle, crab: &Crab, camera: &Camera3D) {
+    fn draw_game(&self, d: &mut RaylibDrawHandle, crab: &mut Crab, map: &Map, camera: &Camera3D) {
         {
             let mut d3d = d.begin_mode3D(camera);
             d3d.draw_grid(10, 1.0);
             crab.draw(&mut d3d);
+            map.draw(&mut d3d);
         }
 
         let coordonnees = format!(
             "({:.2}, {:.2}, {:.2})",
-            crab.position.x, crab.position.y, crab.position.z
+            crab.transform.position.x, crab.transform.position.y, crab.transform.position.z
         );
 
         d.draw_text(
