@@ -2,19 +2,8 @@ use crate::components::collider::Collider;
 use crate::components::transform::Transform3D;
 use crate::crab::crab_animator::CrabAnimation;
 use crate::crab::crab_animator::CrabAnimator;
+use crate::crab::crab_stats::CrabStats;
 use raylib::prelude::*;
-
-//----------------------------------------------------------------
-//
-//                          Static Constants
-//
-//----------------------------------------------------------------
-
-const CRAB_SPEED: f32 = 7.0;
-const MODEL_OFFSET: f32 = 0.2;
-const JUMP_HIGH: f32 = 2.0;
-const JUMP_SPEED: f32 = 4.0;
-const GRAVITY: f32 = 9.81;
 
 /// Represents a crab character in the game world.
 ///
@@ -121,7 +110,7 @@ impl Crab {
         move_vec = move_vec.normalize();
 
         if move_vec.length() > 0.0 {
-            transform.position += move_vec * CRAB_SPEED * dt;
+            transform.position += move_vec * CrabStats::CRAB_SPEED * dt;
 
             let angle_rad = move_vec.x.atan2(move_vec.z);
             transform.rotation = self.lerp_angle(transform.rotation, angle_rad.to_degrees(), 0.12);
@@ -137,8 +126,8 @@ impl Crab {
 
         // Animation mechanic
         if self.jump_timer > 0.0 {
-            self.jump_timer -= dt * JUMP_SPEED;
-            let jump_displacement = self.jump_timer.max(0.0).sin() * JUMP_HIGH;
+            self.jump_timer -= dt * CrabStats::JUMP_SPEED;
+            let jump_displacement = self.jump_timer.max(0.0).sin() * CrabStats::JUMP_HIGH;
             transform.position.y = self.jump_start_y + jump_displacement;
 
             let is_descending = self.jump_timer < std::f32::consts::PI / 2.0;
@@ -148,7 +137,7 @@ impl Crab {
                 self.has_landed = true;
             }
         } else {
-            transform.position.y -= GRAVITY * dt;
+            transform.position.y -= CrabStats::GRAVITY * dt;
 
             if move_vec.length() > 0.0 {
                 self.crab_animator
@@ -170,14 +159,14 @@ impl Crab {
 
     /// Get crab effective position (position - model offset)
     pub fn effective_position(&self) -> Vector3 {
-        self.transform.position - Vector3::new(0.0, MODEL_OFFSET, 0.0)
+        self.transform.position - Vector3::new(0.0, CrabStats::MODEL_OFFSET, 0.0)
     }
 
     /// Draws the crab model using the given `RaylibMode3D` draw handle.
     pub fn draw(&self, d3d: &mut RaylibMode3D<'_, impl RaylibDraw>) {
         d3d.draw_model_ex(
             &self.crab_animator.model,
-            self.transform.position + Vector3::new(0.0, MODEL_OFFSET, 0.0),
+            self.transform.position + Vector3::new(0.0, CrabStats::MODEL_OFFSET, 0.0),
             Vector3::new(0.0, 1.0, 0.0),
             self.transform.rotation,
             Vector3::new(1.0, 1.0, 1.0),
