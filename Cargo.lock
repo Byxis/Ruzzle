@@ -493,6 +493,7 @@ dependencies = [
  "libc",
  "pkg-config",
 ]
+[[package]]
 name = "wit-bindgen"
 version = "0.51.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
