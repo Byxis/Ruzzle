@@ -21,7 +21,7 @@ fn main() {
         .build();
 
     // let mut current_menu = Menu::Title;
-    let mut menu_manager = MenuManager::new(config, &mut rl, &thread);
+    let mut menu_manager = MenuManager::new(&config, &mut rl, &thread);
     if rl.get_screen_width() != menu_manager.config.screen_width
         || rl.get_screen_height() != menu_manager.config.screen_height
     {
@@ -46,7 +46,7 @@ fn main() {
     );
 
     let audio = RaylibAudio::init_audio_device().expect("Failed to initialize audio device");
-    let mut sound_manager = SoundManager::new(&audio, config); // Cannot do that because value already taken by menu manager
+    let mut sound_manager = SoundManager::new(&audio, &config); // Cannot do that because value already taken by menu manager
     
 
     rl.set_target_fps(60);
