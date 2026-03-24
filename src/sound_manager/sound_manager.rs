@@ -2,6 +2,8 @@ use std::collections::HashMap;
 
 use raylib::prelude::*;
 
+use crate::config::Config;
+
 //------------------------------------------------------------------------------
 /// SOUND MANAGER
 /// This module manages all sound-related functionalities, including background music and sound effects.
@@ -51,11 +53,6 @@ impl BackgroundMusic {
     }
 }
 
-/// DEFAULT VOLUME SETTINGS
-// TODO : also add it to config file ?
-const DEFAULT_MUSIC_VOLUME: f32 = 0.5;
-const DEFAULT_EFFECT_VOLUME: f32 = 0.5;
-
 /// SOUND MANAGER STRUCT
 /// This struct encapsulates all sound-related data and functionalities, 
 /// Including the current background music, volume levels, and a cache for sound effects to optimize loading and playback.
@@ -71,9 +68,9 @@ impl<'a> SoundManager<'a> {
     pub fn new(audio: &'a RaylibAudio) -> Self {
         SoundManager {
             background_music: None, // Initialize later (allows for future track choice)
-            music_volume: DEFAULT_MUSIC_VOLUME,
+            music_volume: Config.music_volume,
             effects_cache: HashMap::new(), // Initialize the effects cache
-            effect_volume: DEFAULT_EFFECT_VOLUME, // Volumes set to default
+            effect_volume: Config.sound_effects_volume, // Volumes set to default
             music_playing: false,
         }
     }
