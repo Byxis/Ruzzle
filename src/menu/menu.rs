@@ -4,6 +4,8 @@ use raylib::{ffi::KeyboardKey, RaylibHandle};
 
 use crate::config::Config;
 use crate::crab::Crab;
+use crate::sound_manager;
+use crate::sound_manager::sound_manager::{SoundEffect, SoundManager};
 
 /// Enum for the differents states displayed currently by the application
 pub enum Menu {
@@ -76,7 +78,7 @@ pub struct MenuManager<'a> {
 }
 
 impl<'a> MenuManager<'a> {
-    pub fn new(config: &'a Config, rl: &mut RaylibHandle, thread: &RaylibThread) -> Self {
+    pub fn new(sound_manager: &'a SoundManager<'a>, config: &'a Config, rl: &mut RaylibHandle, thread: &RaylibThread) -> Self {
         let button_width = (config.screen_width as f32) * 0.2;
         let button_height = (config.screen_height as f32) * 0.1;
 
@@ -140,22 +142,23 @@ impl<'a> MenuManager<'a> {
     /// Borrow Raylibhandle Pointer
     ///  #Arguments
     ///  * rl - raylib handler, handle the raylib librairie
-    pub fn update(&mut self, rl: &RaylibHandle) {
+    pub fn update(&mut self, rl: &RaylibHandle, sound_manager: &mut SoundManager) {
         self.frame_count += 1;
         match self.current_menu {
-            Menu::Title => self.update_title(rl),
-            Menu::Select => self.update_select(rl),
+            Menu::Title => self.update_title(rl, sound_manager),
+            Menu::Select => self.update_select(rl,sound_manager),
             Menu::Game => self.update_game(rl),
-            Menu::Settings => self.update_settings(rl),
+            Menu::Settings => self.update_settings(rl, sound_manager),
             Menu::Loading => self.update_loading(rl),
-            Menu::Credit => self.update_credit(rl),
+            Menu::Credit => self.update_credit(rl, sound_manager),
         }
     }
 
     /// Update fonctions
-    fn update_title(&mut self, rl: &RaylibHandle) {
+    fn update_title(&mut self, rl: &RaylibHandle, sound_manager: &mut SoundManager) {
         if rl.is_key_pressed(KeyboardKey::KEY_ENTER) {
             self.current_menu = Menu::Loading;
+            sound_manager.play_sound_effect( SoundEffect::Click);
         }
     }
     /// update_selects allows to check if mouse is hovering a button,
@@ -164,13 +167,14 @@ impl<'a> MenuManager<'a> {
     /// # Arguments
     /// * rl - raylib handler, handle the raylib librairie
     /// #TODO : make it more abstract to be able to use it for the settings menu and other menu with buttons
-    fn update_select(&mut self, rl: &RaylibHandle) {
+    fn update_select(&mut self, rl: &RaylibHandle, sound_manager: &mut SoundManager) {
         let mouse_pos = rl.get_mouse_position();
         self.hovered_button = SelectMenuHoveredButtons::None;
         for button in &self.buttons {
             if button.rectangle.check_collision_point_rec(mouse_pos) {
                 self.hovered_button = button.id;
                 if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
+                    sound_manager.play_sound_effect(SoundEffect::Click);
                     match button.id {
                         SelectMenuHoveredButtons::Game => self.current_menu = Menu::Game,
                         SelectMenuHoveredButtons::Settings => self.current_menu = Menu::Settings,
@@ -188,7 +192,7 @@ impl<'a> MenuManager<'a> {
         }
     }
 
-    fn update_settings(&mut self, rl: &RaylibHandle) {
+    fn update_settings(&mut self, rl: &RaylibHandle, sound_manager: &mut SoundManager) {
         let mouse_pos = rl.get_mouse_position();
         if self
             .button_fullscreen
@@ -197,6 +201,7 @@ impl<'a> MenuManager<'a> {
         {
             if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
                 // TODO : put an option to put in fullscreen but properly or something to resize the game
+                sound_manager.play_sound_effect(SoundEffect::Click);
             }
         }
         if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
@@ -211,8 +216,9 @@ impl<'a> MenuManager<'a> {
         }
     }
 
-    fn update_credit(&mut self, rl: &RaylibHandle) {
+    fn update_credit(&mut self, rl: &RaylibHandle, sound_manager: &mut SoundManager) {
         if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
+            sound_manager.play_sound_effect(SoundEffect::Click);
             self.current_menu = Menu::Title;
         }
     }
