@@ -10,6 +10,9 @@ use crate::menu::menu::MenuManager;
 mod config;
 use config::Config;
 
+mod sound_manager;
+use sound_manager::sound_manager::{SoundManager,BackgroundMusic, SoundEffect};
+
 fn main() {
     let config = Config::new();
     let (mut rl, thread) = raylib::init()
