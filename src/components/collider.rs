@@ -274,15 +274,17 @@ impl Collider {
                         .min(d_min_z)
                         .min(d_max_z);
 
-                    if min_dist == d_max_x {
+                    const EPSILON: f32 = 1e-6;
+
+                    if (min_dist - d_max_x).abs() < EPSILON {
                         Some(Vector3::new(radius + min_dist, 0.0, 0.0))
-                    } else if min_dist == d_min_x {
+                    } else if (min_dist - d_min_x).abs() < EPSILON {
                         Some(Vector3::new(-(radius + min_dist), 0.0, 0.0))
-                    } else if min_dist == d_max_y {
+                    } else if (min_dist - d_max_y).abs() < EPSILON {
                         Some(Vector3::new(0.0, radius + min_dist, 0.0))
-                    } else if min_dist == d_min_y {
+                    } else if (min_dist - d_min_y).abs() < EPSILON {
                         Some(Vector3::new(0.0, -(radius + min_dist), 0.0))
-                    } else if min_dist == d_max_z {
+                    } else if (min_dist - d_max_z).abs() < EPSILON {
                         Some(Vector3::new(0.0, 0.0, radius + min_dist))
                     } else {
                         Some(Vector3::new(0.0, 0.0, -(radius + min_dist)))
