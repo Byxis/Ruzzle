@@ -20,8 +20,14 @@ fn main() {
         .title("Ruzzle")
         .build();
 
+    let audio = RaylibAudio::init_audio_device().expect("Failed to initialize audio device");
+    let mut sound_manager = SoundManager::new(&audio, &config); 
+
+    sound_manager.set_background_music(BackgroundMusic::CrabRave);
+    sound_manager.start_background_music();
+
     // let mut current_menu = Menu::Title;
-    let mut menu_manager = MenuManager::new(&config, &mut rl, &thread);
+    let mut menu_manager = MenuManager::new(&sound_manager, &config, &mut rl, &thread);
     if rl.get_screen_width() != menu_manager.config.screen_width
         || rl.get_screen_height() != menu_manager.config.screen_height
     {
@@ -45,18 +51,14 @@ fn main() {
         0.0,
     );
 
-    let audio = RaylibAudio::init_audio_device().expect("Failed to initialize audio device");
-    let mut sound_manager = SoundManager::new(&audio, &config); // Cannot do that because value already taken by menu manager
+    
     
 
     rl.set_target_fps(60);
 
-    sound_manager.set_background_music(&audio, BackgroundMusic::CrabRave);
-    sound_manager.start_background_music();
-
     while !rl.window_should_close() {
         //Updating the game
-        menu_manager.update(&rl);
+        menu_manager.update(&rl, &mut sound_manager);
         sound_manager.update_music_stream();
 
         crab.update_with_camera(&mut rl, &camera, &thread);
