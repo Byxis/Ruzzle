@@ -53,11 +53,11 @@ fn main() {
         level.update(&rl);
         level.draw(&mut rl, &thread);
         //Updating the game
-        menu_manager.update(&rl);
+        //menu_manager.update(&rl);
 
-        crab.update_with_camera(&mut rl, &camera, &thread);
+        //crab.update_with_camera(&mut rl, &camera, &thread);
         //Drawing the game
-        let mut d = rl.begin_drawing(&thread);
-        menu_manager.draw(&mut d, &crab, &camera);
+        //let mut d = rl.begin_drawing(&thread);
+        //menu_manager.draw(&mut d, &crab, &camera);
     }
 }

@@ -76,14 +76,14 @@ impl BlockPrefab {
             raylib::ffi::rlMultMatrixf(matrix_array.as_ptr());
 
             d.draw_cube(
-                Vector3::zero(),
+                Vector3::ZERO,
                 self.size.x,
                 self.size.y,
                 self.size.z,
                 self.color,
             );
             d.draw_cube_wires(
-                Vector3::zero(),
+                Vector3::ZERO,
                 self.size.x,
                 self.size.y,
                 self.size.z,

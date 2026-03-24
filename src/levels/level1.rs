@@ -82,7 +82,6 @@ impl Level1 {
                 cube.color = Color::YELLOW;
                 if is_clicked {
                     self.selected_cube = Some(i);
-                    println!("Bloc cliqué !");
                 }
             } else {
                 if Some(i) == self.selected_cube {
