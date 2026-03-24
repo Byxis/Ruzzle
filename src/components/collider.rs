@@ -300,89 +300,17 @@ impl Collider {
         let pos = self.effective_position(base_position.position);
         match self.shape {
             CollisionShape::Box { half_size } => {
-                self.draw_box(d3d, pos, half_size, Color::GREEN);
+                d3d.draw_cube_wires(
+                    pos,
+                    half_size.x * 2.0,
+                    half_size.y * 2.0,
+                    half_size.z * 2.0,
+                    Color::GREEN,
+                );
             }
             CollisionShape::Sphere { radius } => {
                 d3d.draw_sphere_wires(pos, radius, 8, 8, Color::GREEN);
             }
         }
-    }
-
-    /// Draws a box-shaped collider using the given 3D mode and position.
-    fn draw_box(
-        &self,
-        d3d: &mut RaylibMode3D<'_, impl RaylibDraw>,
-        pos: Vector3,
-        half_size: Vector3,
-        color: Color,
-    ) {
-        let min = pos - half_size;
-        let max = pos + half_size;
-
-        // Bottom face
-        d3d.draw_line3D(
-            Vector3::new(min.x, min.y, min.z),
-            Vector3::new(max.x, min.y, min.z),
-            color,
-        );
-        d3d.draw_line3D(
-            Vector3::new(max.x, min.y, min.z),
-            Vector3::new(max.x, min.y, max.z),
-            color,
-        );
-        d3d.draw_line3D(
-            Vector3::new(max.x, min.y, max.z),
-            Vector3::new(min.x, min.y, max.z),
-            color,
-        );
-        d3d.draw_line3D(
-            Vector3::new(min.x, min.y, max.z),
-            Vector3::new(min.x, min.y, min.z),
-            color,
-        );
-
-        // Top face
-        d3d.draw_line3D(
-            Vector3::new(min.x, max.y, min.z),
-            Vector3::new(max.x, max.y, min.z),
-            color,
-        );
-        d3d.draw_line3D(
-            Vector3::new(max.x, max.y, min.z),
-            Vector3::new(max.x, max.y, max.z),
-            color,
-        );
-        d3d.draw_line3D(
-            Vector3::new(max.x, max.y, max.z),
-            Vector3::new(min.x, max.y, max.z),
-            color,
-        );
-        d3d.draw_line3D(
-            Vector3::new(min.x, max.y, max.z),
-            Vector3::new(min.x, max.y, min.z),
-            color,
-        );
-
-        // Vertical edges
-        d3d.draw_line3D(
-            Vector3::new(min.x, min.y, min.z),
-            Vector3::new(min.x, max.y, min.z),
-            color,
-        );
-        d3d.draw_line3D(
-            Vector3::new(max.x, min.y, min.z),
-            Vector3::new(max.x, max.y, min.z),
-            color,
-        );
-        d3d.draw_line3D(
-            Vector3::new(max.x, min.y, max.z),
-            Vector3::new(max.x, max.y, max.z),
-            color,
-        );
-        d3d.draw_line3D(
-            Vector3::new(min.x, min.y, max.z),
-            Vector3::new(min.x, max.y, max.z),
-            color,
-        );
     }
 }
