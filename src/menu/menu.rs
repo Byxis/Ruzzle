@@ -9,6 +9,7 @@ use crate::crab::Crab;
 pub enum Menu {
     Title,
     Select,
+    LevelSelection,
     Settings,
     Game,
     Loading,
@@ -20,6 +21,7 @@ pub enum Menu {
 pub enum SelectMenuHoveredButtons {
     None,
     Game,
+    LevelSelection,
     Settings,
     Credit,
 }
@@ -86,7 +88,7 @@ impl MenuManager {
             Button {
                 rectangle: Rectangle::new(
                     (config.screen_width / 2 - button_width as i32 / 2) as f32,
-                    (config.screen_height as f32) * 0.3,
+                    (config.screen_height as f32) * 0.25,
                     button_width,
                     button_height,
                 ),
@@ -96,7 +98,17 @@ impl MenuManager {
             Button {
                 rectangle: Rectangle::new(
                     (config.screen_width / 2 - button_width as i32 / 2) as f32,
-                    (config.screen_height as f32) * 0.5,
+                    (config.screen_height as f32) * 0.40,
+                    button_width,
+                    button_height,
+                ),
+                label: "Niveaux".to_string(),
+                id: SelectMenuHoveredButtons::LevelSelection,
+            },
+            Button {
+                rectangle: Rectangle::new(
+                    (config.screen_width / 2 - button_width as i32 / 2) as f32,
+                    (config.screen_height as f32) * 0.55,
                     button_width,
                     button_height,
                 ),
@@ -106,7 +118,7 @@ impl MenuManager {
             Button {
                 rectangle: Rectangle::new(
                     (config.screen_width / 2 - button_width as i32 / 2) as f32,
-                    (config.screen_height as f32) * 0.7,
+                    (config.screen_height as f32) * 0.70,
                     button_width,
                     button_height,
                 ),
@@ -145,6 +157,8 @@ impl MenuManager {
         match self.current_menu {
             Menu::Title => self.update_title(rl),
             Menu::Select => self.update_select(rl),
+
+            Menu::LevelSelection => self.update_game(rl),
             Menu::Game => self.update_game(rl),
             Menu::Settings => self.update_settings(rl),
             Menu::Loading => self.update_loading(rl),
@@ -173,6 +187,7 @@ impl MenuManager {
                 if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
                     match button.id {
                         SelectMenuHoveredButtons::Game => self.current_menu = Menu::Game,
+                        SelectMenuHoveredButtons::LevelSelection => self.current_menu = Menu::LevelSelection,
                         SelectMenuHoveredButtons::Settings => self.current_menu = Menu::Settings,
                         SelectMenuHoveredButtons::Credit => self.current_menu = Menu::Credit,
                         SelectMenuHoveredButtons::None => {}
@@ -181,7 +196,11 @@ impl MenuManager {
             }
         }
     }
-
+    fn update_level_selection(&mut self, rl: &RaylibHandle) {
+        if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
+            self.current_menu = Menu::Title;
+        }
+    }
     fn update_game(&mut self, rl: &RaylibHandle) {
         if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
             self.current_menu = Menu::Title;
@@ -239,6 +258,7 @@ impl MenuManager {
         match self.current_menu {
             Menu::Title => self.draw_title(d),
             Menu::Select => self.draw_select(d),
+            Menu::LevelSelection => self.draw_level_selection(d),
             Menu::Settings => self.draw_settings(d),
             Menu::Game => self.draw_game(d, crab, camera),
             Menu::Loading => self.draw_loading(d),
@@ -294,6 +314,29 @@ impl MenuManager {
                 font_size_h2,
             );
         }
+    }
+
+    fn draw_level_selection(&self, d: &mut RaylibDrawHandle) {
+        let font_size_h2 = (self.config.screen_height / 23) as i32;
+
+        draw_text_center(
+            d,
+            "Niveaux",
+            self.config.screen_width,
+            (self.config.screen_height / 7) as i32,
+            font_size_h2,
+            Color::WHITE,
+        );
+
+        draw_button(
+            d,
+            self.back_button.rectangle,
+            &self.back_button.label,
+            Color::DARKORANGE,
+            Color::DARKGRAY,
+            false,
+            font_size_h2 / 3,
+        );
     }
 
     fn draw_settings(&self, d: &mut RaylibDrawHandle) {
