@@ -1,5 +1,6 @@
 use raylib::prelude::*;
 
+/// Represents the different animations available for the crab model.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum CrabAnimation {
     Emote = 0,
@@ -11,6 +12,19 @@ pub enum CrabAnimation {
     PreJump = 6,
 }
 
+/// Handles the animation of the crab model.
+///
+/// # Examples
+///
+/// ```
+/// use raylib::prelude::*;
+/// use ruzzle::crab::CrabAnimator;
+///
+/// let mut rl = RaylibHandle::new();
+/// let thread = RaylibThread::new();
+/// let mut crab = CrabAnimator::new(&mut rl, &thread, "rsc/crab.glb");
+/// crab.handle_animation(&mut rl, &thread);
+/// ```
 pub struct CrabAnimator {
     pub model: Model,
     pub current: CrabAnimation,
@@ -19,6 +33,7 @@ pub struct CrabAnimator {
 }
 
 impl CrabAnimator {
+    /// Creates a new `CrabAnimator` with the given model path.
     pub fn new(rl: &mut RaylibHandle, thread: &RaylibThread, path: &str) -> Self {
         Self {
             model: rl.load_model(thread, path).expect("Failed to load model"),
@@ -30,6 +45,7 @@ impl CrabAnimator {
         }
     }
 
+    /// Handles the animation of the crab model (Play in loop or change to a new animation).
     pub fn handle_animation(&mut self, rl: &mut RaylibHandle, thread: &RaylibThread) {
         let anim_index = self.current as usize;
 
@@ -55,6 +71,7 @@ impl CrabAnimator {
         }
     }
 
+    /// Plays the jump animation if the current animation is idle or in the pre-jump state.
     pub fn jump(&mut self) {
         if !matches!(
             self.current,
@@ -64,12 +81,14 @@ impl CrabAnimator {
         }
     }
 
+    /// Plays the land animation if the current animation is not already the land animation.
     pub fn land(&mut self) {
         if self.current != CrabAnimation::LandJump {
             self.change_animation(CrabAnimation::LandJump);
         }
     }
 
+    /// Changes the current animation to the given animation.
     pub fn change_animation(&mut self, animation: CrabAnimation) {
         if self.current != animation {
             self.current = animation;
