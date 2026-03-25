@@ -27,7 +27,7 @@ fn main() {
     sound_manager.start_background_music();
 
     // let mut current_menu = Menu::Title;
-    let mut menu_manager = MenuManager::new(&sound_manager, &config, &mut rl, &thread);
+    let mut menu_manager = MenuManager::new(&config, &mut rl, &thread);
     if rl.get_screen_width() != menu_manager.config.screen_width
         || rl.get_screen_height() != menu_manager.config.screen_height
     {
