@@ -22,6 +22,14 @@ fn main() {
         .title("Ruzzle")
         .build();
 
+    let mut shader = rl.load_shader(
+        &thread,
+        Some("rsc/shaders/pulse.vs"),
+        Some("rsc/shaders/pulse.fs"),
+    );
+    eprintln!("Shader ID: {}", shader.id);
+    let u_time_loc = shader.get_shader_location("uTime");
+
     // let mut current_menu = Menu::Title;
     let mut menu_manager = MenuManager::new(config, &mut rl, &thread);
     if rl.get_screen_width() != menu_manager.config.screen_width
@@ -64,14 +72,22 @@ fn main() {
 
     rl.set_target_fps(60);
 
+    for material in map.model.materials_mut() {
+        material.shader = *shader.as_ref();
+    }
+    for material in crab.crab_animator.model.materials_mut() {
+        material.shader = *shader.as_ref();
+    }
+
     while !rl.window_should_close() {
         //Updating the game
         menu_manager.update(&mut rl, &thread, &map, &mut crab, &camera);
+        shader.set_shader_value(u_time_loc, rl.get_time() as f32);
 
         //Drawing the game
         let mut d = rl.begin_drawing(&thread);
         d.clear_background(Color::BLACK);
 
-        menu_manager.draw(&mut d, &map, &mut crab, &camera);
+        menu_manager.draw(&mut d, &map, &mut crab, &camera, &mut shader);
     }
 }

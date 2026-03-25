@@ -256,6 +256,7 @@ impl MenuManager {
         map: &Map,
         crab: &mut Crab,
         camera: &Camera3D,
+        shader: &mut Shader,
     ) {
         d.clear_background(Color::BLACK);
 
@@ -263,7 +264,7 @@ impl MenuManager {
             Menu::Title => self.draw_title(d),
             Menu::Select => self.draw_select(d),
             Menu::Settings => self.draw_settings(d),
-            Menu::Game => self.draw_game(d, crab, map, camera),
+            Menu::Game => self.draw_game(d, crab, map, camera, shader),
             Menu::Loading => self.draw_loading(d),
             Menu::Credit => self.draw_credit(d),
         }
@@ -342,12 +343,20 @@ impl MenuManager {
         );
     }
 
-    fn draw_game(&self, d: &mut RaylibDrawHandle, crab: &mut Crab, map: &Map, camera: &Camera3D) {
+    fn draw_game(
+        &self,
+        d: &mut RaylibDrawHandle,
+        crab: &mut Crab,
+        map: &Map,
+        camera: &Camera3D,
+        shader: &mut Shader,
+    ) {
         {
             let mut d3d = d.begin_mode3D(camera);
-            d3d.draw_grid(10, 1.0);
-            crab.draw(&mut d3d);
-            map.draw(&mut d3d);
+            let mut s = d3d.begin_shader_mode(shader);
+            s.draw_grid(10, 1.0);
+            crab.draw(&mut s);
+            map.draw(&mut s);
         }
 
         let coordonnees = format!(
