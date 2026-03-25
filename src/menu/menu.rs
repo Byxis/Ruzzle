@@ -78,7 +78,7 @@ pub struct MenuManager<'a> {
 }
 
 impl<'a> MenuManager<'a> {
-    pub fn new(sound_manager: &'a SoundManager<'a>, config: &'a Config, rl: &mut RaylibHandle, thread: &RaylibThread) -> Self {
+    pub fn new(config: &'a Config, rl: &mut RaylibHandle, thread: &RaylibThread) -> Self {
         let button_width = (config.screen_width as f32) * 0.2;
         let button_height = (config.screen_height as f32) * 0.1;
 
