@@ -58,7 +58,7 @@ fn main() {
 
     while !rl.window_should_close() {
         //Updating the game
-        menu_manager.update(&rl, &sound_manager);
+        menu_manager.update(&rl, &mut sound_manager);
         sound_manager.update_music_stream();
 
         crab.update_with_camera(&mut rl, &camera, &thread);
