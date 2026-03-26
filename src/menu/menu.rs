@@ -5,6 +5,7 @@ use raylib::{ffi::KeyboardKey, RaylibHandle};
 use crate::components::map::Map;
 use crate::config::Config;
 use crate::crab::crab::Crab;
+use crate::sound_manager::sound_manager::{SoundManager,SoundEffect};
 
 /// Enum for the differents states displayed currently by the application
 pub enum Menu {
@@ -66,18 +67,18 @@ impl Button {
 /// It is used with two functions :
 /// * update to affect game logic and variables
 /// * draw to draw the graphical elements
-pub struct MenuManager {
+pub struct MenuManager<'a> {
     pub current_menu: Menu,
     pub frame_count: i32,
     pub buttons: Vec<Button>,
     pub button_fullscreen: Button,
-    pub config: Config,
+    pub config: &'a Config,
     pub hovered_button: SelectMenuHoveredButtons,
     pub bg_loading: Option<Texture2D>,
 }
 
-impl MenuManager {
-    pub fn new(config: Config, rl: &mut RaylibHandle, thread: &RaylibThread) -> Self {
+impl<'a> MenuManager<'a> {
+    pub fn new(config: &'a Config, rl: &mut RaylibHandle, thread: &RaylibThread) -> Self {
         let button_width = (config.screen_width as f32) * 0.2;
         let button_height = (config.screen_height as f32) * 0.1;
 
@@ -148,22 +149,24 @@ impl MenuManager {
         map: &Map,
         crab: &mut Crab,
         camera: &Camera3D,
+        sound_manager : &mut SoundManager,
     ) {
         self.frame_count += 1;
         match self.current_menu {
-            Menu::Title => self.update_title(rl),
-            Menu::Select => self.update_select(rl),
+            Menu::Title => self.update_title(rl,sound_manager),
+            Menu::Select => self.update_select(rl,sound_manager),
             Menu::Game => self.update_game(rl, thread, map, crab, camera),
-            Menu::Settings => self.update_settings(rl),
+            Menu::Settings => self.update_settings(rl,sound_manager),
             Menu::Loading => self.update_loading(rl),
-            Menu::Credit => self.update_credit(rl),
+            Menu::Credit => self.update_credit(rl,sound_manager),
         }
     }
 
     /// Update fonctions
-    fn update_title(&mut self, rl: &RaylibHandle) {
+    fn update_title(&mut self, rl: &RaylibHandle, sound_manager: &mut SoundManager) {
         if rl.is_key_pressed(KeyboardKey::KEY_ENTER) {
             self.current_menu = Menu::Loading;
+            sound_manager.play_sound_effect(SoundEffect::Click);
         }
     }
     /// update_selects allows to check if mouse is hovering a button,
@@ -172,13 +175,14 @@ impl MenuManager {
     /// # Arguments
     /// * rl - raylib handler, handle the raylib librairie
     /// #TODO : make it more abstract to be able to use it for the settings menu and other menu with buttons
-    fn update_select(&mut self, rl: &RaylibHandle) {
+    fn update_select(&mut self, rl: &RaylibHandle, sound_manager : &mut SoundManager) {
         let mouse_pos = rl.get_mouse_position();
         self.hovered_button = SelectMenuHoveredButtons::None;
         for button in &self.buttons {
             if button.rectangle.check_collision_point_rec(mouse_pos) {
                 self.hovered_button = button.id;
                 if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
+                    sound_manager.play_sound_effect(SoundEffect::Click);
                     match button.id {
                         SelectMenuHoveredButtons::Game => self.current_menu = Menu::Game,
                         SelectMenuHoveredButtons::Settings => self.current_menu = Menu::Settings,
@@ -215,7 +219,7 @@ impl MenuManager {
         crab.teleport(t);
     }
 
-    fn update_settings(&mut self, rl: &RaylibHandle) {
+    fn update_settings(&mut self, rl: &RaylibHandle,sound_manager : &mut SoundManager) {
         let mouse_pos = rl.get_mouse_position();
         if self
             .button_fullscreen
@@ -223,6 +227,7 @@ impl MenuManager {
             .check_collision_point_rec(mouse_pos)
         {
             if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
+                sound_manager.play_sound_effect(SoundEffect::Click);
                 // TODO : put an option to put in fullscreen but properly or something to resize the game
             }
         }
@@ -238,8 +243,9 @@ impl MenuManager {
         }
     }
 
-    fn update_credit(&mut self, rl: &RaylibHandle) {
+    fn update_credit(&mut self, rl: &RaylibHandle, sound_manager : &mut SoundManager) {
         if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
+            sound_manager.play_sound_effect(SoundEffect::Click);
             self.current_menu = Menu::Title;
         }
     }
