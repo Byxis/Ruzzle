@@ -7,7 +7,7 @@ pub struct Config {
 /// Configuration files for the game
 /// #TODO : add the sound level and music level
 impl Config {
-    pub fn new(screen_width : i32, screen_height : i32) -> Self {
+    pub fn new(screen_width: i32, screen_height: i32) -> Self {
         Config {
             screen_width,
             screen_height,

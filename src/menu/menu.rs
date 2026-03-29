@@ -84,7 +84,6 @@ impl MenuManager {
         let button_height = (config.screen_height as f32) * 0.1;
 
         let bg_loading = rl.load_texture(thread, "assets/bg_loading.png").ok();
-
         let my_buttons_select = vec![
             Button {
                 rectangle: Rectangle::new(
@@ -259,10 +258,7 @@ impl MenuManager {
         }
     }
 
-
-
-
-    fn handle_back_button(&mut self, rl: & RaylibHandle) {
+    fn handle_back_button(&mut self, rl: &RaylibHandle) {
         let mouse_pos = rl.get_mouse_position();
         if self
             .back_button
@@ -302,14 +298,12 @@ impl MenuManager {
     }
 
     fn draw_title(&self, d: &mut RaylibDrawHandle) {
-        let font_size_h1 = (self.config.screen_height / 14) as i32;
-
         draw_text_center(
             d,
             "Ruzzle",
             self.config.screen_width,
             (self.config.screen_height as i32) / 2 - (self.config.screen_height / 10) as i32,
-            font_size_h1,
+            self.config.font_size_h1,
             Color::WHITE,
         );
         draw_text_center(
@@ -317,14 +311,12 @@ impl MenuManager {
             "Appuyez sur Entrée",
             self.config.screen_width,
             (self.config.screen_height as i32) / 2,
-            font_size_h1,
+            self.config.font_size_h1,
             Color::WHITE,
         );
     }
 
     fn draw_select(&self, d: &mut RaylibDrawHandle) {
-        let font_size_h1 = (self.config.screen_height / 14) as i32;
-        let font_size_h2 = (self.config.screen_height / 23) as i32;
         let color_hovered = Color::DARKORANGE;
         let color_button = Color::DARKGRAY;
 
@@ -333,7 +325,7 @@ impl MenuManager {
             "RUZZLE",
             self.config.screen_width,
             (self.config.screen_height / 10) as i32,
-            font_size_h1,
+            self.config.font_size_h1,
             Color::WHITE,
         );
 
@@ -346,20 +338,18 @@ impl MenuManager {
                 color_hovered,
                 color_button,
                 is_hovered,
-                font_size_h2,
+                self.config.font_size_h2,
             );
         }
     }
 
     fn draw_level_selection(&self, d: &mut RaylibDrawHandle) {
-        let font_size_h2 = (self.config.screen_height / 23) as i32;
-
         draw_text_center(
             d,
             "Niveaux",
             self.config.screen_width,
             (self.config.screen_height / 7) as i32,
-            font_size_h2,
+            self.config.font_size_h2,
             Color::WHITE,
         );
 
@@ -370,19 +360,17 @@ impl MenuManager {
             Color::DARKORANGE,
             Color::DARKGRAY,
             false,
-            font_size_h2 / 3,
+            self.config.font_size_h2 / 3,
         );
     }
 
     fn draw_settings(&self, d: &mut RaylibDrawHandle) {
-        let font_size_h2 = (self.config.screen_height / 23) as i32;
-
         draw_text_center(
             d,
             "Settings Menu",
             self.config.screen_width,
             (self.config.screen_height / 7) as i32,
-            font_size_h2,
+            self.config.font_size_h2,
             Color::WHITE,
         );
 
@@ -393,7 +381,7 @@ impl MenuManager {
             Color::DARKORANGE,
             Color::DARKGRAY,
             false,
-            font_size_h2 / 3,
+            self.config.font_size_h2 / 3,
         );
     }
 
@@ -421,8 +409,6 @@ impl MenuManager {
     }
 
     fn draw_loading(&self, d: &mut RaylibDrawHandle) {
-        let font_size_h1 = (self.config.screen_height / 14) as i32;
-
         if let Some(texture) = &self.bg_loading {
             let x = self.config.screen_width / 2 - texture.width / 2;
             let y = self.config.screen_height / 2 - texture.height / 2;
@@ -431,16 +417,12 @@ impl MenuManager {
     }
 
     fn draw_credit(&self, d: &mut RaylibDrawHandle) {
-        let font_size_h1 = (self.config.screen_height / 14) as i32;
-
-        let font_size_h2 = (self.config.screen_height / 23) as i32;
-
         draw_text_center(
             d,
             "Jeu réalisé par :",
             self.config.screen_width,
             (self.config.screen_height as i32) / 2 - (self.config.screen_height / 12) as i32,
-            font_size_h1,
+            self.config.font_size_h1,
             Color::WHITE,
         );
         draw_text_center(
@@ -466,7 +448,7 @@ impl MenuManager {
             Color::DARKORANGE,
             Color::DARKGRAY,
             false,
-            font_size_h2 / 3,
+            self.config.font_size_h2 / 3,
         );
     }
 }
