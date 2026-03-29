@@ -231,6 +231,16 @@ impl MenuManager {
 
 
     fn update_level_selection(&mut self, rl: &RaylibHandle) {
+               let mouse_pos = rl.get_mouse_position();
+        if self
+            .back_button
+            .rectangle
+            .check_collision_point_rec(mouse_pos)
+        {
+            if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
+               self.current_menu = Menu::Select;
+            }
+        }
         if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
             self.current_menu = Menu::Title;
         }
@@ -244,7 +254,7 @@ impl MenuManager {
             .check_collision_point_rec(mouse_pos)
         {
             if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
-                // TODO : put an option to put in fullscreen but properly or something to resize the game
+               self.current_menu = Menu::Select;
             }
         }
         if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
@@ -260,6 +270,16 @@ impl MenuManager {
     }
 
     fn update_credit(&mut self, rl: &RaylibHandle) {
+               let mouse_pos = rl.get_mouse_position();
+        if self
+            .back_button
+            .rectangle
+            .check_collision_point_rec(mouse_pos)
+        {
+            if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
+               self.current_menu = Menu::Select;
+            }
+        }
         if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
             self.current_menu = Menu::Title;
         }
@@ -382,7 +402,7 @@ impl MenuManager {
             self.back_button.rectangle,
             &self.back_button.label,
             Color::DARKORANGE,
-            Color::RED,
+            Color::DARKGRAY,
             false,
             font_size_h2 / 3,
         );
@@ -424,6 +444,8 @@ impl MenuManager {
     fn draw_credit(&self, d: &mut RaylibDrawHandle) {
         let font_size_h1 = (self.config.screen_height / 14) as i32;
 
+        let font_size_h2 = (self.config.screen_height / 23) as i32;
+
         draw_text_center(
             d,
             "Jeu réalisé par :",
@@ -447,6 +469,15 @@ impl MenuManager {
             (self.config.screen_height as i32) / 2 + (self.config.screen_height / 18) as i32,
             (self.config.screen_height / 12) as i32,
             Color::WHITE,
+        );
+        draw_button(
+            d,
+            self.back_button.rectangle,
+            &self.back_button.label,
+            Color::DARKORANGE,
+            Color::DARKGRAY,
+            false,
+            font_size_h2 / 3,
         );
     }
 }
