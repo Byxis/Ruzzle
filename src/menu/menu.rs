@@ -27,6 +27,12 @@ pub enum SelectMenuHoveredButtons {
     Credit,
 }
 
+pub enum FakeLevels {
+    Level1,
+    Level2,
+    Level3,
+}
+
 /// A Button is a Rectangle combined with the text displayed in it and the enum stating if
 /// it's hovered currently or not.
 /// It's purpose is to clicked on.
@@ -72,6 +78,7 @@ pub struct MenuManager {
     pub current_menu: Menu,
     pub frame_count: i32,
     pub buttons: Vec<Button>,
+    pub level_buttons: Vec<Button>,
     pub back_button: Button,
     pub config: Config,
     pub hovered_button: SelectMenuHoveredButtons,
@@ -84,6 +91,13 @@ impl MenuManager {
         let button_height = (config.screen_height as f32) * 0.1;
 
         let bg_loading = rl.load_texture(thread, "assets/bg_loading.png").ok();
+
+        let level_buttons = vec![
+            Self::create_level_button(&config, "Niveau 1", 0, button_width, button_height),
+            Self::create_level_button(&config, "Niveau 2", 1, button_width, button_height),
+            Self::create_level_button(&config, "Niveau 3", 2, button_width, button_height),
+        ];
+
         let my_buttons_select = vec![
             Button {
                 rectangle: Rectangle::new(
@@ -141,13 +155,32 @@ impl MenuManager {
             current_menu: Menu::Title,
             frame_count: 0,
             buttons: my_buttons_select,
+            level_buttons,
             back_button: back_button,
             config,
             hovered_button: SelectMenuHoveredButtons::None,
             bg_loading,
         }
     }
-
+    fn create_level_button(
+        config: &Config,
+        label: &str,
+        index: usize,
+        width: f32,
+        height: f32,
+    ) -> Button {
+        let y_offset = (config.screen_height as f32) * 0.25 + (index as f32) * (height + 20.0);
+        Button {
+            rectangle: Rectangle::new(
+                (config.screen_width / 2 - width as i32 / 2) as f32,
+                y_offset,
+                width,
+                height,
+            ),
+            label: label.to_string(),
+            id: SelectMenuHoveredButtons::None,
+        }
+    }
     /// Update the current state of the game, and the state variables
     /// Borrow Raylibhandle Pointer
     ///  #Arguments
@@ -352,6 +385,19 @@ impl MenuManager {
             self.config.font_size_h2,
             Color::WHITE,
         );
+
+        // Afficher les boutons de niveaux
+        for button in &self.level_buttons {
+            draw_button(
+                d,
+                button.rectangle,
+                &button.label,
+                Color::DARKORANGE,
+                Color::DARKGRAY,
+                false,
+                self.config.font_size_h2 / 2,
+            );
+        }
 
         draw_button(
             d,
