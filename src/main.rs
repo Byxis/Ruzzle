@@ -22,7 +22,7 @@ mod config;
 use config::Config;
 
 fn main() {
-    let config = Config::new();
+    let config = Config::new(SCREEN_WIDTH, SCREEN_HEIGHT);
     let (mut rl, thread) = raylib::init()
         .size(config.screen_width, config.screen_height)
         .title("Ruzzle")
