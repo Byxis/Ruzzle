@@ -13,7 +13,7 @@ mod menu;
 use crate::menu::menu::MenuManager;
 
 mod sound_manager;
-use crate::sound_manager::sound_manager::{SoundManager, BackgroundMusic, SoundEffect};
+use crate::sound_manager::sound_manager::{BackgroundMusic, SoundEffect, SoundManager};
 
 const SCREEN_WIDTH: i32 = 1280;
 const SCREEN_HEIGHT: i32 = 720;
@@ -44,10 +44,10 @@ fn main() {
         Vector3::new(0.0, 1.0, 0.0),
         45.0,
     );
-  
+
     let audio = RaylibAudio::init_audio_device().expect("Failed to initialize audio device");
     let mut sound_manager = SoundManager::new(&audio);
-  
+
     let spawn_point = Transform3D::new(Vector3::new(0.0, 5.0, 0.0), 0.0);
     let mut map = Map::new(&mut rl, &thread, "rsc/map.glb");
 
@@ -80,8 +80,8 @@ fn main() {
     // Frame loop
     while !rl.window_should_close() {
         // Update background music stream (for continuous playing)
-        sound_manager.update_music_stream(); 
-      
+        sound_manager.update_music_stream();
+
         //Updating the game
         menu_manager.update(&mut rl, &thread, &map, &mut crab, &camera);
 

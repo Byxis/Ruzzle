@@ -194,7 +194,9 @@ impl MenuManager {
                 if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
                     match button.id {
                         SelectMenuHoveredButtons::Game => self.current_menu = Menu::Game,
-                        SelectMenuHoveredButtons::LevelSelection => self.current_menu = Menu::LevelSelection,
+                        SelectMenuHoveredButtons::LevelSelection => {
+                            self.current_menu = Menu::LevelSelection
+                        }
                         SelectMenuHoveredButtons::Settings => self.current_menu = Menu::Settings,
                         SelectMenuHoveredButtons::Credit => self.current_menu = Menu::Credit,
                         SelectMenuHoveredButtons::None => {}
@@ -229,34 +231,15 @@ impl MenuManager {
         crab.teleport(t);
     }
 
-
     fn update_level_selection(&mut self, rl: &RaylibHandle) {
-               let mouse_pos = rl.get_mouse_position();
-        if self
-            .back_button
-            .rectangle
-            .check_collision_point_rec(mouse_pos)
-        {
-            if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
-               self.current_menu = Menu::Select;
-            }
-        }
+        self.handle_back_button(rl);
         if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
             self.current_menu = Menu::Title;
         }
     }
 
     fn update_settings(&mut self, rl: &RaylibHandle) {
-        let mouse_pos = rl.get_mouse_position();
-        if self
-            .back_button
-            .rectangle
-            .check_collision_point_rec(mouse_pos)
-        {
-            if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
-               self.current_menu = Menu::Select;
-            }
-        }
+        self.handle_back_button(rl);
         if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
             self.current_menu = Menu::Title;
         }
@@ -270,18 +253,25 @@ impl MenuManager {
     }
 
     fn update_credit(&mut self, rl: &RaylibHandle) {
-               let mouse_pos = rl.get_mouse_position();
+        self.handle_back_button(rl);
+        if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
+            self.current_menu = Menu::Title;
+        }
+    }
+
+
+
+
+    fn handle_back_button(&mut self, rl: & RaylibHandle) {
+        let mouse_pos = rl.get_mouse_position();
         if self
             .back_button
             .rectangle
             .check_collision_point_rec(mouse_pos)
         {
             if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
-               self.current_menu = Menu::Select;
+                self.current_menu = Menu::Select;
             }
-        }
-        if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
-            self.current_menu = Menu::Title;
         }
     }
 
@@ -360,7 +350,6 @@ impl MenuManager {
             );
         }
     }
-
 
     fn draw_level_selection(&self, d: &mut RaylibDrawHandle) {
         let font_size_h2 = (self.config.screen_height / 23) as i32;
