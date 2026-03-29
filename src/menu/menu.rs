@@ -1,4 +1,3 @@
-use raylib::ffi::{CSSPalette, GetScreenHeight, RaylibPalette, ToggleFullscreen};
 use raylib::prelude::*;
 use raylib::{ffi::KeyboardKey, RaylibHandle};
 
@@ -27,12 +26,6 @@ pub enum SelectMenuHoveredButtons {
     Credit,
 }
 
-pub enum FakeLevels {
-    Level1,
-    Level2,
-    Level3,
-}
-
 /// A Button is a Rectangle combined with the text displayed in it and the enum stating if
 /// it's hovered currently or not.
 /// It's purpose is to clicked on.
@@ -58,14 +51,14 @@ pub struct Button {
 impl Button {
     pub fn new(rectangle: Rectangle, label: String, id: SelectMenuHoveredButtons) -> Self {
         Button {
-            rectangle: rectangle,
-            label: label,
-            id: id,
+            rectangle,
+            label, 
+            id,
         }
     }
 }
 
-/// The Game Manager is designed to display the current state of the game.
+/// The Menu Manager is designed to display the current state of the game.
 /// It takes into arugment only the Config enum, and is in called in the main application.
 /// It has the current_menu, and enum with the different menu possible, the frame_count used for artificial loading time,
 /// the buttons which is a vec of buttons for the select menu, the button for the fullscreen, the config taken as an argument to know
@@ -156,12 +149,20 @@ impl MenuManager {
             frame_count: 0,
             buttons: my_buttons_select,
             level_buttons,
-            back_button: back_button,
+            back_button, 
             config,
             hovered_button: SelectMenuHoveredButtons::None,
             bg_loading,
         }
     }
+    /// Helper to build level selection buttons with a simple vertical layout.
+    ///
+    /// # Arguments
+    /// * config - used for positioning according to screen size
+    /// * label - displayed text
+    /// * index - vertical order of the button
+    /// * width - button width in pixels
+    /// * height - button height in pixels
     fn create_level_button(
         config: &Config,
         label: &str,
@@ -181,10 +182,14 @@ impl MenuManager {
             id: SelectMenuHoveredButtons::None,
         }
     }
-    /// Update the current state of the game, and the state variables
-    /// Borrow Raylibhandle Pointer
-    ///  #Arguments
-    ///  * rl - raylib handler, handle the raylib librairie
+    /// Update the current state of the application, and the state variables.
+    ///
+    /// # Arguments
+    /// * rl - raylib handler (inputs)
+    /// * thread - raylib thread (passed to game update / crab)
+    /// * map - used for collisions / grounded checks (game state)
+    /// * crab - player entity updated in game state
+    /// * camera - camera used for movement computations in game state
     pub fn update(
         &mut self,
         rl: &mut RaylibHandle,
@@ -209,8 +214,11 @@ impl MenuManager {
     fn update_title(&mut self, rl: &RaylibHandle) {
         if rl.is_key_pressed(KeyboardKey::KEY_ENTER) {
             self.current_menu = Menu::Loading;
+            self.frame_count = 0;
         }
     }
+
+
     /// update_selects allows to check if mouse is hovering a button,
     ///  and if it's the case, to update the hovered butto state for the menu manager,
     ///  and if the mouse is clicked, to change the menu accordingly to the button
@@ -278,7 +286,7 @@ impl MenuManager {
     }
 
     fn update_loading(&mut self, rl: &RaylibHandle) {
-        if self.frame_count % 100 == 0 {
+        if self.frame_count >= 100 {
             self.current_menu = Menu::Select;
             self.frame_count = 0;
         }
@@ -291,6 +299,12 @@ impl MenuManager {
         }
     }
 
+    
+    /// handle_back_button: common helper for menus that have a "Retour" button.
+    ///
+    /// # Arguments
+    /// * rl - raylib handler (mouse position + click)
+    
     fn handle_back_button(&mut self, rl: &RaylibHandle) {
         let mouse_pos = rl.get_mouse_position();
         if self
@@ -310,13 +324,7 @@ impl MenuManager {
     /// * d : rayLIbDrawHandle, borrows it to draw graphical elemetns
     /// * c : crab : Crab (alexei's crabito)
     /// * camera : Camera3D (not used for now)
-    pub fn draw(
-        &self,
-        mut d: &mut RaylibDrawHandle,
-        map: &Map,
-        crab: &mut Crab,
-        camera: &Camera3D,
-    ) {
+    pub fn draw(&self, d: &mut RaylibDrawHandle, map: &Map, crab: &mut Crab, camera: &Camera3D) {
         d.clear_background(Color::BLACK);
 
         match self.current_menu {
@@ -508,7 +516,6 @@ fn draw_button(
     hovered: bool,
     font_size: i32,
 ) {
-    //let text_play = "Jouer";
     let text_width_play = d.measure_text(text, font_size);
     if hovered {
         d.draw_rectangle_rec(button, color_hovered);
