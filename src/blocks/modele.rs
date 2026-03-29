@@ -1,5 +1,6 @@
 use crate::blocks;
 use crate::blocks::material::{self, BlockMaterial};
+use crate::Assets;
 use raylib::prelude::*;
 
 // Permet d'activer l'autorisation de la comparaison entre valeurs de BlockType
@@ -99,7 +100,7 @@ impl GroupBlock {
         }
     }
 
-    pub fn draw(&self, d: &mut RaylibMode3D<RaylibDrawHandle>) {
+    pub fn draw(&self, d: &mut RaylibMode3D<RaylibDrawHandle>, assets: &Assets) {
         // Calcul de l'orientation animée du groupe
         let animated_orientation = self
             .orientation
@@ -120,14 +121,18 @@ impl GroupBlock {
 
             for child in &self.children {
                 let color_to_draw = child.temp_color.unwrap_or(child.material.color);
-                // On dessine l'enfant à sa position RELATIVE
-                d.draw_cube(
+
+                // Si le matériau dit qu'il a besoin d'une texture
+                draw_cube_with_texture(
+                    &assets.sand_tex,
                     child.position,
                     child.size.x,
                     child.size.y,
                     child.size.z,
                     color_to_draw,
                 );
+
+                // On garde les wires pour le style
                 d.draw_cube_wires(
                     child.position,
                     child.size.x,
@@ -219,4 +224,96 @@ impl GroupBlock {
         self.end_pos = end;
         self
     }
+}
+
+use raylib::ffi; // Assure-toi d'avoir cet import
+
+fn draw_cube_with_texture(
+    tex: &Texture2D,
+    position: Vector3,
+    width: f32,
+    height: f32,
+    length: f32,
+    color: Color,
+) {
+    // demi-dimensions pour centrer le cube sur sa position
+    let (x, y, z) = (position.x, position.y, position.z);
+    let (w, h, l) = (width / 2.0, height / 2.0, length / 2.0);
+
+    // les 8 coins du cube, nommés par position (avant/arrière, haut/bas, gauche/droite)
+    let avant_bas_gauche = (x - w, y - h, z + l);
+    let avant_bas_droit = (x + w, y - h, z + l);
+    let avant_haut_gauche = (x - w, y + h, z + l);
+    let avant_haut_droit = (x + w, y + h, z + l);
+
+    let arr_bas_gauche = (x - w, y - h, z - l);
+    let arr_bas_droit = (x + w, y - h, z - l);
+    let arr_haut_gauche = (x - w, y + h, z - l);
+    let arr_haut_droit = (x + w, y + h, z - l);
+
+    unsafe {
+        ffi::rlSetTexture(tex.id);
+        ffi::rlBegin(ffi::RL_QUADS as i32);
+        ffi::rlColor4ub(color.r, color.g, color.b, color.a);
+
+        // chaque face = 4 sommets dans le sens anti-horaire vu de l'extérieur
+        // les coordonnées UV vont de (0,0) en haut-gauche à (1,1) en bas-droite
+
+        draw_face(
+            avant_bas_gauche,
+            avant_bas_droit,
+            avant_haut_droit,
+            avant_haut_gauche,
+        ); // avant
+        draw_face(
+            arr_bas_droit,
+            arr_bas_gauche,
+            arr_haut_gauche,
+            arr_haut_droit,
+        ); // arrière
+        draw_face(
+            arr_haut_gauche,
+            avant_haut_gauche,
+            avant_haut_droit,
+            arr_haut_droit,
+        ); // dessus
+        draw_face(
+            arr_bas_droit,
+            avant_bas_droit,
+            avant_bas_gauche,
+            arr_bas_gauche,
+        ); // dessous
+        draw_face(
+            avant_bas_droit,
+            arr_bas_droit,
+            arr_haut_droit,
+            avant_haut_droit,
+        ); // droite
+        draw_face(
+            arr_bas_gauche,
+            avant_bas_gauche,
+            avant_haut_gauche,
+            arr_haut_gauche,
+        ); // gauche
+
+        ffi::rlEnd();
+        ffi::rlSetTexture(0);
+    }
+}
+
+// dessine un quad avec les UV aux 4 coins standard
+unsafe fn draw_face(
+    bas_gauche: (f32, f32, f32),
+    bas_droit: (f32, f32, f32),
+    haut_droit: (f32, f32, f32),
+    haut_gauche: (f32, f32, f32),
+) {
+    ffi::rlTexCoord2f(0.0, 1.0);
+    ffi::rlVertex3f(bas_gauche.0, bas_gauche.1, bas_gauche.2);
+    ffi::rlTexCoord2f(1.0, 1.0);
+    ffi::rlVertex3f(bas_droit.0, bas_droit.1, bas_droit.2);
+    ffi::rlTexCoord2f(1.0, 0.0);
+    ffi::rlVertex3f(haut_droit.0, haut_droit.1, haut_droit.2);
+    ffi::rlTexCoord2f(0.0, 0.0);
+    ffi::rlVertex3f(haut_gauche.0, haut_gauche.1, haut_gauche.2);
 }

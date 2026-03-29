@@ -13,6 +13,10 @@ use crate::menu::menu::MenuManager;
 mod config;
 use config::Config;
 
+struct Assets {
+    sand_tex: Texture2D,
+}
+
 fn main() {
     let config = Config::new();
     let (mut rl, thread) = raylib::init()
@@ -47,11 +51,16 @@ fn main() {
 
     rl.set_target_fps(60);
 
+    let assets = Assets {
+        sand_tex: rl.load_texture(&thread, "rsc/sand.png").unwrap(),
+    };
+
     // méthode pour appeler un niveau et le mettre en place
-    let mut level = levels::level1::Level1::new();
+    let mut level = levels::level1::Level1::new(&assets);
+
     while !rl.window_should_close() {
         level.update(&rl);
-        level.draw(&mut rl, &thread);
+        level.draw(&mut rl, &thread, &assets);
         //Updating the game
         //menu_manager.update(&rl);
 

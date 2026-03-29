@@ -1,6 +1,6 @@
+use crate::Assets;
 use raylib::prelude::*;
 
-use crate::blocks;
 use crate::blocks::modele::BlockType;
 use crate::blocks::modele::GroupBlock;
 use crate::blocks::prefab::beach::*;
@@ -12,7 +12,7 @@ pub struct Level1 {
 }
 
 impl Level1 {
-    pub fn new() -> Self {
+    pub fn new(assets: &Assets) -> Self {
         let mut groups = Vec::new();
 
         let mon_pont = create_sand_pillar(Vector3::new(2.0, 0.0, -2.0))
@@ -32,7 +32,7 @@ impl Level1 {
     }
 
     // Fonction qui dessine le niveau
-    pub fn draw(&mut self, rl: &mut RaylibHandle, thread: &RaylibThread) {
+    pub fn draw(&mut self, rl: &mut RaylibHandle, thread: &RaylibThread, assets: &Assets) {
         let mut d = rl.begin_drawing(thread);
         d.clear_background(Color::RAYWHITE);
 
@@ -42,7 +42,7 @@ impl Level1 {
         // Gestion unifiée de la sélection
         for (i, group) in self.groups.iter_mut().enumerate() {
             if group.is_mouse_over(&d, &camera) {
-                group.set_temporary_color(Color::YELLOW); // Méthode à ajouter dans GroupBlock
+                group.set_temporary_color(Color::YELLOW);
                 if is_clicked {
                     self.selected_group = Some(i);
                 }
@@ -50,14 +50,14 @@ impl Level1 {
                 if Some(i) == self.selected_group {
                     group.set_temporary_color(Color::ORANGE);
                 } else {
-                    group.reset_color(); // Reprend les couleurs de base des enfants
+                    group.reset_color();
                 }
             }
         }
 
         let mut d3d = d.begin_mode3D(&self.camera);
         for group in &self.groups {
-            group.draw(&mut d3d);
+            group.draw(&mut d3d, assets);
             if group.is_dragging {
                 group.draw_drag_guides(&mut d3d);
             }
