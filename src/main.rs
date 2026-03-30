@@ -80,11 +80,11 @@ fn main() {
 
     // Frame loop
     while !rl.window_should_close() {
-        //Updating the game
+        // Updating the game
         menu_manager.update(&mut rl, &thread, &map, &mut crab, &camera, &mut sound_manager);
         sound_manager.update_music_stream();
 
-        //Drawing the game
+        // Drawing the game
         let mut d = rl.begin_drawing(&thread);
         d.clear_background(Color::BLACK);
 

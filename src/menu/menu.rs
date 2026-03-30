@@ -72,7 +72,7 @@ pub struct MenuManager<'a> {
     pub frame_count: i32,
     pub buttons: Vec<Button>,
     pub button_fullscreen: Button,
-    pub config: &'a Config,
+    pub config: &'a Config, // Config is as an address because of ownership issues
     pub hovered_button: SelectMenuHoveredButtons,
     pub bg_loading: Option<Texture2D>,
 }
@@ -153,6 +153,7 @@ impl<'a> MenuManager<'a> {
     ) {
         self.frame_count += 1;
         match self.current_menu {
+            // Passing sound_manager to each function that needs it individually to avoid ownership issues
             Menu::Title => self.update_title(rl,sound_manager),
             Menu::Select => self.update_select(rl,sound_manager),
             Menu::Game => self.update_game(rl, thread, map, crab, camera),
@@ -166,6 +167,7 @@ impl<'a> MenuManager<'a> {
     fn update_title(&mut self, rl: &RaylibHandle, sound_manager: &mut SoundManager) {
         if rl.is_key_pressed(KeyboardKey::KEY_ENTER) {
             self.current_menu = Menu::Loading;
+            // Use sound_manager this way to play any available sound effect (here click)
             sound_manager.play_sound_effect(SoundEffect::Click);
         }
     }
