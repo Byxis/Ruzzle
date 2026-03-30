@@ -1,10 +1,13 @@
-use raylib::prelude::*;
-use raylib::{ffi::KeyboardKey, RaylibHandle};
 use crate::components::map::Map;
 use crate::config::Config;
 use crate::crab::crab::Crab;
+use raylib::prelude::*;
+use raylib::{ffi::KeyboardKey, RaylibHandle};
 
-use crate::menu::utils::draw_text_center;
+use crate::menu::utils::{
+    draw_button, draw_text_center, draw_texture_button, draw_texture_contain, 
+    draw_back_button,
+};
 
 /// Enum for the differents states displayed currently by the application
 pub enum Menu {
@@ -55,7 +58,7 @@ impl Button {
     pub fn new(rectangle: Rectangle, label: String, id: SelectMenuHoveredButtons) -> Self {
         Button {
             rectangle,
-            label, 
+            label,
             id,
         }
     }
@@ -169,7 +172,7 @@ impl MenuManager {
             frame_count: 0,
             buttons: my_buttons_select,
             level_buttons,
-            back_button, 
+            back_button,
             config,
             hovered_button: SelectMenuHoveredButtons::None,
             bg_logo,
@@ -242,7 +245,6 @@ impl MenuManager {
         }
     }
 
-
     /// update_selects allows to check if mouse is hovering a button,
     ///  and if it's the case, to update the hovered butto state for the menu manager,
     ///  and if the mouse is clicked, to change the menu accordingly to the button
@@ -261,7 +263,9 @@ impl MenuManager {
                         SelectMenuHoveredButtons::LevelSelection => {
                             self.current_menu = Menu::LevelSelection
                         }
-                        SelectMenuHoveredButtons::Multiplayer => self.current_menu = Menu::Multiplayer,
+                        SelectMenuHoveredButtons::Multiplayer => {
+                            self.current_menu = Menu::Multiplayer
+                        }
                         SelectMenuHoveredButtons::Settings => self.current_menu = Menu::Settings,
                         SelectMenuHoveredButtons::Credit => self.current_menu = Menu::Credit,
                         SelectMenuHoveredButtons::None => {}
@@ -331,12 +335,11 @@ impl MenuManager {
         }
     }
 
-    
     /// handle_back_button: common helper for menus that have a "Retour" button.
     ///
     /// # Arguments
     /// * rl - raylib handler (mouse position + click)
-    
+
     fn handle_back_button(&mut self, rl: &RaylibHandle) {
         let mouse_pos = rl.get_mouse_position();
         if self
@@ -357,13 +360,11 @@ impl MenuManager {
     /// * c : crab : Crab (alexei's crabito)
     /// * camera : Camera3D (not used for now)
     pub fn draw(&self, d: &mut RaylibDrawHandle, map: &Map, crab: &mut Crab, camera: &Camera3D) {
-        if let Some(text) = &self.background_menu{
-                draw_background_contain(d, text, 
-                    self.config.screen_width, self.config.screen_height );
-        }else{
+        if let Some(text) = &self.background_menu {
+            draw_texture_contain(d, text, self.config.screen_width, self.config.screen_height);
+        } else {
             d.clear_background(Color::BLACK);
         };
-        
 
         match self.current_menu {
             Menu::Title => self.draw_title(d),
@@ -446,7 +447,7 @@ impl MenuManager {
             );
         }
 
-        draw_back_button(d, &self.back_button, &self.tex_back, &self.config);
+        draw_back_button(d, self.back_button.rectangle, &self.tex_back, &self.back_button.label, self.config.font_size_h2 / 3);
     }
 
     fn draw_multiplayer(&self, d: &mut RaylibDrawHandle) {
@@ -458,7 +459,7 @@ impl MenuManager {
             self.config.font_size_h2,
             Color::WHITE,
         );
-        draw_back_button(d, &self.back_button, &self.tex_back, &self.config);
+        draw_back_button(d, self.back_button.rectangle, &self.tex_back, &self.back_button.label, self.config.font_size_h2 / 3);
     }
     fn draw_settings(&self, d: &mut RaylibDrawHandle) {
         draw_text_center(
@@ -469,31 +470,27 @@ impl MenuManager {
             self.config.font_size_h2,
             Color::WHITE,
         );
-    let mouse = d.get_mouse_position(); // RaylibDrawHandle a accès à get_mouse_position
-    let hovered = self
-        .back_button
-        .rectangle
-        .check_collision_point_rec(mouse);
-    if let Some(tex) = &self.tex_back {
-        draw_texture_button(d, tex, self.back_button.rectangle, hovered);
-    } else {
-        // fallback si la texture n'a pas chargé
-        draw_button(
-            d,
-            self.back_button.rectangle,
-            &self.back_button.label,
-            Color::DARKORANGE,
-            Color::DARKGRAY,
-            hovered,
-            self.config.font_size_h2 / 3,
-        );
-    }
+        let mouse = d.get_mouse_position(); // RaylibDrawHandle a accès à get_mouse_position
+        let hovered = self.back_button.rectangle.check_collision_point_rec(mouse);
+        if let Some(tex) = &self.tex_back {
+            draw_texture_button(d, tex, self.back_button.rectangle, hovered);
+        } else {
+            // fallback si la texture n'a pas chargé
+            draw_button(
+                d,
+                self.back_button.rectangle,
+                &self.back_button.label,
+                Color::DARKORANGE,
+                Color::DARKGRAY,
+                hovered,
+                self.config.font_size_h2 / 3,
+            );
+        }
     }
 
     fn draw_game(&self, d: &mut RaylibDrawHandle, crab: &mut Crab, map: &Map, camera: &Camera3D) {
-
-            
-        {   d.clear_background(Color::BLACK);
+        {
+            d.clear_background(Color::BLACK);
             let mut d3d = d.begin_mode3D(camera);
             d3d.draw_grid(10, 1.0);
             crab.draw(&mut d3d);
@@ -520,7 +517,7 @@ impl MenuManager {
             let x = 0;
             let y = 0;
             d.draw_texture(texture, x, y, Color::WHITE);
-        }       
+        }
         if let Some(texture) = &self.bg_logo {
             let x = self.config.screen_width / 2 - texture.width / 2;
             let y = self.config.screen_height / 2 - texture.height / 2;
@@ -539,7 +536,7 @@ impl MenuManager {
         );
         draw_text_center(
             d,
-            "Alexey Serrané, Allessandraaaaaa, Carolayne, Max La Menax, André saitpascodé",
+            "Alexey Serrané, Allessandraaaaaa, Carolayne",
             self.config.screen_width,
             (self.config.screen_height as i32) / 2,
             (self.config.screen_height / 36) as i32,
@@ -554,115 +551,6 @@ impl MenuManager {
             Color::WHITE,
         );
 
-        draw_back_button(d, &self.back_button, &self.tex_back, &self.config);
-        // draw_button(
-        //     d,
-        //     self.back_button.rectangle,
-        //     &self.back_button.label,
-        //     Color::DARKORANGE,
-        //     Color::DARKGRAY,
-        //     false,
-        //     self.config.font_size_h2 / 3,
-        // );
-    }
-
-    
-}
-// Dessine la texture en conservant le ratio (pas de déformation), avec bandes noires si nécessaire.
-fn draw_background_contain(d: &mut RaylibDrawHandle, tex: &Texture2D, screen_w: i32, screen_h: i32) {
-    let sw = screen_w as f32;
-    let sh = screen_h as f32;
-    let tw = tex.width as f32;
-    let th = tex.height as f32;
-
-    let scale = (sw / tw).min(sh / th);
-    let dw = tw * scale;
-    let dh = th * scale;
-    let dx = (sw - dw) * 0.5;
-    let dy = (sh - dh) * 0.5;
-
-    let src = Rectangle::new(0.0, 0.0, tw, th);
-    let dst = Rectangle::new(dx, dy, dw, dh);
-
-    d.draw_texture_pro(tex, src, dst, Vector2::new(0.0, 0.0), 0.0, Color::WHITE);
-}
-
-
-
-fn draw_back_button(d: &mut RaylibDrawHandle, button: &Button, texture: &Option<Texture2D>, config: &Config) {
-    let mouse = d.get_mouse_position(); // RaylibDrawHandle a accès à get_mouse_position
-    let hovered = button
-                        .rectangle
-                        .check_collision_point_rec(mouse);
-    if let Some(tex) = texture {
-        draw_texture_button(d, tex, button.rectangle, hovered);
-    } else {
-        // fallback si la texture n'a pas chargé
-        draw_button(
-            d,
-            button.rectangle,
-            &button.label,
-            Color::DARKORANGE,
-            Color::DARKGRAY,
-            hovered,
-            config.font_size_h2 / 3,
-        );
-    }
-}
-fn draw_texture_button(
-    d: &mut RaylibDrawHandle,
-    texture: &Texture2D,
-    rect: Rectangle,
-    hovered: bool,
-) {
-    // Source = toute la texture
-    let src = Rectangle::new(0.0, 0.0, texture.width as f32, texture.height as f32);
-
-    // Destination = ton rectangle de bouton
-    let dst = rect;
-
-    // Origine = coin haut-gauche (rotation 0)
-    let origin = Vector2::new(0.0, 0.0);
-
-    // Teinte: on peut éclaircir si hovered
-    let tint = if hovered {
-        Color::new(255, 255, 255, 220)
-    } else {
-        Color::WHITE
-    };
-
-    d.draw_texture_pro(texture, src, dst, origin, 0.0, tint);
-}
-
-
-
-fn draw_button(
-    d: &mut RaylibDrawHandle,
-    button: Rectangle,
-    text: &str,
-    color_hovered: Color,
-    color: Color,
-    hovered: bool,
-    font_size: i32,
-) {
-    let text_width_play = d.measure_text(text, font_size);
-    if hovered {
-        d.draw_rectangle_rec(button, color_hovered);
-        d.draw_text(
-            text,
-            (button.x + (button.width - text_width_play as f32) / 1.8) as i32,
-            (button.y + (button.height - (button.height / 2.0)) / 2.0) as i32,
-            font_size,
-            Color::WHITE,
-        );
-    } else {
-        d.draw_rectangle_rec(button, color);
-        d.draw_text(
-            text,
-            (button.x + (button.width - text_width_play as f32) / 2.0) as i32,
-            (button.y + (button.height - (button.height / 2.0)) / 2.0) as i32,
-            font_size,
-            Color::BLACK,
-        );
+        draw_back_button(d, self.back_button.rectangle, &self.tex_back, &self.back_button.label, self.config.font_size_h2 / 3);
     }
 }
