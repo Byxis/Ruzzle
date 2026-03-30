@@ -9,6 +9,8 @@ use crate::menu::utils::{
     draw_back_button,
 };
 
+use crate::menu::screens::draw_title;
+
 /// Enum for the differents states displayed currently by the application
 pub enum Menu {
     Title,
@@ -367,7 +369,7 @@ impl MenuManager {
         };
 
         match self.current_menu {
-            Menu::Title => self.draw_title(d),
+            Menu::Title => draw_title(d, &self.config),
             Menu::Select => self.draw_select(d),
             Menu::LevelSelection => self.draw_level_selection(d),
             Menu::Multiplayer => self.draw_multiplayer(d),
@@ -377,26 +379,6 @@ impl MenuManager {
             Menu::Credit => self.draw_credit(d),
         }
     }
-
-    fn draw_title(&self, d: &mut RaylibDrawHandle) {
-        draw_text_center(
-            d,
-            "Ruzzle",
-            self.config.screen_width,
-            (self.config.screen_height as i32) / 2 - (self.config.screen_height / 10) as i32,
-            self.config.font_size_h1,
-            Color::WHITE,
-        );
-        draw_text_center(
-            d,
-            "Appuyez sur Entrée",
-            self.config.screen_width,
-            (self.config.screen_height as i32) / 2,
-            self.config.font_size_h1,
-            Color::WHITE,
-        );
-    }
-
     fn draw_select(&self, d: &mut RaylibDrawHandle) {
         let color_hovered = Color::DARKORANGE;
         let color_button = Color::DARKGRAY;
