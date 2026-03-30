@@ -3,6 +3,7 @@ use crate::components::transform::Transform3D;
 use crate::crab::crab_animator::CrabAnimation;
 use crate::crab::crab_animator::CrabAnimator;
 use crate::crab::crab_stats::CrabStats;
+use crate::sound_manager;
 use crate::sound_manager::sound_manager::{SoundManager,SoundEffect};
 use raylib::prelude::*;
 
@@ -94,6 +95,7 @@ impl Crab {
         thread: &RaylibThread,
         is_grounded: bool,
         will_grounded: bool,
+        sound_manager: &mut SoundManager, // Passing sound manager as parameter to play sound
     ) -> Transform3D {
         let mut transform = self.transform.clone();
 
@@ -141,7 +143,8 @@ impl Crab {
             transform.position.y -= CrabStats::GRAVITY * dt;
 
             if move_vec.length() > 0.0 {
-                // sound here ?
+                // Play walking sound
+                
                 self.crab_animator
                     .change_animation(CrabAnimation::MoveFront);
             } else if !matches!(
