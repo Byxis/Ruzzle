@@ -3,6 +3,7 @@ use crate::components::transform::Transform3D;
 use crate::crab::crab_animator::CrabAnimation;
 use crate::crab::crab_animator::CrabAnimator;
 use crate::crab::crab_stats::CrabStats;
+use crate::sound_manager::sound_manager::{SoundManager,SoundEffect};
 use raylib::prelude::*;
 
 /// Represents a crab character in the game world.
@@ -140,17 +141,20 @@ impl Crab {
             transform.position.y -= CrabStats::GRAVITY * dt;
 
             if move_vec.length() > 0.0 {
+                // sound here ?
                 self.crab_animator
                     .change_animation(CrabAnimation::MoveFront);
             } else if !matches!(
                 self.crab_animator.current,
                 CrabAnimation::LandJump | CrabAnimation::Emote
             ) {
+                // sound here ?
                 self.crab_animator.change_animation(CrabAnimation::Idle);
             }
         }
 
         if self.crab_animator.current == CrabAnimation::Idle && rl.is_key_down(KeyboardKey::KEY_E) {
+            // sound here ? (magic)
             self.crab_animator.change_animation(CrabAnimation::Emote);
         }
 
