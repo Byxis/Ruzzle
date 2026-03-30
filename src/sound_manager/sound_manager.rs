@@ -28,11 +28,11 @@ impl SoundEffect {
     fn path(&self) -> &'static str {
         match self {
             Self::Boing => "rsc/sounds/boing_effect.mp3", // To be decided
-            Self::Jump => "rsc/sounds/jump_effect.mp3", // For crab jump
+            Self::Jump => "rsc/sounds/jump_effect.mp3",   // For crab jump
             Self::Walking => "rsc/sounds/walking_effect.mp3", // For crab movement
             Self::Click => "rsc/sounds/click_effect.mp3", // For menu interactions
             Self::Rotate => "rsc/sounds/rotate_effect.mp3", // For block rotation
-            _ => "rsc/sounds/boing_effect.mp3", // Boing is default sound effect
+            _ => "rsc/sounds/boing_effect.mp3",           // Boing is default sound effect
         }
     }
 }
@@ -48,13 +48,12 @@ impl BackgroundMusic {
         match self {
             Self::CrabRave => "rsc/sounds/8bit_crab_rave.mp3",
             _ => "rsc/sounds/8bit_crab_rave.mp3", // Crab rave is default music
-            
         }
     }
 }
 
 /// SOUND MANAGER STRUCT
-/// This struct encapsulates all sound-related data and functionalities, 
+/// This struct encapsulates all sound-related data and functionalities,
 /// Including the current background music, volume levels, and a cache for sound effects to optimize loading and playback.
 pub struct SoundManager<'a> {
     background_music: Option<Music<'a>>,
@@ -168,7 +167,4 @@ impl<'a> SoundManager<'a> {
         cached_effect.set_volume(self.effect_volume); // Set volume to current setting for effects
         cached_effect.play();
     }
-
-    
-
 }

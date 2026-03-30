@@ -13,13 +13,13 @@ mod menu;
 use crate::menu::menu::MenuManager;
 
 mod sound_manager;
-use crate::sound_manager::sound_manager::{SoundManager, BackgroundMusic, SoundEffect};
+use crate::sound_manager::sound_manager::{BackgroundMusic, SoundEffect, SoundManager};
 
 mod config;
 use config::Config;
 
 fn main() {
-    let config = Config::new();
+    let config = Config::new(SCREEN_WIDTH, SCREEN_HEIGHT);
     let (mut rl, thread) = raylib::init()
         .size(config.screen_width, config.screen_height)
         .title("Ruzzle")
@@ -47,8 +47,6 @@ fn main() {
         Vector3::new(0.0, 1.0, 0.0),
         45.0,
     );
-  
-    
   
     let spawn_point = Transform3D::new(Vector3::new(0.0, 5.0, 0.0), 0.0);
     let mut map = Map::new(&mut rl, &thread, "rsc/map.glb");
