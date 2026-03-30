@@ -56,7 +56,7 @@ fn main() {
     };
 
     // méthode pour appeler un niveau et le mettre en place
-    let mut level = levels::level1::Level1::new(&assets);
+    let mut level: Box<dyn levels::level::Level> = Box::new(levels::level4::Level4::new());
 
     while !rl.window_should_close() {
         level.update(&rl);

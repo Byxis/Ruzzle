@@ -1,9 +1,10 @@
 use crate::blocks;
 use crate::blocks::material::{self, BlockMaterial};
 use crate::Assets;
+use raylib::ffi;
 use raylib::prelude::*;
 
-// Permet d'activer l'autorisation de la comparaison entre valeurs de BlockType
+// Permet d'activer l'autorisation de la comparaison entre valeurs
 #[derive(PartialEq, Clone, Copy)]
 pub enum BlockType {
     Fixe,
@@ -13,7 +14,7 @@ pub enum BlockType {
     All,
 }
 
-// Block type avec sa fonction d'implementation
+// Block avec sa fonction d'implementation
 pub struct BlockPrefab {
     pub position: crate::Vector3,
     pub size: crate::Vector3,
@@ -22,6 +23,7 @@ pub struct BlockPrefab {
     pub temp_color: Option<Color>,
 }
 
+// Implémentation pour un block
 impl BlockPrefab {
     pub fn new(
         pos: Vector3,
@@ -36,10 +38,6 @@ impl BlockPrefab {
             material: material,
             temp_color: None,
         }
-    }
-
-    pub fn get_current_color(&self) -> Color {
-        self.material.color
     }
 }
 
@@ -59,6 +57,7 @@ pub struct GroupBlock {
     pub drag_timer: f32,
 }
 
+// Implémentation pour un groupe de block(s)
 impl GroupBlock {
     pub fn new(
         pos: Vector3,
@@ -69,11 +68,14 @@ impl GroupBlock {
             position: pos,
             orientation: Quaternion::identity(),
             target_orientation: Quaternion::identity(),
-            children,
-            block_type,
+            children,   // Liste des blocks
+            block_type, // Type de groupe
+
+            // Rotation
             is_rotating: false,
             rotation_progress: 1.0,
-            // Initialisation du drag
+
+            // Drag
             start_pos: pos,
             end_pos: pos,
             is_dragging: false,
@@ -81,27 +83,38 @@ impl GroupBlock {
         }
     }
 
+    /*  Fonction pour créer un block unique avec:
+     * [pos] -> Vector3 : Position du block
+     * [block_type] -> BlockType : Type du block (Fixe, RotationH)
+     * [material] -> Materiel du block (sand, grass)
+     */
     pub fn single(pos: Vector3, block_type: BlockType, material: BlockMaterial) -> Self {
         let child = BlockPrefab::new(Vector3::ZERO, None, block_type.clone(), material);
         Self::new(pos, vec![child], block_type)
     }
 
-    // Applique une couleur à tous les enfants (pour le feedback visuel)
+    /* Fonction qui applique la couleur au groupe
+     * [color] -> Color : Couleur du block
+     */
     pub fn set_temporary_color(&mut self, color: Color) {
         for child in self.children.iter_mut() {
             child.temp_color = Some(color);
         }
     }
 
-    // Rend aux enfants leur base_color
+    // Fonction qui change la couleur du block a celui de départ
     pub fn reset_color(&mut self) {
         for child in self.children.iter_mut() {
             child.temp_color = None;
         }
     }
 
+    /* Fonction qui dessine tous les cubes du groupe à chaque appel
+     * [d] -> &mut RaylibMode3D<RaylibDrawHandle> : Reçoit le contexte de dessin 3D actif pour envoyer les ordres de rendu
+     * [assets] -> &Assets : permet de récupérer la texture des assets
+     */
     pub fn draw(&self, d: &mut RaylibMode3D<RaylibDrawHandle>, assets: &Assets) {
-        // Calcul de l'orientation animée du groupe
+        // Calcul de l'orientation du groupe
         let animated_orientation = self
             .orientation
             .slerp(self.target_orientation, self.rotation_progress);
@@ -112,17 +125,17 @@ impl GroupBlock {
             mat.m10, mat.m14, mat.m3, mat.m7, mat.m11, mat.m15,
         ];
 
+        // Unsafe car [ffi] est écrit en C donc Rust ne peut plus garantir la sécurité de la mémoire
         unsafe {
             raylib::ffi::rlPushMatrix();
-            // On déplace tout le groupe à sa position mondiale
             raylib::ffi::rlTranslatef(self.position.x, self.position.y, self.position.z);
+
             // On applique la rotation du groupe
             raylib::ffi::rlMultMatrixf(matrix_array.as_ptr());
 
             for child in &self.children {
                 let color_to_draw = child.temp_color.unwrap_or(child.material.color);
 
-                // Si le matériau dit qu'il a besoin d'une texture
                 draw_cube_with_texture(
                     &assets.sand_tex,
                     child.position,
@@ -132,7 +145,6 @@ impl GroupBlock {
                     color_to_draw,
                 );
 
-                // On garde les wires pour le style
                 d.draw_cube_wires(
                     child.position,
                     child.size.x,
@@ -144,12 +156,15 @@ impl GroupBlock {
             raylib::ffi::rlPopMatrix();
         }
     }
+
+    /* Fonction qui est appelée lorsque la souris est sur le cube
+     * [rl] -> &RaylibHandle : Représente l'accès direct au moteur de jeu pour lire les entrées
+     * [camera] -> &Camera3D : permet d'avoir accès à la position de cubes par rapport a la caméra
+     */
     pub fn is_mouse_over(&self, rl: &RaylibHandle, camera: &Camera3D) -> bool {
         let ray = rl.get_screen_to_world_ray(rl.get_mouse_position(), camera);
 
         for child in &self.children {
-            // Note: On doit tester la position MONDE du cube : groupe.pos + enfant.pos
-            // (Attention: Si rotation, il faut transformer child.position par l'orientation)
             let world_child_pos = self.position + child.position;
 
             let half_size = child.size * 0.5;
@@ -161,6 +176,9 @@ impl GroupBlock {
         false
     }
 
+    /* Fonction qui met à jour les animatiosn du cubes
+     * [dt] -> f32 : C'est le temps écoulé depuis la dernière image
+     */
     pub fn update_animation(&mut self, dt: f32) {
         if self.is_rotating {
             self.rotation_progress += 3.0 * dt; // Vitesse de rotation
@@ -172,6 +190,9 @@ impl GroupBlock {
         }
     }
 
+    /* Fonctionn qui dessine le drag guide
+     * [d] -> &mut RaylibMode3D<RaylibDrawHandle> : Reçoit le contexte de dessin 3D actif pour envoyer les ordres de rendu
+     */
     pub fn draw_drag_guides(&self, d: &mut RaylibMode3D<RaylibDrawHandle>) {
         if !self.is_dragging {
             return;
@@ -180,7 +201,7 @@ impl GroupBlock {
         let current_v = self.position - self.start_pos;
         let progress = current_v.dot(axis) / axis.dot(axis);
 
-        let dot_color = if progress > 0.5 {
+        if progress > 0.5 {
             Color::LIME
         } else {
             Color::WHITE
@@ -211,7 +232,7 @@ impl GroupBlock {
             raylib::ffi::rlPopMatrix();
         }
 
-        // Dessiner les petits points de trajectoire
+        // Dessine les petits points de trajectoire
         let segments = 10;
         for i in 0..=segments {
             let t = i as f32 / segments as f32;
@@ -220,13 +241,12 @@ impl GroupBlock {
         }
     }
 
+    // Si un cube à le drag, alors on peut lui rajouter une position de fin via cette fonction
     pub fn with_end_pos(mut self, end: Vector3) -> Self {
         self.end_pos = end;
         self
     }
 }
-
-use raylib::ffi; // Assure-toi d'avoir cet import
 
 fn draw_cube_with_texture(
     tex: &Texture2D,

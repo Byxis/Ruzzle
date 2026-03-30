@@ -5,13 +5,13 @@ use crate::blocks::modele::BlockType;
 use crate::blocks::modele::GroupBlock;
 use crate::levels::level::Level;
 
-pub struct Level1 {
+pub struct Level4 {
     pub groups: Vec<GroupBlock>,
     pub camera: Camera3D,
     pub selected_group: Option<usize>,
 }
 
-impl Level1 {
+impl Level4 {
     pub fn new() -> Self {
         let mut groups = Vec::new();
 
@@ -31,27 +31,7 @@ impl Level1 {
             BlockMaterial::sand(),
         ));
         groups.push(GroupBlock::single(
-            Vector3::new(-2.0, 0.0, 0.0),
-            BlockType::Fixe,
-            BlockMaterial::sand(),
-        ));
-        groups.push(GroupBlock::single(
-            Vector3::new(-1.0, 0.0, 0.0),
-            BlockType::Fixe,
-            BlockMaterial::sand(),
-        ));
-        groups.push(GroupBlock::single(
             Vector3::new(0.0, 0.0, 0.0),
-            BlockType::Fixe,
-            BlockMaterial::sand(),
-        ));
-        groups.push(GroupBlock::single(
-            Vector3::new(1.0, 0.0, 0.0),
-            BlockType::Fixe,
-            BlockMaterial::sand(),
-        ));
-        groups.push(GroupBlock::single(
-            Vector3::new(2.0, 0.0, 0.0),
             BlockType::Fixe,
             BlockMaterial::sand(),
         ));
@@ -84,7 +64,7 @@ impl Level1 {
     }
 }
 
-impl Level for Level1 {
+impl Level for Level4 {
     fn groups_mut(&mut self) -> &mut Vec<GroupBlock> {
         &mut self.groups
     }
