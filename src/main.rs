@@ -15,9 +15,6 @@ use crate::menu::menu::MenuManager;
 mod sound_manager;
 use crate::sound_manager::sound_manager::{SoundManager, BackgroundMusic, SoundEffect};
 
-const SCREEN_WIDTH: i32 = 1280;
-const SCREEN_HEIGHT: i32 = 720;
-
 mod config;
 use config::Config;
 
