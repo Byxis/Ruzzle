@@ -1,0 +1,233 @@
+use crate::blocks::material::BlockMaterial;
+use crate::blocks::modele::{BlockType, GroupBlock};
+use crate::components::collider::Collider;
+use crate::menu::menu::Assets;
+use raylib::prelude::*;
+
+pub struct Level {
+    pub groups: Vec<GroupBlock>,
+    pub camera: Camera3D,
+    pub selected_group: Option<usize>,
+}
+
+impl Level {
+    /// Initialise un niveau avec une configuration par défaut (ici celle du Level1)
+    pub fn new(index: i8) -> Self {
+        let mut groups = Vec::new();
+
+        match index {
+            1 => {
+                for x in -5..=5 {
+                    groups.push(GroupBlock::single(
+                        Vector3::new(x as f32, 0.0, 0.0),
+                        BlockType::Fixe,
+                        BlockMaterial::sand(),
+                    ));
+                }
+            }
+            _ => {}
+        }
+
+        Self {
+            camera: Camera3D::perspective(
+                Vector3::new(0.0, 10.0, 10.0),
+                Vector3::new(0.0, 0.0, 0.0),
+                Vector3::new(0.0, 1.0, 0.0),
+                45.0,
+            ),
+            groups,
+            selected_group: None,
+        }
+    }
+
+    pub fn update(&mut self, rl: &RaylibHandle) {
+        let dt = rl.get_frame_time();
+
+        // 1. Mise à jour des animations pour tous les groupes
+        for group in self.groups.iter_mut() {
+            group.update_animation(dt);
+        }
+
+        // 2. Gestion du groupe sélectionné
+        if let Some(index) = self.selected_group {
+            let camera = self.camera; // Copie de la camera (Camera3D implémente Copy)
+
+            // On récupère le groupe sélectionné
+            if let Some(group) = self.groups.get_mut(index) {
+                if !group.is_rotating {
+                    let mut rotation_to_apply = None;
+
+                    // --- Logique de Drag ---
+                    if group.block_type == BlockType::Drag {
+                        if rl.is_mouse_button_down(MouseButton::MOUSE_BUTTON_LEFT) {
+                            if !group.is_dragging {
+                                group.drag_timer += dt;
+                                if group.drag_timer > 0.15 {
+                                    group.is_dragging = true;
+                                }
+                            }
+
+                            if group.is_dragging {
+                                let mouse_ray =
+                                    rl.get_screen_to_world_ray(rl.get_mouse_position(), &camera);
+                                let axis = group.end_pos - group.start_pos;
+                                let axis_len_sq = axis.dot(axis);
+
+                                if axis_len_sq > 0.0 {
+                                    let plane_normal =
+                                        (camera.target - camera.position).normalize();
+                                    let denom = mouse_ray.direction.dot(plane_normal);
+
+                                    if denom.abs() > 0.0001 {
+                                        let t_plane = (group.start_pos - mouse_ray.position)
+                                            .dot(plane_normal)
+                                            / denom;
+                                        let world_mouse_pos =
+                                            mouse_ray.position + (mouse_ray.direction * t_plane);
+                                        let v = world_mouse_pos - group.start_pos;
+                                        let t_axis = v.dot(axis) / axis_len_sq;
+
+                                        group.position =
+                                            group.start_pos + (axis * t_axis.clamp(0.0, 1.0));
+                                    }
+                                }
+                            }
+                        } else {
+                            // Relâchement du drag
+                            if group.is_dragging {
+                                let axis = group.end_pos - group.start_pos;
+                                let current_v = group.position - group.start_pos;
+                                let axis_len_sq = axis.dot(axis);
+                                let progress = if axis_len_sq > 0.0 {
+                                    current_v.dot(axis) / axis_len_sq
+                                } else {
+                                    0.0
+                                };
+
+                                if progress > 0.5 {
+                                    group.position = group.end_pos;
+                                    std::mem::swap(&mut group.start_pos, &mut group.end_pos);
+                                } else {
+                                    group.position = group.start_pos;
+                                }
+                            }
+                            group.is_dragging = false;
+                            group.drag_timer = 0.0;
+                            self.selected_group = None;
+                        }
+                    }
+
+                    // --- Logique de Rotation ---
+                    // Note : On vérifie à nouveau car la sélection a pu être annulée par le drag
+                    if self.selected_group.is_some() {
+                        let is_h_type = group.block_type == BlockType::All
+                            || group.block_type == BlockType::RotationH;
+                        let is_v_type = group.block_type == BlockType::All
+                            || group.block_type == BlockType::RotationV;
+
+                        if is_h_type {
+                            if rl.is_key_pressed(KeyboardKey::KEY_RIGHT) {
+                                rotation_to_apply = Some(Quaternion::from_axis_angle(
+                                    Vector3::new(0.0, 1.0, 0.0),
+                                    90.0f32.to_radians(),
+                                ));
+                            }
+                            if rl.is_key_pressed(KeyboardKey::KEY_LEFT) {
+                                rotation_to_apply = Some(Quaternion::from_axis_angle(
+                                    Vector3::new(0.0, 1.0, 0.0),
+                                    -90.0f32.to_radians(),
+                                ));
+                            }
+                        }
+
+                        if is_v_type {
+                            if rl.is_key_pressed(KeyboardKey::KEY_UP) {
+                                rotation_to_apply = Some(Quaternion::from_axis_angle(
+                                    Vector3::new(1.0, 0.0, 0.0),
+                                    -90.0f32.to_radians(),
+                                ));
+                            }
+                            if rl.is_key_pressed(KeyboardKey::KEY_DOWN) {
+                                rotation_to_apply = Some(Quaternion::from_axis_angle(
+                                    Vector3::new(1.0, 0.0, 0.0),
+                                    90.0f32.to_radians(),
+                                ));
+                            }
+                        }
+
+                        if let Some(rot) = rotation_to_apply {
+                            group.is_rotating = true;
+                            group.rotation_progress = 0.0;
+                            group.target_orientation = rot * group.orientation;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    pub fn collides_with(&self, other: &Collider, pos: Vector3) -> bool {
+        self.groups.iter().any(|g| {
+            g.children.iter().any(|child| {
+                let world_pos = g.position + child.position;
+                child.collider.collides_with(world_pos, other, pos)
+            })
+        })
+    }
+
+    pub fn resolve_collisions(&self, collider: &Collider, mut pos: Vector3) -> Vector3 {
+        for group in &self.groups {
+            for child in &group.children {
+                let world_pos = group.position + child.position;
+                if let Some(push) = collider.get_penetration_vector(pos, &child.collider, world_pos)
+                {
+                    pos += push;
+                }
+            }
+        }
+        pos
+    }
+
+    pub fn is_grounded(&self, collider: &Collider, pos: Vector3) -> bool {
+        self.collides_with(collider, pos - Vector3::new(0.0, 0.05, 0.0))
+    }
+
+    pub fn draw(&mut self, rl: &mut RaylibHandle, thread: &RaylibThread, assets: &Assets) {
+        let is_clicked = rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT);
+        let camera = self.camera;
+
+        // Gestion du survol et de la sélection visuelle
+        let mut new_selected = self.selected_group;
+
+        // On commence le dessin pour pouvoir utiliser la RaylibDrawHandle
+        let mut d = rl.begin_drawing(thread);
+        d.clear_background(Color::RAYWHITE);
+
+        for (i, group) in self.groups.iter_mut().enumerate() {
+            if group.is_mouse_over(&d, &camera) {
+                group.set_temporary_color(Color::YELLOW);
+                if is_clicked {
+                    new_selected = Some(i);
+                }
+            } else if Some(i) == new_selected {
+                group.set_temporary_color(Color::ORANGE);
+            } else {
+                group.reset_color();
+            }
+        }
+
+        self.selected_group = new_selected;
+
+        // Rendu 3D
+        {
+            let mut d3d = d.begin_mode3D(&camera);
+            for group in self.groups.iter() {
+                group.draw(&mut d3d, assets);
+                if group.is_dragging {
+                    group.draw_drag_guides(&mut d3d);
+                }
+            }
+            d3d.draw_grid(10, 1.0);
+        }
+    }
+}

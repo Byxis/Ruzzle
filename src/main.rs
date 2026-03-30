@@ -15,6 +15,9 @@ use crate::menu::menu::MenuManager;
 mod sound_manager;
 use crate::sound_manager::sound_manager::{BackgroundMusic, SoundEffect, SoundManager};
 
+mod blocks;
+mod levels;
+
 const SCREEN_WIDTH: i32 = 1280;
 const SCREEN_HEIGHT: i32 = 720;
 
@@ -37,7 +40,6 @@ fn main() {
             raylib::ffi::SetConfigFlags(raylib::ffi::ConfigFlags::FLAG_WINDOW_RESIZABLE as u32);
         }
     }
-
     let camera = Camera3D::perspective(
         Vector3::new(10.0, 10.0, 0.0),
         Vector3::new(0.0, 0.0, 0.5),

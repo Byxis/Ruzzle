@@ -5,6 +5,24 @@ use crate::components::map::Map;
 use crate::config::Config;
 use crate::crab::crab::Crab;
 
+use crate::levels::level::Level;
+
+pub struct Assets {
+    pub textures: Vec<Texture2D>,
+}
+
+impl Assets {
+    pub fn new(rl: &mut RaylibHandle, thread: &RaylibThread) -> Self {
+        Self {
+            textures: vec![
+                rl.load_texture(thread, "rsc/sand.png").expect("sand"),
+                rl.load_texture(thread, "rsc/bg_loading.png")
+                    .expect("bg_loading"),
+            ],
+        }
+    }
+}
+
 /// Enum for the differents states displayed currently by the application
 pub enum Menu {
     Title,
@@ -52,7 +70,7 @@ impl Button {
     pub fn new(rectangle: Rectangle, label: String, id: SelectMenuHoveredButtons) -> Self {
         Button {
             rectangle,
-            label, 
+            label,
             id,
         }
     }
@@ -75,16 +93,15 @@ pub struct MenuManager {
     pub back_button: Button,
     pub config: Config,
     pub hovered_button: SelectMenuHoveredButtons,
-    pub bg_loading: Option<Texture2D>,
+    pub current_level: Option<Level>,
+    pub assets: Assets,
 }
 
 impl MenuManager {
     pub fn new(config: Config, rl: &mut RaylibHandle, thread: &RaylibThread) -> Self {
         let button_width = (config.screen_width as f32) * 0.2;
         let button_height = (config.screen_height as f32) * 0.1;
-
-        let bg_loading = rl.load_texture(thread, "assets/bg_loading.png").ok();
-
+        let assets = Assets::new(rl, thread);
         let level_buttons = vec![
             Self::create_level_button(&config, "Niveau 1", 0, button_width, button_height),
             Self::create_level_button(&config, "Niveau 2", 1, button_width, button_height),
@@ -151,10 +168,11 @@ impl MenuManager {
             frame_count: 0,
             buttons: my_buttons_select,
             level_buttons,
-            back_button, 
+            back_button,
             config,
             hovered_button: SelectMenuHoveredButtons::None,
-            bg_loading,
+            current_level: None,
+            assets,
         }
     }
     /// Helper to build level selection buttons with a simple vertical layout.
@@ -204,7 +222,7 @@ impl MenuManager {
         match self.current_menu {
             Menu::Title => self.update_title(rl),
             Menu::Select => self.update_select(rl),
-            Menu::LevelSelection => self.update_level_selection(rl),
+            Menu::LevelSelection => self.update_level_selection(rl, thread),
             Menu::Game => self.update_game(rl, thread, map, crab, camera),
             Menu::Settings => self.update_settings(rl),
             Menu::Loading => self.update_loading(rl),
@@ -219,7 +237,6 @@ impl MenuManager {
             self.frame_count = 0;
         }
     }
-
 
     /// update_selects allows to check if mouse is hovering a button,
     ///  and if it's the case, to update the hovered butto state for the menu manager,
@@ -260,6 +277,10 @@ impl MenuManager {
             self.current_menu = Menu::Title;
         }
 
+        if let Some(level) = &mut self.current_level {
+            level.update(rl);
+        }
+
         let is_grounded = map.is_grounded(&crab.collider, crab.effective_position());
         let will_grounded = map.is_grounded(
             &crab.collider,
@@ -269,14 +290,25 @@ impl MenuManager {
         let mut t = crab.calculate_next_transform(rl, &camera, &thread, is_grounded, will_grounded);
 
         t.position = map.resolve_collisions(&crab.collider, t.position);
+
+        if let Some(level) = &self.current_level {
+            t.position = level.resolve_collisions(&crab.collider, t.position);
+        }
         t.position = map.handle_out_of_map(t.position);
         crab.teleport(t);
     }
 
-    fn update_level_selection(&mut self, rl: &RaylibHandle) {
+    fn update_level_selection(&mut self, rl: &mut RaylibHandle, thread: &RaylibThread) {
         self.handle_back_button(rl);
-        if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
-            self.current_menu = Menu::Title;
+
+        let mouse_pos = rl.get_mouse_position();
+        for (i, button) in self.level_buttons.iter().enumerate() {
+            if button.rectangle.check_collision_point_rec(mouse_pos) {
+                if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
+                    self.current_level = Some(Level::new((i + 1) as i8)); // index 1-based
+                    self.current_menu = Menu::Game;
+                }
+            }
         }
     }
 
@@ -301,12 +333,11 @@ impl MenuManager {
         }
     }
 
-    
     /// handle_back_button: common helper for menus that have a "Retour" button.
     ///
     /// # Arguments
     /// * rl - raylib handler (mouse position + click)
-    
+
     fn handle_back_button(&mut self, rl: &RaylibHandle) {
         let mouse_pos = rl.get_mouse_position();
         if self
@@ -447,6 +478,12 @@ impl MenuManager {
             d3d.draw_grid(10, 1.0);
             crab.draw(&mut d3d);
             map.draw(&mut d3d);
+
+            if let Some(level) = &self.current_level {
+                for group in &level.groups {
+                    group.draw(&mut d3d, &self.assets);
+                }
+            }
         }
 
         let coordonnees = format!(
@@ -465,7 +502,7 @@ impl MenuManager {
     }
 
     fn draw_loading(&self, d: &mut RaylibDrawHandle) {
-        if let Some(texture) = &self.bg_loading {
+        if let Some(texture) = self.assets.textures.get(1) {
             let x = self.config.screen_width / 2 - texture.width / 2;
             let y = self.config.screen_height / 2 - texture.height / 2;
             d.draw_texture(texture, x, y, Color::WHITE);
