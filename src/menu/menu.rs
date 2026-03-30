@@ -207,7 +207,7 @@ impl<'a> MenuManager<'a> {
             // Passing sound_manager to each function that needs it individually to avoid ownership issues
             Menu::Title => self.update_title(rl,sound_manager),
             Menu::Select => self.update_select(rl,sound_manager),
-            Menu::LevelSelection => self.update_level_selection(rl),
+            Menu::LevelSelection => self.update_level_selection(rl,sound_manager),
             Menu::Game => self.update_game(rl, thread, map, crab, camera),
             Menu::Settings => self.update_settings(rl,sound_manager),
             Menu::Loading => self.update_loading(rl),
@@ -287,9 +287,10 @@ impl<'a> MenuManager<'a> {
         }
     }
 
-    fn update_settings(&mut self, rl: &RaylibHandle) {
+    fn update_settings(&mut self, rl: &RaylibHandle, sound_manager : &mut SoundManager) {
         self.handle_back_button(rl);
         if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
+            sound_manager.play_sound_effect(SoundEffect::Click);
             self.current_menu = Menu::Title;
         }
     }
