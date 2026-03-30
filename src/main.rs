@@ -18,6 +18,9 @@ use crate::sound_manager::sound_manager::{BackgroundMusic, SoundEffect, SoundMan
 mod config;
 use config::Config;
 
+const SCREEN_WIDTH: i32 = 1280;
+const SCREEN_HEIGHT: i32 = 720;
+
 fn main() {
     let config = Config::new(SCREEN_WIDTH, SCREEN_HEIGHT);
     let (mut rl, thread) = raylib::init()
