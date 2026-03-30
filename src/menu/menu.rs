@@ -89,6 +89,8 @@ impl MenuManager {
             Self::create_level_button(&config, "Niveau 1", 0, button_width, button_height),
             Self::create_level_button(&config, "Niveau 2", 1, button_width, button_height),
             Self::create_level_button(&config, "Niveau 3", 2, button_width, button_height),
+            Self::create_level_button(&config, "Niveau 4", 3, button_width, button_height),
+            Self::create_level_button(&config, "Niveau 5", 4, button_width, button_height),
         ];
 
         let my_buttons_select = vec![
