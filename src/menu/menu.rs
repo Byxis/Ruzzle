@@ -76,6 +76,7 @@ pub struct MenuManager {
     pub config: Config,
     pub hovered_button: SelectMenuHoveredButtons,
     pub bg_loading: Option<Texture2D>,
+   pub tex_back: Option<Texture2D>,
 }
 
 impl MenuManager {
@@ -84,6 +85,7 @@ impl MenuManager {
         let button_height = (config.screen_height as f32) * 0.1;
 
         let bg_loading = rl.load_texture(thread, "assets/bg_loading.png").ok();
+        let tex_back = rl.load_texture(thread, "assets/back_button.png").ok();
 
         let level_buttons = vec![
             Self::create_level_button(&config, "Niveau 1", 0, button_width, button_height),
@@ -137,10 +139,10 @@ impl MenuManager {
         ];
         let back_button = Button {
             rectangle: Rectangle::new(
-                (config.screen_width - (config.screen_width as f32 * 0.1) as i32) as f32,
+                0.0,
                 0.0,
                 config.screen_width as f32 * 0.1,
-                config.screen_width as f32 * 0.1,
+                config.screen_height as f32 * 0.1,
             ),
             label: "Retour".to_string(),
             id: SelectMenuHoveredButtons::None,
@@ -155,6 +157,7 @@ impl MenuManager {
             config,
             hovered_button: SelectMenuHoveredButtons::None,
             bg_loading,
+            tex_back,
         }
     }
     /// Helper to build level selection buttons with a simple vertical layout.
@@ -409,15 +412,7 @@ impl MenuManager {
             );
         }
 
-        draw_button(
-            d,
-            self.back_button.rectangle,
-            &self.back_button.label,
-            Color::DARKORANGE,
-            Color::DARKGRAY,
-            false,
-            self.config.font_size_h2 / 3,
-        );
+        draw_back_button(d, &self.back_button, &self.tex_back, &self.config);
     }
 
     fn draw_settings(&self, d: &mut RaylibDrawHandle) {
@@ -429,16 +424,25 @@ impl MenuManager {
             self.config.font_size_h2,
             Color::WHITE,
         );
-
+    let mouse = d.get_mouse_position(); // RaylibDrawHandle a accès à get_mouse_position
+    let hovered = self
+        .back_button
+        .rectangle
+        .check_collision_point_rec(mouse);
+    if let Some(tex) = &self.tex_back {
+        draw_texture_button(d, tex, self.back_button.rectangle, hovered);
+    } else {
+        // fallback si la texture n'a pas chargé
         draw_button(
             d,
             self.back_button.rectangle,
             &self.back_button.label,
             Color::DARKORANGE,
             Color::DARKGRAY,
-            false,
+            hovered,
             self.config.font_size_h2 / 3,
         );
+    }
     }
 
     fn draw_game(&self, d: &mut RaylibDrawHandle, crab: &mut Crab, map: &Map, camera: &Camera3D) {
@@ -497,17 +501,68 @@ impl MenuManager {
             (self.config.screen_height / 12) as i32,
             Color::WHITE,
         );
+
+        draw_back_button(d, &self.back_button, &self.tex_back, &self.config);
+        // draw_button(
+        //     d,
+        //     self.back_button.rectangle,
+        //     &self.back_button.label,
+        //     Color::DARKORANGE,
+        //     Color::DARKGRAY,
+        //     false,
+        //     self.config.font_size_h2 / 3,
+        // );
+    }
+
+    
+}
+
+fn draw_back_button(d: &mut RaylibDrawHandle, button: &Button, texture: &Option<Texture2D>, config: &Config) {
+    let mouse = d.get_mouse_position(); // RaylibDrawHandle a accès à get_mouse_position
+    let hovered = button
+                        .rectangle
+                        .check_collision_point_rec(mouse);
+    if let Some(tex) = texture {
+        draw_texture_button(d, tex, button.rectangle, hovered);
+    } else {
+        // fallback si la texture n'a pas chargé
         draw_button(
             d,
-            self.back_button.rectangle,
-            &self.back_button.label,
+            button.rectangle,
+            &button.label,
             Color::DARKORANGE,
             Color::DARKGRAY,
-            false,
-            self.config.font_size_h2 / 3,
+            hovered,
+            config.font_size_h2 / 3,
         );
     }
 }
+fn draw_texture_button(
+    d: &mut RaylibDrawHandle,
+    texture: &Texture2D,
+    rect: Rectangle,
+    hovered: bool,
+) {
+    // Source = toute la texture
+    let src = Rectangle::new(0.0, 0.0, texture.width as f32, texture.height as f32);
+
+    // Destination = ton rectangle de bouton
+    let dst = rect;
+
+    // Origine = coin haut-gauche (rotation 0)
+    let origin = Vector2::new(0.0, 0.0);
+
+    // Teinte: on peut éclaircir si hovered
+    let tint = if hovered {
+        Color::new(255, 255, 255, 220)
+    } else {
+        Color::WHITE
+    };
+
+    d.draw_texture_pro(texture, src, dst, origin, 0.0, tint);
+}
+
+
 
 fn draw_button(
     d: &mut RaylibDrawHandle,
