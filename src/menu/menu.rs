@@ -1,9 +1,10 @@
 use raylib::prelude::*;
 use raylib::{ffi::KeyboardKey, RaylibHandle};
-
 use crate::components::map::Map;
 use crate::config::Config;
 use crate::crab::crab::Crab;
+
+use crate::menu::utils::draw_text_center;
 
 /// Enum for the differents states displayed currently by the application
 pub enum Menu {
@@ -77,9 +78,10 @@ pub struct MenuManager {
     pub back_button: Button,
     pub config: Config,
     pub hovered_button: SelectMenuHoveredButtons,
-    pub bg_loading: Option<Texture2D>,
+    pub bg_logo: Option<Texture2D>,
     pub tex_back: Option<Texture2D>,
     pub background_menu: Option<Texture2D>,
+    //pub egg_menu: Option<Texture2D>,
 }
 
 impl MenuManager {
@@ -87,9 +89,10 @@ impl MenuManager {
         let button_width = (config.screen_width as f32) * 0.2;
         let button_height = (config.screen_height as f32) * 0.1;
 
-        let bg_loading = rl.load_texture(thread, "assets/bg_loading.png").ok();
+        let bg_logo = rl.load_texture(thread, "assets/bg_logo.png").ok();
         let tex_back = rl.load_texture(thread, "assets/back_button.png").ok();
-        let background_menu = rl.load_texture(thread, "assets/title_screen.png").ok();
+        let background_menu = rl.load_texture(thread, "assets/background.png").ok();
+        //let egg_menu = rl.load_texture(thread, "assets/egg.png").ok();
         let level_buttons = vec![
             Self::create_level_button(&config, "Niveau 1", 0, button_width, button_height),
             Self::create_level_button(&config, "Niveau 2", 1, button_width, button_height),
@@ -169,9 +172,10 @@ impl MenuManager {
             back_button, 
             config,
             hovered_button: SelectMenuHoveredButtons::None,
-            bg_loading,
+            bg_logo,
             tex_back,
             background_menu,
+            //egg_menu,
         }
     }
     /// Helper to build level selection buttons with a simple vertical layout.
@@ -353,13 +357,12 @@ impl MenuManager {
     /// * c : crab : Crab (alexei's crabito)
     /// * camera : Camera3D (not used for now)
     pub fn draw(&self, d: &mut RaylibDrawHandle, map: &Map, crab: &mut Crab, camera: &Camera3D) {
-        if let Some(texture) = &self.background_menu {
-            let x = 0;
-            let y = 0;
-            draw_background_contain(d, texture, self.config.screen_width, self.config.screen_height );
+        if let Some(text) = &self.background_menu{
+                draw_background_contain(d, text, 
+                    self.config.screen_width, self.config.screen_height );
         }else{
             d.clear_background(Color::BLACK);
-        }
+        };
         
 
         match self.current_menu {
@@ -518,7 +521,7 @@ impl MenuManager {
             let y = 0;
             d.draw_texture(texture, x, y, Color::WHITE);
         }       
-        if let Some(texture) = &self.bg_loading {
+        if let Some(texture) = &self.bg_logo {
             let x = self.config.screen_width / 2 - texture.width / 2;
             let y = self.config.screen_height / 2 - texture.height / 2;
             d.draw_texture(texture, x, y, Color::WHITE);
@@ -662,20 +665,4 @@ fn draw_button(
             Color::BLACK,
         );
     }
-}
-///given a text, draws it centered based on the coordinate
-/// * x :i32 x coordinates, if you want at the middle of the screen screen resolution /2 i   (can be anything but it will not be centered if not the =current screen resolution)
-/// * y : i32 y coordinate
-/// fontsize : i32 necessary to compute the center of the displayed text
-///  color : Color of the text
-fn draw_text_center(
-    d: &mut RaylibDrawHandle,
-    text: &str,
-    x: i32,
-    y: i32,
-    font_size: i32,
-    color: Color,
-) {
-    let text_length = d.measure_text(text, font_size);
-    d.draw_text(text, (x / 2) - (text_length / 2), y, font_size, color);
 }
