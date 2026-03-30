@@ -1,4 +1,3 @@
-use raylib::ffi::{CSSPalette, GetScreenHeight, RaylibPalette, ToggleFullscreen};
 use raylib::prelude::*;
 use raylib::{ffi::KeyboardKey, RaylibHandle};
 
@@ -10,6 +9,7 @@ use crate::crab::crab::Crab;
 pub enum Menu {
     Title,
     Select,
+    LevelSelection,
     Settings,
     Game,
     Loading,
@@ -21,6 +21,7 @@ pub enum Menu {
 pub enum SelectMenuHoveredButtons {
     None,
     Game,
+    LevelSelection,
     Settings,
     Credit,
 }
@@ -50,14 +51,14 @@ pub struct Button {
 impl Button {
     pub fn new(rectangle: Rectangle, label: String, id: SelectMenuHoveredButtons) -> Self {
         Button {
-            rectangle: rectangle,
-            label: label,
-            id: id,
+            rectangle,
+            label, 
+            id,
         }
     }
 }
 
-/// The Game Manager is designed to display the current state of the game.
+/// The Menu Manager is designed to display the current state of the game.
 /// It takes into arugment only the Config enum, and is in called in the main application.
 /// It has the current_menu, and enum with the different menu possible, the frame_count used for artificial loading time,
 /// the buttons which is a vec of buttons for the select menu, the button for the fullscreen, the config taken as an argument to know
@@ -70,7 +71,8 @@ pub struct MenuManager {
     pub current_menu: Menu,
     pub frame_count: i32,
     pub buttons: Vec<Button>,
-    pub button_fullscreen: Button,
+    pub level_buttons: Vec<Button>,
+    pub back_button: Button,
     pub config: Config,
     pub hovered_button: SelectMenuHoveredButtons,
     pub bg_loading: Option<Texture2D>,
@@ -83,11 +85,19 @@ impl MenuManager {
 
         let bg_loading = rl.load_texture(thread, "assets/bg_loading.png").ok();
 
+        let level_buttons = vec![
+            Self::create_level_button(&config, "Niveau 1", 0, button_width, button_height),
+            Self::create_level_button(&config, "Niveau 2", 1, button_width, button_height),
+            Self::create_level_button(&config, "Niveau 3", 2, button_width, button_height),
+            Self::create_level_button(&config, "Niveau 4", 3, button_width, button_height),
+            Self::create_level_button(&config, "Niveau 5", 4, button_width, button_height),
+        ];
+
         let my_buttons_select = vec![
             Button {
                 rectangle: Rectangle::new(
                     (config.screen_width / 2 - button_width as i32 / 2) as f32,
-                    (config.screen_height as f32) * 0.3,
+                    (config.screen_height as f32) * 0.25,
                     button_width,
                     button_height,
                 ),
@@ -97,7 +107,17 @@ impl MenuManager {
             Button {
                 rectangle: Rectangle::new(
                     (config.screen_width / 2 - button_width as i32 / 2) as f32,
-                    (config.screen_height as f32) * 0.5,
+                    (config.screen_height as f32) * 0.40,
+                    button_width,
+                    button_height,
+                ),
+                label: "Niveaux".to_string(),
+                id: SelectMenuHoveredButtons::LevelSelection,
+            },
+            Button {
+                rectangle: Rectangle::new(
+                    (config.screen_width / 2 - button_width as i32 / 2) as f32,
+                    (config.screen_height as f32) * 0.55,
                     button_width,
                     button_height,
                 ),
@@ -107,7 +127,7 @@ impl MenuManager {
             Button {
                 rectangle: Rectangle::new(
                     (config.screen_width / 2 - button_width as i32 / 2) as f32,
-                    (config.screen_height as f32) * 0.7,
+                    (config.screen_height as f32) * 0.70,
                     button_width,
                     button_height,
                 ),
@@ -115,14 +135,14 @@ impl MenuManager {
                 id: SelectMenuHoveredButtons::Credit,
             },
         ];
-        let button_fullscreen = Button {
+        let back_button = Button {
             rectangle: Rectangle::new(
                 (config.screen_width - (config.screen_width as f32 * 0.1) as i32) as f32,
                 0.0,
                 config.screen_width as f32 * 0.1,
-                config.screen_width as f32 / 10.0,
+                config.screen_width as f32 * 0.1,
             ),
-            label: "Plein écran".to_string(),
+            label: "Retour".to_string(),
             id: SelectMenuHoveredButtons::None,
         };
 
@@ -130,17 +150,48 @@ impl MenuManager {
             current_menu: Menu::Title,
             frame_count: 0,
             buttons: my_buttons_select,
-            button_fullscreen: button_fullscreen,
+            level_buttons,
+            back_button, 
             config,
             hovered_button: SelectMenuHoveredButtons::None,
             bg_loading,
         }
     }
-
-    /// Update the current state of the game, and the state variables
-    /// Borrow Raylibhandle Pointer
-    ///  #Arguments
-    ///  * rl - raylib handler, handle the raylib librairie
+    /// Helper to build level selection buttons with a simple vertical layout.
+    ///
+    /// # Arguments
+    /// * config - used for positioning according to screen size
+    /// * label - displayed text
+    /// * index - vertical order of the button
+    /// * width - button width in pixels
+    /// * height - button height in pixels
+    fn create_level_button(
+        config: &Config,
+        label: &str,
+        index: usize,
+        width: f32,
+        height: f32,
+    ) -> Button {
+        let y_offset = (config.screen_height as f32) * 0.25 + (index as f32) * (height + 20.0);
+        Button {
+            rectangle: Rectangle::new(
+                (config.screen_width / 2 - width as i32 / 2) as f32,
+                y_offset,
+                width,
+                height,
+            ),
+            label: label.to_string(),
+            id: SelectMenuHoveredButtons::None,
+        }
+    }
+    /// Update the current state of the application, and the state variables.
+    ///
+    /// # Arguments
+    /// * rl - raylib handler (inputs)
+    /// * thread - raylib thread (passed to game update / crab)
+    /// * map - used for collisions / grounded checks (game state)
+    /// * crab - player entity updated in game state
+    /// * camera - camera used for movement computations in game state
     pub fn update(
         &mut self,
         rl: &mut RaylibHandle,
@@ -153,6 +204,7 @@ impl MenuManager {
         match self.current_menu {
             Menu::Title => self.update_title(rl),
             Menu::Select => self.update_select(rl),
+            Menu::LevelSelection => self.update_level_selection(rl),
             Menu::Game => self.update_game(rl, thread, map, crab, camera),
             Menu::Settings => self.update_settings(rl),
             Menu::Loading => self.update_loading(rl),
@@ -164,8 +216,11 @@ impl MenuManager {
     fn update_title(&mut self, rl: &RaylibHandle) {
         if rl.is_key_pressed(KeyboardKey::KEY_ENTER) {
             self.current_menu = Menu::Loading;
+            self.frame_count = 0;
         }
     }
+
+
     /// update_selects allows to check if mouse is hovering a button,
     ///  and if it's the case, to update the hovered butto state for the menu manager,
     ///  and if the mouse is clicked, to change the menu accordingly to the button
@@ -181,6 +236,9 @@ impl MenuManager {
                 if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
                     match button.id {
                         SelectMenuHoveredButtons::Game => self.current_menu = Menu::Game,
+                        SelectMenuHoveredButtons::LevelSelection => {
+                            self.current_menu = Menu::LevelSelection
+                        }
                         SelectMenuHoveredButtons::Settings => self.current_menu = Menu::Settings,
                         SelectMenuHoveredButtons::Credit => self.current_menu = Menu::Credit,
                         SelectMenuHoveredButtons::None => {}
@@ -215,32 +273,50 @@ impl MenuManager {
         crab.teleport(t);
     }
 
-    fn update_settings(&mut self, rl: &RaylibHandle) {
-        let mouse_pos = rl.get_mouse_position();
-        if self
-            .button_fullscreen
-            .rectangle
-            .check_collision_point_rec(mouse_pos)
-        {
-            if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
-                // TODO : put an option to put in fullscreen but properly or something to resize the game
-            }
+    fn update_level_selection(&mut self, rl: &RaylibHandle) {
+        self.handle_back_button(rl);
+        if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
+            self.current_menu = Menu::Title;
         }
+    }
+
+    fn update_settings(&mut self, rl: &RaylibHandle) {
+        self.handle_back_button(rl);
         if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
             self.current_menu = Menu::Title;
         }
     }
 
     fn update_loading(&mut self, rl: &RaylibHandle) {
-        if self.frame_count % 100 == 0 {
+        if self.frame_count >= 100 {
             self.current_menu = Menu::Select;
             self.frame_count = 0;
         }
     }
 
     fn update_credit(&mut self, rl: &RaylibHandle) {
+        self.handle_back_button(rl);
         if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
             self.current_menu = Menu::Title;
+        }
+    }
+
+    
+    /// handle_back_button: common helper for menus that have a "Retour" button.
+    ///
+    /// # Arguments
+    /// * rl - raylib handler (mouse position + click)
+    
+    fn handle_back_button(&mut self, rl: &RaylibHandle) {
+        let mouse_pos = rl.get_mouse_position();
+        if self
+            .back_button
+            .rectangle
+            .check_collision_point_rec(mouse_pos)
+        {
+            if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
+                self.current_menu = Menu::Select;
+            }
         }
     }
 
@@ -250,18 +326,13 @@ impl MenuManager {
     /// * d : rayLIbDrawHandle, borrows it to draw graphical elemetns
     /// * c : crab : Crab (alexei's crabito)
     /// * camera : Camera3D (not used for now)
-    pub fn draw(
-        &self,
-        mut d: &mut RaylibDrawHandle,
-        map: &Map,
-        crab: &mut Crab,
-        camera: &Camera3D,
-    ) {
+    pub fn draw(&self, d: &mut RaylibDrawHandle, map: &Map, crab: &mut Crab, camera: &Camera3D) {
         d.clear_background(Color::BLACK);
 
         match self.current_menu {
             Menu::Title => self.draw_title(d),
             Menu::Select => self.draw_select(d),
+            Menu::LevelSelection => self.draw_level_selection(d),
             Menu::Settings => self.draw_settings(d),
             Menu::Game => self.draw_game(d, crab, map, camera),
             Menu::Loading => self.draw_loading(d),
@@ -270,14 +341,12 @@ impl MenuManager {
     }
 
     fn draw_title(&self, d: &mut RaylibDrawHandle) {
-        let font_size_h1 = (self.config.screen_height / 14) as i32;
-
         draw_text_center(
             d,
             "Ruzzle",
             self.config.screen_width,
             (self.config.screen_height as i32) / 2 - (self.config.screen_height / 10) as i32,
-            font_size_h1,
+            self.config.font_size_h1,
             Color::WHITE,
         );
         draw_text_center(
@@ -285,14 +354,12 @@ impl MenuManager {
             "Appuyez sur Entrée",
             self.config.screen_width,
             (self.config.screen_height as i32) / 2,
-            font_size_h1,
+            self.config.font_size_h1,
             Color::WHITE,
         );
     }
 
     fn draw_select(&self, d: &mut RaylibDrawHandle) {
-        let font_size_h1 = (self.config.screen_height / 14) as i32;
-        let font_size_h2 = (self.config.screen_height / 23) as i32;
         let color_hovered = Color::DARKORANGE;
         let color_button = Color::DARKGRAY;
 
@@ -301,7 +368,7 @@ impl MenuManager {
             "RUZZLE",
             self.config.screen_width,
             (self.config.screen_height / 10) as i32,
-            font_size_h1,
+            self.config.font_size_h1,
             Color::WHITE,
         );
 
@@ -314,31 +381,63 @@ impl MenuManager {
                 color_hovered,
                 color_button,
                 is_hovered,
-                font_size_h2,
+                self.config.font_size_h2,
             );
         }
     }
 
-    fn draw_settings(&self, d: &mut RaylibDrawHandle) {
-        let font_size_h2 = (self.config.screen_height / 23) as i32;
+    fn draw_level_selection(&self, d: &mut RaylibDrawHandle) {
+        draw_text_center(
+            d,
+            "Niveaux",
+            self.config.screen_width,
+            (self.config.screen_height / 7) as i32,
+            self.config.font_size_h2,
+            Color::WHITE,
+        );
 
+        // Afficher les boutons de niveaux
+        for button in &self.level_buttons {
+            draw_button(
+                d,
+                button.rectangle,
+                &button.label,
+                Color::DARKORANGE,
+                Color::DARKGRAY,
+                false,
+                self.config.font_size_h2 / 2,
+            );
+        }
+
+        draw_button(
+            d,
+            self.back_button.rectangle,
+            &self.back_button.label,
+            Color::DARKORANGE,
+            Color::DARKGRAY,
+            false,
+            self.config.font_size_h2 / 3,
+        );
+    }
+
+    fn draw_settings(&self, d: &mut RaylibDrawHandle) {
         draw_text_center(
             d,
             "Settings Menu",
             self.config.screen_width,
             (self.config.screen_height / 7) as i32,
-            font_size_h2,
+            self.config.font_size_h2,
             Color::WHITE,
         );
 
         draw_button(
             d,
-            self.button_fullscreen.rectangle,
-            &self.button_fullscreen.label,
+            self.back_button.rectangle,
+            &self.back_button.label,
             Color::DARKORANGE,
-            Color::RED,
+            Color::DARKGRAY,
             false,
-            font_size_h2 / 3,
+            self.config.font_size_h2 / 3,
         );
     }
 
@@ -366,8 +465,6 @@ impl MenuManager {
     }
 
     fn draw_loading(&self, d: &mut RaylibDrawHandle) {
-        let font_size_h1 = (self.config.screen_height / 14) as i32;
-
         if let Some(texture) = &self.bg_loading {
             let x = self.config.screen_width / 2 - texture.width / 2;
             let y = self.config.screen_height / 2 - texture.height / 2;
@@ -376,14 +473,12 @@ impl MenuManager {
     }
 
     fn draw_credit(&self, d: &mut RaylibDrawHandle) {
-        let font_size_h1 = (self.config.screen_height / 14) as i32;
-
         draw_text_center(
             d,
             "Jeu réalisé par :",
             self.config.screen_width,
             (self.config.screen_height as i32) / 2 - (self.config.screen_height / 12) as i32,
-            font_size_h1,
+            self.config.font_size_h1,
             Color::WHITE,
         );
         draw_text_center(
@@ -402,6 +497,15 @@ impl MenuManager {
             (self.config.screen_height / 12) as i32,
             Color::WHITE,
         );
+        draw_button(
+            d,
+            self.back_button.rectangle,
+            &self.back_button.label,
+            Color::DARKORANGE,
+            Color::DARKGRAY,
+            false,
+            self.config.font_size_h2 / 3,
+        );
     }
 }
 
@@ -414,7 +518,6 @@ fn draw_button(
     hovered: bool,
     font_size: i32,
 ) {
-    //let text_play = "Jouer";
     let text_width_play = d.measure_text(text, font_size);
     if hovered {
         d.draw_rectangle_rec(button, color_hovered);

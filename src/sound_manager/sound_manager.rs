@@ -26,11 +26,11 @@ impl SoundEffect {
     fn path(&self) -> &'static str {
         match self {
             Self::Boing => "rsc/sounds/boing_effect.mp3", // To be decided
-            Self::Jump => "rsc/sounds/jump_effect.mp3", // For crab jump
+            Self::Jump => "rsc/sounds/jump_effect.mp3",   // For crab jump
             Self::Walking => "rsc/sounds/walking_effect.mp3", // For crab movement
             Self::Click => "rsc/sounds/click_effect.mp3", // For menu interactions
             Self::Rotate => "rsc/sounds/rotate_effect.mp3", // For block rotation
-            _ => "rsc/sounds/boing_effect.mp3", // Boing is default sound effect
+            _ => "rsc/sounds/boing_effect.mp3",           // Boing is default sound effect
         }
     }
 }
@@ -46,7 +46,6 @@ impl BackgroundMusic {
         match self {
             Self::CrabRave => "rsc/sounds/8bit_crab_rave.mp3",
             _ => "rsc/sounds/8bit_crab_rave.mp3", // Crab rave is default music
-            
         }
     }
 }
@@ -57,7 +56,7 @@ const DEFAULT_MUSIC_VOLUME: f32 = 0.5;
 const DEFAULT_EFFECT_VOLUME: f32 = 0.5;
 
 /// SOUND MANAGER STRUCT
-/// This struct encapsulates all sound-related data and functionalities, 
+/// This struct encapsulates all sound-related data and functionalities,
 /// Including the current background music, volume levels, and a cache for sound effects to optimize loading and playback.
 pub struct SoundManager<'a> {
     background_music: Option<Music<'a>>,
@@ -107,9 +106,16 @@ impl<'a> SoundManager<'a> {
 
     /// Sets the background music to the specified track
     pub fn set_background_music(&mut self, audio: &'a RaylibAudio, music: BackgroundMusic) {
-        self.background_music = Some(audio.new_music(music.path()).expect("Failed to load background music"));
-        self.background_music.as_mut().unwrap().set_volume(self.music_volume); // Maintain current volume when changing music
-        // Background music as Option needs unwrapping 
+        self.background_music = Some(
+            audio
+                .new_music(music.path())
+                .expect("Failed to load background music"),
+        );
+        self.background_music
+            .as_mut()
+            .unwrap()
+            .set_volume(self.music_volume); // Maintain current volume when changing music
+                                            // Background music as Option needs unwrapping
     }
 
     /// Launches background music if not already playing (only called once)
@@ -150,14 +156,15 @@ impl<'a> SoundManager<'a> {
     /// Uses lazy loading with a cache to only load when needed and keep it in memory for future use
     fn load_sound(&mut self, audio: &'a RaylibAudio, effect: SoundEffect) {
         let effect_path = effect.path();
-        let new_sound: Sound<'a> = audio.new_sound(effect.path()).expect(&format!("Failed to load {effect_path}"));
+        let new_sound: Sound<'a> = audio
+            .new_sound(effect.path())
+            .expect(&format!("Failed to load {effect_path}"));
         self.effects_cache.insert(effect, new_sound);
     }
 
     /// Plays the specified sound effect from the cache at the current effect volume
     /// Calls load_sound if the effect is not already in the cache
     pub fn play_sound_effect(&mut self, audio: &'a RaylibAudio, effect: SoundEffect) {
-
         if !self.effects_cache.contains_key(&effect) {
             SoundManager::load_sound(self, audio, effect);
         }
@@ -167,7 +174,4 @@ impl<'a> SoundManager<'a> {
         cached_effect.set_volume(self.effect_volume); // Set volume to current setting for effects
         cached_effect.play();
     }
-
-    
-
 }
