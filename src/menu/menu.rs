@@ -4,6 +4,7 @@ use raylib::{ffi::KeyboardKey, RaylibHandle};
 use crate::components::map::Map;
 use crate::config::Config;
 use crate::crab::crab::Crab;
+use crate::sound_manager;
 use crate::sound_manager::sound_manager::{SoundManager,SoundEffect};
 
 /// Enum for the differents states displayed currently by the application
@@ -208,7 +209,7 @@ impl<'a> MenuManager<'a> {
             Menu::Title => self.update_title(rl,sound_manager),
             Menu::Select => self.update_select(rl,sound_manager),
             Menu::LevelSelection => self.update_level_selection(rl,sound_manager),
-            Menu::Game => self.update_game(rl, thread, map, crab, camera),
+            Menu::Game => self.update_game(rl, thread, map, crab, camera, sound_manager),
             Menu::Settings => self.update_settings(rl,sound_manager),
             Menu::Loading => self.update_loading(rl),
             Menu::Credit => self.update_credit(rl,sound_manager),
@@ -261,8 +262,10 @@ impl<'a> MenuManager<'a> {
         map: &Map,
         crab: &mut Crab,
         camera: &Camera3D,
+        sound_manager : &mut SoundManager, // Passed sound manager to sound effect back button
     ) {
         if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
+            sound_manager.play_sound_effect(SoundEffect::Click);
             self.current_menu = Menu::Title;
         }
 
@@ -280,7 +283,7 @@ impl<'a> MenuManager<'a> {
     }
 
     fn update_level_selection(&mut self, rl: &RaylibHandle, sound_manager : &mut SoundManager) {
-        self.handle_back_button(rl);
+        self.handle_back_button(rl, sound_manager);
         if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
             sound_manager.play_sound_effect(SoundEffect::Click);
             self.current_menu = Menu::Title;
@@ -288,7 +291,7 @@ impl<'a> MenuManager<'a> {
     }
 
     fn update_settings(&mut self, rl: &RaylibHandle, sound_manager : &mut SoundManager) {
-        self.handle_back_button(rl);
+        self.handle_back_button(rl, sound_manager);
         if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
             sound_manager.play_sound_effect(SoundEffect::Click);
             self.current_menu = Menu::Title;
@@ -303,7 +306,7 @@ impl<'a> MenuManager<'a> {
     }
 
     fn update_credit(&mut self, rl: &RaylibHandle, sound_manager : &mut SoundManager) {
-        self.handle_back_button(rl);
+        self.handle_back_button(rl, sound_manager);
         if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
             sound_manager.play_sound_effect(SoundEffect::Click);
             self.current_menu = Menu::Title;
@@ -316,7 +319,7 @@ impl<'a> MenuManager<'a> {
     /// # Arguments
     /// * rl - raylib handler (mouse position + click)
     
-    fn handle_back_button(&mut self, rl: &RaylibHandle) {
+    fn handle_back_button(&mut self, rl: &RaylibHandle, sound_manager : &mut SoundManager) {
         let mouse_pos = rl.get_mouse_position();
         if self
             .back_button
@@ -324,6 +327,7 @@ impl<'a> MenuManager<'a> {
             .check_collision_point_rec(mouse_pos)
         {
             if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
+                sound_manager.play_sound_effect(SoundEffect::Click);
                 self.current_menu = Menu::Select;
             }
         }
