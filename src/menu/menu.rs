@@ -5,11 +5,10 @@ use raylib::prelude::*;
 use raylib::{ffi::KeyboardKey, RaylibHandle};
 
 use crate::menu::utils::{
-    draw_button, draw_text_center, draw_texture_button, draw_texture_contain, 
-    draw_back_button,
+    draw_back_button, draw_button, draw_text_center, draw_texture_button, draw_texture_contain,
 };
 
-use crate::menu::screens::draw_title;
+use crate::menu::screens::{draw_title, draw_select};
 
 /// Enum for the differents states displayed currently by the application
 pub enum Menu {
@@ -370,7 +369,7 @@ impl MenuManager {
 
         match self.current_menu {
             Menu::Title => draw_title(d, &self.config),
-            Menu::Select => self.draw_select(d),
+            Menu::Select => draw_select(d, &self.config, &self.buttons),
             Menu::LevelSelection => self.draw_level_selection(d),
             Menu::Multiplayer => self.draw_multiplayer(d),
             Menu::Settings => self.draw_settings(d),
@@ -379,32 +378,33 @@ impl MenuManager {
             Menu::Credit => self.draw_credit(d),
         }
     }
-    fn draw_select(&self, d: &mut RaylibDrawHandle) {
-        let color_hovered = Color::DARKORANGE;
-        let color_button = Color::DARKGRAY;
 
-        draw_text_center(
-            d,
-            "RUZZLE",
-            self.config.screen_width,
-            (self.config.screen_height / 10) as i32,
-            self.config.font_size_h1,
-            Color::WHITE,
-        );
+    // fn draw_select(&self, d: &mut RaylibDrawHandle) {
+    //     let color_hovered = Color::DARKORANGE;
+    //     let color_button = Color::DARKGRAY;
 
-        for button in &self.buttons {
-            let is_hovered = self.hovered_button == button.id;
-            draw_button(
-                d,
-                button.rectangle,
-                &button.label,
-                color_hovered,
-                color_button,
-                is_hovered,
-                self.config.font_size_h2,
-            );
-        }
-    }
+    //     draw_text_center(
+    //         d,
+    //         "RUZZLE",
+    //         self.config.screen_width,
+    //         (self.config.screen_height / 10) as i32,
+    //         self.config.font_size_h1,
+    //         Color::WHITE,
+    //     );
+
+    //     for button in &self.buttons {
+    //         let is_hovered = self.hovered_button == button.id;
+    //         draw_button(
+    //             d,
+    //             button.rectangle,
+    //             &button.label,
+    //             color_hovered,
+    //             color_button,
+    //             is_hovered,
+    //             self.config.font_size_h2,
+    //         );
+    //     }
+    // }
 
     fn draw_level_selection(&self, d: &mut RaylibDrawHandle) {
         draw_text_center(
@@ -429,7 +429,13 @@ impl MenuManager {
             );
         }
 
-        draw_back_button(d, self.back_button.rectangle, &self.tex_back, &self.back_button.label, self.config.font_size_h2 / 3);
+        draw_back_button(
+            d,
+            self.back_button.rectangle,
+            &self.tex_back,
+            &self.back_button.label,
+            self.config.font_size_h2 / 3,
+        );
     }
 
     fn draw_multiplayer(&self, d: &mut RaylibDrawHandle) {
@@ -441,7 +447,13 @@ impl MenuManager {
             self.config.font_size_h2,
             Color::WHITE,
         );
-        draw_back_button(d, self.back_button.rectangle, &self.tex_back, &self.back_button.label, self.config.font_size_h2 / 3);
+        draw_back_button(
+            d,
+            self.back_button.rectangle,
+            &self.tex_back,
+            &self.back_button.label,
+            self.config.font_size_h2 / 3,
+        );
     }
     fn draw_settings(&self, d: &mut RaylibDrawHandle) {
         draw_text_center(
@@ -533,6 +545,12 @@ impl MenuManager {
             Color::WHITE,
         );
 
-        draw_back_button(d, self.back_button.rectangle, &self.tex_back, &self.back_button.label, self.config.font_size_h2 / 3);
+        draw_back_button(
+            d,
+            self.back_button.rectangle,
+            &self.tex_back,
+            &self.back_button.label,
+            self.config.font_size_h2 / 3,
+        );
     }
 }

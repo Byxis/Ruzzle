@@ -2,7 +2,7 @@ use raylib::prelude::RaylibDrawHandle;
 use raylib::prelude::*;
 
 /// Draws text centered horizontally at a given position.
-/// 
+///
 /// This function calculates the text width and positions it so that it appears
 /// centered around the x coordinate provided (typically screen_width for full centering).
 ///
@@ -24,8 +24,6 @@ pub fn draw_text_center(
     let text_length = d.measure_text(text, font_size);
     d.draw_text(text, (x / 2) - (text_length / 2), y, font_size, color);
 }
-
-
 
 /// Draws a button texture with tinting based on hover state.
 ///
@@ -62,8 +60,6 @@ pub fn draw_texture_button(
     d.draw_texture_pro(texture, src, dst, origin, 0.0, tint);
 }
 
-
-
 /// Draws a rectangular button with text, with color and styling based on hover state.
 ///
 /// The button displays different colors when hovered (typically brighter) vs normal state,
@@ -78,7 +74,7 @@ pub fn draw_texture_button(
 /// * color : Color, the button background color when not hovered
 /// * hovered : bool, whether the mouse is currently hovering this button
 /// * font_size : i32, the font size for the button label
-/// 
+///
 pub fn draw_button(
     d: &mut RaylibDrawHandle,
     button: Rectangle,
@@ -109,8 +105,6 @@ pub fn draw_button(
         );
     }
 }
-
-
 
 /// Draws a texture while maintaining its aspect ratio within the screen bounds.
 ///
@@ -145,6 +139,44 @@ pub fn draw_texture_contain(
     d.draw_texture_pro(tex, src, dst, Vector2::new(0.0, 0.0), 0.0, Color::WHITE);
 }
 
+/// Draws a button with optional texture fallback, auto-detecting hover state.
+///
+/// This function automatically checks if the mouse is hovering over the button rectangle
+/// and applies appropriate styling. It's the simplest way to draw interactive buttons
+/// without managing hover state externally.
+///
+/// # Arguments
+/// * d : &mut RaylibDrawHandle, borrows it to draw the button
+/// * rect : Rectangle, the position and size of the button
+/// * texture : &Option<Texture2D>, optional texture; if None, falls back to rectangle+text
+/// * label : &str, the text to display (used only if texture is None)
+/// * font_size : i32, the font size for the label (used only if texture is None)
+pub fn draw_interactive_button(
+    d: &mut RaylibDrawHandle,
+    rect: Rectangle,
+    texture: &Option<Texture2D>,
+    label: &str,
+    font_size: i32,
+) {
+    let mouse = d.get_mouse_position();
+    let hovered = rect.check_collision_point_rec(mouse);
+
+    if let Some(tex) = texture {
+        draw_texture_button(d, tex, rect, hovered);
+    } else {
+        draw_button(
+            d,
+            rect,
+            label,
+            Color::DARKORANGE,
+            Color::DARKGRAY,
+            hovered,
+            font_size,
+        );
+    }
+}
+
+
 
 
 /// Draws a "back" button that can display either a texture or fallback to a styled rectangle+text.
@@ -161,7 +193,6 @@ pub fn draw_texture_contain(
 /// * label : &str, the text to display (used only if texture is None)
 /// * font_size : i32, the font size for the label (used only if texture is None)
 
-
 pub fn draw_back_button(
     d: &mut RaylibDrawHandle,
     rect: Rectangle,
@@ -169,14 +200,5 @@ pub fn draw_back_button(
     label: &str,
     font_size: i32,
 ) {
-    let mouse = d.get_mouse_position();
-    let hovered = rect.check_collision_point_rec(mouse);
-
-    if let Some(tex) = texture {
-        draw_texture_button(d, tex, rect, hovered);
-    } else {
-        draw_button(d,rect,label,Color::DARKORANGE,
-            Color::DARKGRAY,hovered, font_size
-        );
-    }
+    draw_interactive_button(d, rect, texture, label, font_size);
 }
