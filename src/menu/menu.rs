@@ -12,6 +12,7 @@ pub enum Menu {
     LevelSelection,
     Settings,
     Game,
+    Multiplayer,
     Loading,
     Credit,
 }
@@ -23,6 +24,7 @@ pub enum SelectMenuHoveredButtons {
     Game,
     LevelSelection,
     Settings,
+    Multiplayer,
     Credit,
 }
 
@@ -76,7 +78,8 @@ pub struct MenuManager {
     pub config: Config,
     pub hovered_button: SelectMenuHoveredButtons,
     pub bg_loading: Option<Texture2D>,
-   pub tex_back: Option<Texture2D>,
+    pub tex_back: Option<Texture2D>,
+    pub background_menu: Option<Texture2D>,
 }
 
 impl MenuManager {
@@ -86,7 +89,7 @@ impl MenuManager {
 
         let bg_loading = rl.load_texture(thread, "assets/bg_loading.png").ok();
         let tex_back = rl.load_texture(thread, "assets/back_button.png").ok();
-
+        let background_menu = rl.load_texture(thread, "assets/title_screen.png").ok();
         let level_buttons = vec![
             Self::create_level_button(&config, "Niveau 1", 0, button_width, button_height),
             Self::create_level_button(&config, "Niveau 2", 1, button_width, button_height),
@@ -99,7 +102,7 @@ impl MenuManager {
             Button {
                 rectangle: Rectangle::new(
                     (config.screen_width / 2 - button_width as i32 / 2) as f32,
-                    (config.screen_height as f32) * 0.25,
+                    (config.screen_height as f32) * 0.20,
                     button_width,
                     button_height,
                 ),
@@ -109,7 +112,7 @@ impl MenuManager {
             Button {
                 rectangle: Rectangle::new(
                     (config.screen_width / 2 - button_width as i32 / 2) as f32,
-                    (config.screen_height as f32) * 0.40,
+                    (config.screen_height as f32) * 0.35,
                     button_width,
                     button_height,
                 ),
@@ -119,7 +122,17 @@ impl MenuManager {
             Button {
                 rectangle: Rectangle::new(
                     (config.screen_width / 2 - button_width as i32 / 2) as f32,
-                    (config.screen_height as f32) * 0.55,
+                    (config.screen_height as f32) * 0.50,
+                    button_width,
+                    button_height,
+                ),
+                label: "Multijoueur".to_string(),
+                id: SelectMenuHoveredButtons::Multiplayer,
+            },
+            Button {
+                rectangle: Rectangle::new(
+                    (config.screen_width / 2 - button_width as i32 / 2) as f32,
+                    (config.screen_height as f32) * 0.65,
                     button_width,
                     button_height,
                 ),
@@ -129,7 +142,7 @@ impl MenuManager {
             Button {
                 rectangle: Rectangle::new(
                     (config.screen_width / 2 - button_width as i32 / 2) as f32,
-                    (config.screen_height as f32) * 0.70,
+                    (config.screen_height as f32) * 0.80,
                     button_width,
                     button_height,
                 ),
@@ -158,6 +171,7 @@ impl MenuManager {
             hovered_button: SelectMenuHoveredButtons::None,
             bg_loading,
             tex_back,
+            background_menu,
         }
     }
     /// Helper to build level selection buttons with a simple vertical layout.
@@ -210,6 +224,7 @@ impl MenuManager {
             Menu::LevelSelection => self.update_level_selection(rl),
             Menu::Game => self.update_game(rl, thread, map, crab, camera),
             Menu::Settings => self.update_settings(rl),
+            Menu::Multiplayer => self.update_multiplayer(rl),
             Menu::Loading => self.update_loading(rl),
             Menu::Credit => self.update_credit(rl),
         }
@@ -242,6 +257,7 @@ impl MenuManager {
                         SelectMenuHoveredButtons::LevelSelection => {
                             self.current_menu = Menu::LevelSelection
                         }
+                        SelectMenuHoveredButtons::Multiplayer => self.current_menu = Menu::Multiplayer,
                         SelectMenuHoveredButtons::Settings => self.current_menu = Menu::Settings,
                         SelectMenuHoveredButtons::Credit => self.current_menu = Menu::Credit,
                         SelectMenuHoveredButtons::None => {}
@@ -277,6 +293,13 @@ impl MenuManager {
     }
 
     fn update_level_selection(&mut self, rl: &RaylibHandle) {
+        self.handle_back_button(rl);
+        if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
+            self.current_menu = Menu::Title;
+        }
+    }
+
+    fn update_multiplayer(&mut self, rl: &RaylibHandle) {
         self.handle_back_button(rl);
         if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
             self.current_menu = Menu::Title;
@@ -330,12 +353,20 @@ impl MenuManager {
     /// * c : crab : Crab (alexei's crabito)
     /// * camera : Camera3D (not used for now)
     pub fn draw(&self, d: &mut RaylibDrawHandle, map: &Map, crab: &mut Crab, camera: &Camera3D) {
-        d.clear_background(Color::BLACK);
+        if let Some(texture) = &self.background_menu {
+            let x = 0;
+            let y = 0;
+            draw_background_contain(d, texture, self.config.screen_width, self.config.screen_height );
+        }else{
+            d.clear_background(Color::BLACK);
+        }
+        
 
         match self.current_menu {
             Menu::Title => self.draw_title(d),
             Menu::Select => self.draw_select(d),
             Menu::LevelSelection => self.draw_level_selection(d),
+            Menu::Multiplayer => self.draw_multiplayer(d),
             Menu::Settings => self.draw_settings(d),
             Menu::Game => self.draw_game(d, crab, map, camera),
             Menu::Loading => self.draw_loading(d),
@@ -415,6 +446,17 @@ impl MenuManager {
         draw_back_button(d, &self.back_button, &self.tex_back, &self.config);
     }
 
+    fn draw_multiplayer(&self, d: &mut RaylibDrawHandle) {
+        draw_text_center(
+            d,
+            "Multijoueur",
+            self.config.screen_width,
+            (self.config.screen_height / 7) as i32,
+            self.config.font_size_h2,
+            Color::WHITE,
+        );
+        draw_back_button(d, &self.back_button, &self.tex_back, &self.config);
+    }
     fn draw_settings(&self, d: &mut RaylibDrawHandle) {
         draw_text_center(
             d,
@@ -446,7 +488,9 @@ impl MenuManager {
     }
 
     fn draw_game(&self, d: &mut RaylibDrawHandle, crab: &mut Crab, map: &Map, camera: &Camera3D) {
-        {
+
+            
+        {   d.clear_background(Color::BLACK);
             let mut d3d = d.begin_mode3D(camera);
             d3d.draw_grid(10, 1.0);
             crab.draw(&mut d3d);
@@ -469,6 +513,11 @@ impl MenuManager {
     }
 
     fn draw_loading(&self, d: &mut RaylibDrawHandle) {
+        if let Some(texture) = &self.background_menu {
+            let x = 0;
+            let y = 0;
+            d.draw_texture(texture, x, y, Color::WHITE);
+        }       
         if let Some(texture) = &self.bg_loading {
             let x = self.config.screen_width / 2 - texture.width / 2;
             let y = self.config.screen_height / 2 - texture.height / 2;
@@ -516,6 +565,26 @@ impl MenuManager {
 
     
 }
+// Dessine la texture en conservant le ratio (pas de déformation), avec bandes noires si nécessaire.
+fn draw_background_contain(d: &mut RaylibDrawHandle, tex: &Texture2D, screen_w: i32, screen_h: i32) {
+    let sw = screen_w as f32;
+    let sh = screen_h as f32;
+    let tw = tex.width as f32;
+    let th = tex.height as f32;
+
+    let scale = (sw / tw).min(sh / th);
+    let dw = tw * scale;
+    let dh = th * scale;
+    let dx = (sw - dw) * 0.5;
+    let dy = (sh - dh) * 0.5;
+
+    let src = Rectangle::new(0.0, 0.0, tw, th);
+    let dst = Rectangle::new(dx, dy, dw, dh);
+
+    d.draw_texture_pro(tex, src, dst, Vector2::new(0.0, 0.0), 0.0, Color::WHITE);
+}
+
+
 
 fn draw_back_button(d: &mut RaylibDrawHandle, button: &Button, texture: &Option<Texture2D>, config: &Config) {
     let mouse = d.get_mouse_position(); // RaylibDrawHandle a accès à get_mouse_position
