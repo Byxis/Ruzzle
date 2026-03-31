@@ -170,7 +170,7 @@ impl GroupBlock {
         false
     }
 
-    /// Updates the group's rotation animation based on the delta time.
+    /// Updates the group's rotation animation downed on the delta time.
     pub fn update_animation(&mut self, dt: f32) {
         if self.is_rotating {
             self.rotation_progress += 3.0 * dt;
@@ -256,15 +256,15 @@ fn draw_cube_with_texture(
     let (x, y, z) = (position.x, position.y, position.z);
     let (w, h, l) = (width / 2.0, height / 2.0, length / 2.0);
 
-    let avant_bas_gauche = (x - w, y - h, z + l);
-    let avant_bas_droit = (x + w, y - h, z + l);
-    let avant_haut_gauche = (x - w, y + h, z + l);
-    let avant_haut_droit = (x + w, y + h, z + l);
+    let front_down_left = (x - w, y - h, z + l);
+    let front_down_right = (x + w, y - h, z + l);
+    let front_up_left = (x - w, y + h, z + l);
+    let front_up_right = (x + w, y + h, z + l);
 
-    let arr_bas_gauche = (x - w, y - h, z - l);
-    let arr_bas_droit = (x + w, y - h, z - l);
-    let arr_haut_gauche = (x - w, y + h, z - l);
-    let arr_haut_droit = (x + w, y + h, z - l);
+    let arr_down_left = (x - w, y - h, z - l);
+    let arr_down_right = (x + w, y - h, z - l);
+    let arr_up_left = (x - w, y + h, z - l);
+    let arr_up_right = (x + w, y + h, z - l);
 
     unsafe {
         ffi::rlSetTexture(tex.id);
@@ -272,41 +272,26 @@ fn draw_cube_with_texture(
         ffi::rlColor4ub(color.r, color.g, color.b, color.a);
 
         draw_face(
-            avant_bas_gauche,
-            avant_bas_droit,
-            avant_haut_droit,
-            avant_haut_gauche,
+            front_down_left,
+            front_down_right,
+            front_up_right,
+            front_up_left,
         ); // front
+        draw_face(arr_down_right, arr_down_left, arr_up_left, arr_up_right); // back
+        draw_face(arr_up_left, front_up_left, front_up_right, arr_up_right); // up
         draw_face(
-            arr_bas_droit,
-            arr_bas_gauche,
-            arr_haut_gauche,
-            arr_haut_droit,
-        ); // back
-        draw_face(
-            arr_haut_gauche,
-            avant_haut_gauche,
-            avant_haut_droit,
-            arr_haut_droit,
-        ); // up
-        draw_face(
-            arr_bas_droit,
-            avant_bas_droit,
-            avant_bas_gauche,
-            arr_bas_gauche,
+            arr_down_right,
+            front_down_right,
+            front_down_left,
+            arr_down_left,
         ); // down
         draw_face(
-            avant_bas_droit,
-            arr_bas_droit,
-            arr_haut_droit,
-            avant_haut_droit,
+            front_down_right,
+            arr_down_right,
+            arr_up_right,
+            front_up_right,
         ); // right
-        draw_face(
-            arr_bas_gauche,
-            avant_bas_gauche,
-            avant_haut_gauche,
-            arr_haut_gauche,
-        ); // left
+        draw_face(arr_down_left, front_down_left, front_up_left, arr_up_left); // left
 
         ffi::rlEnd();
         ffi::rlSetTexture(0);
@@ -315,17 +300,17 @@ fn draw_cube_with_texture(
 
 /// Draws a single quad face using vertex positions and standard UV coordinates.
 unsafe fn draw_face(
-    bas_gauche: (f32, f32, f32),
-    bas_droit: (f32, f32, f32),
-    haut_droit: (f32, f32, f32),
-    haut_gauche: (f32, f32, f32),
+    down_left: (f32, f32, f32),
+    down_right: (f32, f32, f32),
+    up_right: (f32, f32, f32),
+    up_left: (f32, f32, f32),
 ) {
     ffi::rlTexCoord2f(0.0, 1.0);
-    ffi::rlVertex3f(bas_gauche.0, bas_gauche.1, bas_gauche.2);
+    ffi::rlVertex3f(down_left.0, down_left.1, down_left.2);
     ffi::rlTexCoord2f(1.0, 1.0);
-    ffi::rlVertex3f(bas_droit.0, bas_droit.1, bas_droit.2);
+    ffi::rlVertex3f(down_right.0, down_right.1, down_right.2);
     ffi::rlTexCoord2f(1.0, 0.0);
-    ffi::rlVertex3f(haut_droit.0, haut_droit.1, haut_droit.2);
+    ffi::rlVertex3f(up_right.0, up_right.1, up_right.2);
     ffi::rlTexCoord2f(0.0, 0.0);
-    ffi::rlVertex3f(haut_gauche.0, haut_gauche.1, haut_gauche.2);
+    ffi::rlVertex3f(up_left.0, up_left.1, up_left.2);
 }
