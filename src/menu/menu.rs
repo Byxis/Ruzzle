@@ -100,21 +100,21 @@ impl Button {
 /// It is used with two functions :
 /// * update to affect game logic and variables
 /// * draw to draw the graphical elements
-pub struct MenuManager {
+pub struct MenuManager<'a> {
     pub current_menu: Menu,
     pub frame_count: i32,
     pub buttons: Vec<Button>,
     pub level_buttons: Vec<Button>,
     pub back_button: Button,
-    pub config: Config,
+    pub config: &'a Config,
     pub hovered_button: SelectMenuHoveredButtons,
     pub current_level: Option<Level>,
     pub assets: Assets,
     //pub egg_menu: Option<Texture2D>,
 }
 
-impl MenuManager {
-    pub fn new(config: Config, rl: &mut RaylibHandle, thread: &RaylibThread) -> Self {
+impl<'a> MenuManager<'a> {
+    pub fn new(config: &'a Config, rl: &mut RaylibHandle, thread: &RaylibThread) -> Self {
         let button_width = (config.screen_width as f32) * 0.2;
         let button_height = (config.screen_height as f32) * 0.1;
         let assets = Assets::new(rl, thread);

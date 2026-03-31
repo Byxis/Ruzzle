@@ -32,7 +32,7 @@ fn main() {
         .build();
 
     // let mut current_menu = Menu::Title;
-    let mut menu_manager = MenuManager::new(config, &mut rl, &thread);
+    let mut menu_manager = MenuManager::new(&config, &mut rl, &thread);
     if rl.get_screen_width() != menu_manager.config.screen_width
         || rl.get_screen_height() != menu_manager.config.screen_height
     {
@@ -48,7 +48,7 @@ fn main() {
     );
 
     let audio = RaylibAudio::init_audio_device().expect("Failed to initialize audio device");
-    let mut sound_manager = SoundManager::new(&audio);
+    let mut sound_manager = SoundManager::new(&audio, &config);
 
     let spawn_point = Transform3D::new(Vector3::new(0.0, 5.0, 0.0), 0.0);
     let mut map = Map::new(&mut rl, &thread, "rsc/map.glb");
@@ -76,7 +76,7 @@ fn main() {
     rl.set_target_fps(60);
 
     // Apply default sound parameters and start game music
-    sound_manager.set_background_music(&audio, BackgroundMusic::CrabRave);
+    sound_manager.set_background_music(BackgroundMusic::CrabRave);
     sound_manager.start_background_music();
 
     // Frame loop
