@@ -1,7 +1,6 @@
 use crate::components::map::Map;
 use crate::config::Config;
 use crate::crab::crab::Crab;
-use crate::sound_manager;
 use crate::sound_manager::sound_manager::{SoundManager,SoundEffect};
 use raylib::prelude::*;
 use raylib::{ffi::KeyboardKey, RaylibHandle};
