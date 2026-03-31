@@ -305,7 +305,7 @@ impl MenuManager {
         for (i, button) in self.level_buttons.iter().enumerate() {
             if button.rectangle.check_collision_point_rec(mouse_pos) {
                 if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
-                    self.current_level = Some(Level::new((i + 1) as i8)); // index 1-based
+                    self.current_level = Some(Level::new((i + 1) as i8));
                     self.current_menu = Menu::Game;
                 }
             }

@@ -13,3 +13,67 @@ pub fn create_sand_row(pos: Vector3) -> GroupBlock {
     ];
     GroupBlock::new(pos, children, BlockType::All)
 }
+
+pub fn create_level1(pos: Vector3) -> GroupBlock {
+    let mut groups = vec![];
+
+    for x in -5..=5 {
+        groups.push(BlockPrefab::new(
+            Vector3::new(x as f32, 0.0, 0.0),
+            None,
+            BlockType::Fixe,
+            BlockMaterial::sand(),
+        ));
+    }
+    GroupBlock::new(pos, groups, BlockType::Fixe)
+}
+
+pub fn create_level2(pos: Vector3) -> GroupBlock {
+    let mut groups = vec![];
+
+    for x in -5..=-3 {
+        groups.push(BlockPrefab::new(
+            Vector3::new(x as f32, 0.0, 0.0),
+            None,
+            BlockType::Fixe,
+            BlockMaterial::sand(),
+        ));
+    }
+    for z in 1..=2 {
+        groups.push(BlockPrefab::new(
+            Vector3::new(-3.0, 0.0, z as f32),
+            None,
+            BlockType::Fixe,
+            BlockMaterial::sand(),
+        ));
+    }
+
+    for x in -3..=3 {
+        groups.push(BlockPrefab::new(
+            Vector3::new(x as f32, 0.0, 2.0),
+            None,
+            BlockType::Fixe,
+            BlockMaterial::sand(),
+        ));
+    }
+
+    for z in 1..=2 {
+        groups.push(BlockPrefab::new(
+            Vector3::new(3.0, 0.0, z as f32),
+            None,
+            BlockType::Fixe,
+            BlockMaterial::sand(),
+        ));
+    }
+
+    for x in 3..=5 {
+        groups.push(BlockPrefab::new(
+            Vector3::new(x as f32, 0.0, 0.0),
+            None,
+            BlockType::Fixe,
+            BlockMaterial::sand(),
+        ));
+    }
+
+    GroupBlock::new(pos, groups, BlockType::Fixe)
+}

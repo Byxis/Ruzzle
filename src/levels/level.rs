@@ -1,7 +1,9 @@
 use crate::blocks::material::BlockMaterial;
 use crate::blocks::modele::{BlockType, GroupBlock};
+use crate::blocks::prefab::beach::{create_level1, create_level2};
 use crate::components::collider::Collider;
 use crate::menu::menu::Assets;
+use raylib::math::glam::vec3;
 use raylib::prelude::*;
 
 /// Represents a 3D level with a group of blocks.
@@ -27,15 +29,8 @@ impl Level {
         let mut groups = Vec::new();
 
         match index {
-            1 => {
-                for x in -5..=5 {
-                    groups.push(GroupBlock::single(
-                        Vector3::new(x as f32, 0.0, 0.0),
-                        BlockType::Fixe,
-                        BlockMaterial::sand(),
-                    ));
-                }
-            }
+            1 => groups.push(create_level1(Vector3::new(0.0, 0.0, 0.0))),
+            2 => groups.push(create_level2(Vector3::new(0.0, 0.0, 0.0))),
             _ => {}
         }
 
