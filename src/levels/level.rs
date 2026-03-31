@@ -51,120 +51,130 @@ impl Level {
     pub fn update(&mut self, rl: &RaylibHandle) {
         let dt = rl.get_frame_time();
 
+        // Update visual animations for all groups
         for group in self.groups.iter_mut() {
             group.update_animation(dt);
         }
 
+        // Handle interaction logic if a group is selected
         if let Some(index) = self.selected_group {
-            let camera = self.camera;
-
             if let Some(group) = self.groups.get_mut(index) {
                 if !group.is_rotating {
-                    let mut rotation_to_apply = None;
+                    // Process movement and rotation inputs
+                    Self::update_drag(&mut self.selected_group, group, dt, rl, self.camera);
+                    Self::update_rotation(group, rl);
+                }
+            }
+        }
+    }
 
-                    // Dragging Logic
-                    if group.block_type == BlockType::Drag {
-                        if rl.is_mouse_button_down(MouseButton::MOUSE_BUTTON_LEFT) {
-                            if !group.is_dragging {
-                                group.drag_timer += dt;
-                                if group.drag_timer > 0.15 {
-                                    group.is_dragging = true;
-                                }
-                            }
+    /// Handles keyboard input to trigger 90-degree rotations on valid axes.
+    pub fn update_rotation(group: &mut GroupBlock, rl: &RaylibHandle) {
+        let mut rotation_to_apply: Option<Quaternion> = None;
 
-                            if group.is_dragging {
-                                let mouse_ray =
-                                    rl.get_screen_to_world_ray(rl.get_mouse_position(), &camera);
-                                let axis = group.end_pos - group.start_pos;
-                                let axis_len_sq = axis.dot(axis);
+        let is_h_type =
+            group.block_type == BlockType::All || group.block_type == BlockType::RotationH;
+        let is_v_type =
+            group.block_type == BlockType::All || group.block_type == BlockType::RotationV;
 
-                                if axis_len_sq > 0.0 {
-                                    let plane_normal =
-                                        (camera.target - camera.position).normalize();
-                                    let denom = mouse_ray.direction.dot(plane_normal);
+        // Horizontal rotation (Y-axis)
+        if is_h_type {
+            if rl.is_key_pressed(KeyboardKey::KEY_RIGHT) {
+                rotation_to_apply = Some(Quaternion::from_axis_angle(
+                    Vector3::new(0.0, 1.0, 0.0),
+                    90.0f32.to_radians(),
+                ));
+            }
+            if rl.is_key_pressed(KeyboardKey::KEY_LEFT) {
+                rotation_to_apply = Some(Quaternion::from_axis_angle(
+                    Vector3::new(0.0, 1.0, 0.0),
+                    -90.0f32.to_radians(),
+                ));
+            }
+        }
 
-                                    if denom.abs() > 0.0001 {
-                                        let t_plane = (group.start_pos - mouse_ray.position)
-                                            .dot(plane_normal)
-                                            / denom;
-                                        let world_mouse_pos =
-                                            mouse_ray.position + (mouse_ray.direction * t_plane);
-                                        let v = world_mouse_pos - group.start_pos;
-                                        let t_axis = v.dot(axis) / axis_len_sq;
+        // Vertical rotation (X-axis)
+        if is_v_type {
+            if rl.is_key_pressed(KeyboardKey::KEY_UP) {
+                rotation_to_apply = Some(Quaternion::from_axis_angle(
+                    Vector3::new(1.0, 0.0, 0.0),
+                    -90.0f32.to_radians(),
+                ));
+            }
+            if rl.is_key_pressed(KeyboardKey::KEY_DOWN) {
+                rotation_to_apply = Some(Quaternion::from_axis_angle(
+                    Vector3::new(1.0, 0.0, 0.0),
+                    90.0f32.to_radians(),
+                ));
+            }
+        }
 
-                                        group.position =
-                                            group.start_pos + (axis * t_axis.clamp(0.0, 1.0));
-                                    }
-                                }
-                            }
-                        } else {
-                            if group.is_dragging {
-                                let axis = group.end_pos - group.start_pos;
-                                let current_v = group.position - group.start_pos;
-                                let axis_len_sq = axis.dot(axis);
-                                let progress = if axis_len_sq > 0.0 {
-                                    current_v.dot(axis) / axis_len_sq
-                                } else {
-                                    0.0
-                                };
+        // Apply the new target orientation if an input was detected
+        if let Some(rot) = rotation_to_apply {
+            group.is_rotating = true;
+            group.rotation_progress = 0.0;
+            group.target_orientation = rot * group.orientation;
+        }
+    }
 
-                                if progress > 0.5 {
-                                    group.position = group.end_pos;
-                                    std::mem::swap(&mut group.start_pos, &mut group.end_pos);
-                                } else {
-                                    group.position = group.start_pos;
-                                }
-                            }
-                            group.is_dragging = false;
-                            group.drag_timer = 0.0;
-                            self.selected_group = None;
-                        }
+    pub fn update_drag(
+        selected_group_idx: &mut Option<usize>,
+        group: &mut GroupBlock,
+        dt: f32,
+        rl: &RaylibHandle,
+        camera: Camera3D,
+    ) {
+        if group.block_type == BlockType::Drag {
+            if rl.is_mouse_button_down(MouseButton::MOUSE_BUTTON_LEFT) {
+                if !group.is_dragging {
+                    group.drag_timer += dt;
+                    if group.drag_timer > 0.15 {
+                        group.is_dragging = true;
                     }
+                }
 
-                    // Rotation Logic
-                    if self.selected_group.is_some() {
-                        let is_h_type = group.block_type == BlockType::All
-                            || group.block_type == BlockType::RotationH;
-                        let is_v_type = group.block_type == BlockType::All
-                            || group.block_type == BlockType::RotationV;
+                if group.is_dragging {
+                    let mouse_ray = rl.get_screen_to_world_ray(rl.get_mouse_position(), &camera);
+                    let axis = group.end_pos - group.start_pos;
+                    let axis_len_sq = axis.dot(axis);
 
-                        if is_h_type {
-                            if rl.is_key_pressed(KeyboardKey::KEY_RIGHT) {
-                                rotation_to_apply = Some(Quaternion::from_axis_angle(
-                                    Vector3::new(0.0, 1.0, 0.0),
-                                    90.0f32.to_radians(),
-                                ));
-                            }
-                            if rl.is_key_pressed(KeyboardKey::KEY_LEFT) {
-                                rotation_to_apply = Some(Quaternion::from_axis_angle(
-                                    Vector3::new(0.0, 1.0, 0.0),
-                                    -90.0f32.to_radians(),
-                                ));
-                            }
-                        }
+                    if axis_len_sq > 0.0 {
+                        let plane_normal = (camera.target - camera.position).normalize();
+                        let denom = mouse_ray.direction.dot(plane_normal);
 
-                        if is_v_type {
-                            if rl.is_key_pressed(KeyboardKey::KEY_UP) {
-                                rotation_to_apply = Some(Quaternion::from_axis_angle(
-                                    Vector3::new(1.0, 0.0, 0.0),
-                                    -90.0f32.to_radians(),
-                                ));
-                            }
-                            if rl.is_key_pressed(KeyboardKey::KEY_DOWN) {
-                                rotation_to_apply = Some(Quaternion::from_axis_angle(
-                                    Vector3::new(1.0, 0.0, 0.0),
-                                    90.0f32.to_radians(),
-                                ));
-                            }
-                        }
+                        if denom.abs() > 0.0001 {
+                            let t_plane =
+                                (group.start_pos - mouse_ray.position).dot(plane_normal) / denom;
+                            let world_mouse_pos =
+                                mouse_ray.position + (mouse_ray.direction * t_plane);
+                            let v = world_mouse_pos - group.start_pos;
+                            let t_axis = v.dot(axis) / axis_len_sq;
 
-                        if let Some(rot) = rotation_to_apply {
-                            group.is_rotating = true;
-                            group.rotation_progress = 0.0;
-                            group.target_orientation = rot * group.orientation;
+                            group.position = group.start_pos + (axis * t_axis.clamp(0.0, 1.0));
                         }
                     }
                 }
+            } else {
+                if group.is_dragging {
+                    let axis = group.end_pos - group.start_pos;
+                    let current_v = group.position - group.start_pos;
+                    let axis_len_sq = axis.dot(axis);
+                    let progress = if axis_len_sq > 0.0 {
+                        current_v.dot(axis) / axis_len_sq
+                    } else {
+                        0.0
+                    };
+
+                    if progress > 0.5 {
+                        group.position = group.end_pos;
+                        std::mem::swap(&mut group.start_pos, &mut group.end_pos);
+                    } else {
+                        group.position = group.start_pos;
+                    }
+                }
+                group.is_dragging = false;
+                group.drag_timer = 0.0;
+                *selected_group_idx = None;
             }
         }
     }
