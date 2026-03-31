@@ -1,6 +1,7 @@
 use crate::components::map::Map;
 use crate::config::Config;
 use crate::crab::crab::Crab;
+use crate::menu::screens::loading::draw_loading;
 use raylib::prelude::*;
 use raylib::{ffi::KeyboardKey, RaylibHandle};
 
@@ -8,7 +9,7 @@ use crate::menu::utils::{
     draw_back_button, draw_button, draw_text_center, draw_texture_button, draw_texture_contain,
 };
 
-use crate::menu::screens::{draw_title, draw_select, draw_level_selection, draw_multiplayer, draw_credit};
+use crate::menu::screens::{draw_credit, draw_level_selection, draw_multiplayer, draw_select, draw_settings, draw_title};
 
 /// Enum for the differents states displayed currently by the application
 pub enum Menu {
@@ -372,36 +373,10 @@ impl MenuManager {
             Menu::Select => draw_select(d, &self.config, &self.buttons),
             Menu::LevelSelection => draw_level_selection(d, &self.config, &self.level_buttons, &self.tex_back, &self.back_button),
             Menu::Multiplayer => draw_multiplayer(d, &self.config, &self.back_button, &self.tex_back),
-            Menu::Settings => self.draw_settings(d),
+            Menu::Settings => draw_settings(d, &self.config, &self.back_button, &self.tex_back),
             Menu::Game => self.draw_game(d, crab, map, camera),
-            Menu::Loading => self.draw_loading(d),
+            Menu::Loading => draw_loading(d, &self.config, &self.bg_logo),
             Menu::Credit => draw_credit(d, &self.config, &self.back_button, &self.tex_back),
-        }
-    }
-    fn draw_settings(&self, d: &mut RaylibDrawHandle) {
-        draw_text_center(
-            d,
-            "Settings Menu",
-            self.config.screen_width,
-            (self.config.screen_height / 7) as i32,
-            self.config.font_size_h2,
-            Color::WHITE,
-        );
-        let mouse = d.get_mouse_position(); // RaylibDrawHandle a accès à get_mouse_position
-        let hovered = self.back_button.rectangle.check_collision_point_rec(mouse);
-        if let Some(tex) = &self.tex_back {
-            draw_texture_button(d, tex, self.back_button.rectangle, hovered);
-        } else {
-            // fallback si la texture n'a pas chargé
-            draw_button(
-                d,
-                self.back_button.rectangle,
-                &self.back_button.label,
-                Color::DARKORANGE,
-                Color::DARKGRAY,
-                hovered,
-                self.config.font_size_h2 / 3,
-            );
         }
     }
 
@@ -427,53 +402,5 @@ impl MenuManager {
             Color::DARKGRAY,
         );
         d.draw_fps(10, 10);
-    }
-
-    fn draw_loading(&self, d: &mut RaylibDrawHandle) {
-        if let Some(texture) = &self.background_menu {
-            let x = 0;
-            let y = 0;
-            d.draw_texture(texture, x, y, Color::WHITE);
-        }
-        if let Some(texture) = &self.bg_logo {
-            let x = self.config.screen_width / 2 - texture.width / 2;
-            let y = self.config.screen_height / 2 - texture.height / 2;
-            d.draw_texture(texture, x, y, Color::WHITE);
-        }
-    }
-
-    fn draw_credit(&self, d: &mut RaylibDrawHandle) {
-        draw_text_center(
-            d,
-            "Jeu réalisé par :",
-            self.config.screen_width,
-            (self.config.screen_height as i32) / 2 - (self.config.screen_height / 12) as i32,
-            self.config.font_size_h1,
-            Color::WHITE,
-        );
-        draw_text_center(
-            d,
-            "Alexey Serrané, Allessandraaaaaa, Carolayne",
-            self.config.screen_width,
-            (self.config.screen_height as i32) / 2,
-            (self.config.screen_height / 36) as i32,
-            Color::WHITE,
-        );
-        draw_text_center(
-            d,
-            "Max La Menax, André saitpascodé",
-            self.config.screen_width,
-            (self.config.screen_height as i32) / 2 + (self.config.screen_height / 18) as i32,
-            (self.config.screen_height / 12) as i32,
-            Color::WHITE,
-        );
-
-        draw_back_button(
-            d,
-            self.back_button.rectangle,
-            &self.tex_back,
-            &self.back_button.label,
-            self.config.font_size_h2 / 3,
-        );
     }
 }
