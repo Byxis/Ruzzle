@@ -21,7 +21,7 @@ pub fn draw_settings(
     d: &mut RaylibDrawHandle,
     config: &Config,
     back_button: &Button,
-    texture: &Option<Texture2D>,
+    texture: Option<&Texture2D>,
 ) {
     draw_text_center(
         d,

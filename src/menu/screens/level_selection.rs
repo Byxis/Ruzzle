@@ -1,5 +1,5 @@
 use crate::config::Config;
-use crate::menu::menu::Button;
+use crate::menu::menu::{Assets, Button};
 use crate::menu::utils::{draw_back_button, draw_interactive_button, draw_text_center};
 use raylib::prelude::Color;
 use raylib::prelude::RaylibDrawHandle;
@@ -22,7 +22,7 @@ pub fn draw_level_selection(
     d: &mut RaylibDrawHandle,
     config: &Config,
     level_buttons: &[Button],
-    texture: &Option<Texture2D>,
+    assets: &Assets,
     back_button: &Button,
 ) {
     draw_text_center(
@@ -39,7 +39,7 @@ pub fn draw_level_selection(
         draw_interactive_button(
             d,
             button.rectangle,
-            &None,
+            None,
             &button.label,
             config.font_size_h2,
         );
@@ -48,7 +48,7 @@ pub fn draw_level_selection(
     draw_back_button(
         d,
         back_button.rectangle,
-        texture,
+        assets.textures.get(3),
         &back_button.label,
         config.font_size_h2 / 3,
     );

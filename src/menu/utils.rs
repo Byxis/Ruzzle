@@ -154,7 +154,7 @@ pub fn draw_texture_contain(
 pub fn draw_interactive_button(
     d: &mut RaylibDrawHandle,
     rect: Rectangle,
-    texture: &Option<Texture2D>,
+    texture: Option<&Texture2D>,
     label: &str,
     font_size: i32,
 ) {
@@ -193,7 +193,7 @@ pub fn draw_interactive_button(
 pub fn draw_back_button(
     d: &mut RaylibDrawHandle,
     rect: Rectangle,
-    texture: &Option<Texture2D>,
+    texture: Option<&Texture2D>,
     label: &str,
     font_size: i32,
 ) {
