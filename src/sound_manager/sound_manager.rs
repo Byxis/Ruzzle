@@ -157,7 +157,6 @@ impl<'a> SoundManager<'a> {
     /// Plays the specified sound effect from the cache at the current effect volume
     /// Calls load_sound if the effect is not already in the cache
     pub fn play_sound_effect(&mut self, effect: SoundEffect) {
-
         if !self.effects_cache.contains_key(&effect) {
             SoundManager::load_sound(self, effect);
         }
