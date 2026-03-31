@@ -1,4 +1,3 @@
-
 use crate::config::Config;
 use crate::menu::menu::Button;
 use crate::menu::utils::{draw_interactive_button, draw_text_center};
@@ -10,8 +9,6 @@ pub fn draw_select(
     config: &Config,
     buttons: &[Button],
 ) {
-    let color_hovered = Color::DARKORANGE;
-    let color_button = Color::DARKGRAY;
 
     draw_text_center(
         d,

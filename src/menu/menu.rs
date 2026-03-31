@@ -1,15 +1,14 @@
 use crate::components::map::Map;
 use crate::config::Config;
 use crate::crab::crab::Crab;
-use crate::menu::screens::loading::draw_loading;
 use raylib::prelude::*;
 use raylib::{ffi::KeyboardKey, RaylibHandle};
 
 use crate::menu::utils::{
-    draw_back_button, draw_button, draw_text_center, draw_texture_button, draw_texture_contain,
+    draw_texture_contain,
 };
 
-use crate::menu::screens::{draw_credit, draw_level_selection, draw_multiplayer, draw_select, draw_settings, draw_title};
+use crate::menu::screens::{draw_title, draw_loading, draw_game,  draw_select, draw_level_selection,  draw_multiplayer, draw_settings, draw_credit};
 
 /// Enum for the differents states displayed currently by the application
 pub enum Menu {
@@ -374,33 +373,9 @@ impl MenuManager {
             Menu::LevelSelection => draw_level_selection(d, &self.config, &self.level_buttons, &self.tex_back, &self.back_button),
             Menu::Multiplayer => draw_multiplayer(d, &self.config, &self.back_button, &self.tex_back),
             Menu::Settings => draw_settings(d, &self.config, &self.back_button, &self.tex_back),
-            Menu::Game => self.draw_game(d, crab, map, camera),
+            Menu::Game => draw_game(d, crab, map, camera),
             Menu::Loading => draw_loading(d, &self.config, &self.bg_logo),
             Menu::Credit => draw_credit(d, &self.config, &self.back_button, &self.tex_back),
         }
-    }
-
-    fn draw_game(&self, d: &mut RaylibDrawHandle, crab: &mut Crab, map: &Map, camera: &Camera3D) {
-        {
-            d.clear_background(Color::BLACK);
-            let mut d3d = d.begin_mode3D(camera);
-            d3d.draw_grid(10, 1.0);
-            crab.draw(&mut d3d);
-            map.draw(&mut d3d);
-        }
-
-        let coordonnees = format!(
-            "({:.2}, {:.2}, {:.2})",
-            crab.transform.position.x, crab.transform.position.y, crab.transform.position.z
-        );
-
-        d.draw_text(
-            &coordonnees,
-            10,
-            40,
-            (self.config.screen_height / 36) as i32,
-            Color::DARKGRAY,
-        );
-        d.draw_fps(10, 10);
     }
 }

@@ -1,7 +1,5 @@
 use raylib::prelude::*;
 use crate::config::Config;
-use crate::menu::menu::Button;
-use crate::menu::utils::{draw_text_center, draw_back_button};
 use raylib::prelude::Color;
 use raylib::prelude::RaylibDrawHandle;
 

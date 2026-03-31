@@ -1,5 +1,5 @@
 use raylib::prelude::*;
-use crate::config::{self, Config};
+use crate::config::{Config};
 use crate::menu::menu::Button;
 use crate::menu::utils::{draw_back_button, draw_interactive_button, draw_text_center};
 use raylib::prelude::Color;
@@ -23,7 +23,7 @@ use raylib::prelude::RaylibDrawHandle;
 
         // Draw the buttons for the levels
         for button in level_buttons {
-            draw_interactive_button(d, button.rectangle, &None, &button.label, config.font_size_h1);
+            draw_interactive_button(d, button.rectangle, &None, &button.label, config.font_size_h2);
         }
 
         draw_back_button(

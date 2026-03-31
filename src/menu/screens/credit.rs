@@ -1,4 +1,3 @@
-use raylib::ffi::CSSPalette;
 use raylib::prelude::*;
 use crate::config::Config;
 use crate::menu::menu::Button;
