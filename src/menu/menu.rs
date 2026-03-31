@@ -236,7 +236,7 @@ impl<'a> MenuManager<'a> {
             Menu::LevelSelection => self.update_level_selection(rl,sound_manager),
             Menu::Game => self.update_game(rl, thread, map, crab, camera,sound_manager),
             Menu::Settings => self.update_settings(rl,sound_manager),
-            Menu::Multiplayer => self.update_multiplayer(rl),
+            Menu::Multiplayer => self.update_multiplayer(rl, sound_manager),
             Menu::Loading => self.update_loading(rl),
             Menu::Credit => self.update_credit(rl,sound_manager),
         }
@@ -318,9 +318,10 @@ impl<'a> MenuManager<'a> {
         }
     }
 
-    fn update_multiplayer(&mut self, rl: &RaylibHandle) {
-        self.handle_back_button(rl);
+    fn update_multiplayer(&mut self, rl: &RaylibHandle, sound_manager : &mut SoundManager) {
+        self.handle_back_button(rl, sound_manager);
         if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
+            sound_manager.play_sound_effect(SoundEffect::Click);
             self.current_menu = Menu::Title;
         }
     }
