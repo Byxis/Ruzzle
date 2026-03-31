@@ -5,6 +5,21 @@ use crate::menu::utils::{draw_text_center, draw_back_button};
 use raylib::prelude::Color;
 use raylib::prelude::RaylibDrawHandle;
 
+
+
+
+/// Draws the settings menu screen.
+///
+/// Displays game configuration options and settings. Players can adjust various
+/// game parameters such as graphics, audio, or other preferences through this screen.
+/// A "Retour" (back) button allows returning to the main menu without saving changes,
+/// or navigation to apply and save settings.
+///
+/// # Arguments
+/// * d : &mut RaylibDrawHandle, borrows it to draw graphical elements
+/// * config : &Config, used for screen dimensions and font sizes
+/// * back_button : &Button, the back button to return to the main menu
+/// * tex_back : &Option<Texture2D>, optional texture for the back button; if None, uses fallback styling
 pub fn draw_settings(
     d: &mut RaylibDrawHandle,
     config: &Config,

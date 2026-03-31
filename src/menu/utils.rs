@@ -203,12 +203,3 @@ pub fn draw_back_button(
     draw_interactive_button(d, rect, texture, label, font_size);
 }
 
-///Checks if a button is clicked based on mouse position and click state.
-/// 
-/// #Arguments
-/// * d : &mut RaylibDrawHandle, borrows it to draw the button
-/// * rect : Rectangle, the position and size of the back button
-pub fn is_button_clicked(d: &mut RaylibDrawHandle, rect: Rectangle) -> bool {
-    let mouse = d.get_mouse_position();
-    rect.check_collision_point_rec(mouse) && d.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT)
-}

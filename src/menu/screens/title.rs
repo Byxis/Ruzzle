@@ -3,6 +3,17 @@ use crate::menu::utils::draw_text_center;
 use raylib::prelude::Color;
 use raylib::prelude::RaylibDrawHandle;
 
+
+
+/// Draws the title menu screen.
+///
+/// Displays the "Ruzzle" game title and an instruction prompt centered on screen.
+/// This is the first screen shown when launching the game, waiting for the player
+/// to press Enter to proceed to the main menu.
+///
+/// # Arguments
+/// * d : &mut RaylibDrawHandle, borrows it to draw graphical elements
+/// * config : &Config, used for screen dimensions and font sizes
 pub fn draw_title(d: &mut RaylibDrawHandle, config: &Config) {
     draw_text_center(
         d,

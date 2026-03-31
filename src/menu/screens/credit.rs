@@ -5,6 +5,22 @@ use crate::menu::utils::{draw_text_center, draw_back_button};
 use raylib::prelude::Color;
 use raylib::prelude::RaylibDrawHandle;
 
+
+
+
+
+/// Draws the credits screen.
+///
+/// Displays the names and roles of all contributors who worked on the Ruzzle game project.
+/// Credits are typically shown in a scrolling or static list format, acknowledging
+/// developers, artists, designers, and other team members. A "Retour" (back) button
+/// allows players to return to the main menu from the credits.
+///
+/// # Arguments
+/// * d : &mut RaylibDrawHandle, borrows it to draw graphical elements
+/// * config : &Config, used for screen dimensions and font sizes
+/// * back_button : &Button, the back button to return to the main menu
+/// * tex_back : &Option<Texture2D>, optional texture for the back button; if None, uses fallback styling
 pub fn draw_credit(
     d: &mut RaylibDrawHandle,
     config: &Config,

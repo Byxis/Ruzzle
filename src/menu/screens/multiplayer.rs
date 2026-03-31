@@ -5,6 +5,18 @@ use crate::menu::utils::{draw_text_center, draw_back_button};
 use raylib::prelude::Color;
 use raylib::prelude::RaylibDrawHandle;
 
+
+/// Draws the multiplayer menu screen.
+///
+/// Displays information or options related to multiplayer gameplay mode.
+/// Includes a "Retour" (back) button to return to the main menu.
+/// This screen allows players to access or configure multiplayer features.
+///
+/// # Arguments
+/// * d : &mut RaylibDrawHandle, borrows it to draw graphical elements
+/// * config : &Config, used for screen dimensions and font sizes
+/// * back_button : &Button, the back button to return to the main menu
+/// * tex_back : &Option<Texture2D>, optional texture for the back button; if None, uses fallback styling
 pub fn draw_multiplayer(
     d: &mut RaylibDrawHandle,
     config: &Config,

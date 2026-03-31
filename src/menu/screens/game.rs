@@ -4,6 +4,19 @@ use crate::components::map::Map;
 use raylib::prelude::RaylibDrawHandle;
 
 
+/// Draws the active gameplay screen.
+///
+/// Renders the 3D game world with the crab player, map terrain, and all interactive elements.
+/// This is called every frame during active gameplay and uses the camera to render
+/// the scene from the appropriate viewpoint. Map collisions and object rendering are
+/// handled by the map's internal draw methods.
+///
+/// # Arguments
+/// * d : &mut RaylibDrawHandle, borrows it to draw graphical elements
+/// * crab : &mut Crab, the player entity (crabito) to be rendered
+/// * map : &Map, the game world containing terrain and interactive objects
+/// * camera : &Camera3D, the 3D camera defining the view of the scene
+/// * config : &Config, used for screen dimensions and configuration settings
   pub  fn draw_game(
     d: &mut RaylibDrawHandle,
     crab : &mut Crab,
