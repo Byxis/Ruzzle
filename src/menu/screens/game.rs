@@ -26,9 +26,13 @@ pub fn draw_game(
     level: &mut Level,
     assets: &Assets,
 ) {
-    let mut d3d = d.begin_mode3D(camera);
-    d3d.draw_grid(10, 1.0);
-    crab.draw(&mut d3d);
-    map.draw(&mut d3d);
-    level.draw(&mut d3d, assets);
+    {
+        level.handle_input_from_draw(d, camera); // ← sélection avec la bonne caméra
+
+        {
+            let mut d3d = d.begin_mode3D(camera); // ← un seul begin_mode3D
+            crab.draw(&mut d3d);
+            level.draw(&mut d3d, assets);
+        }
+    }
 }

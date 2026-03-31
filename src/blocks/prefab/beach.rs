@@ -25,7 +25,7 @@ pub fn create_level1(pos: Vector3) -> GroupBlock {
             BlockMaterial::sand(),
         ));
     }
-    GroupBlock::new(pos, groups, BlockType::Fixe)
+    GroupBlock::new(pos, groups, BlockType::All)
 }
 
 pub fn create_level2(pos: Vector3) -> GroupBlock {

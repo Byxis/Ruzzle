@@ -34,6 +34,10 @@ impl Level {
             _ => {}
         }
 
+        for group in groups.iter_mut() {
+            group.sync_colliders();
+        }
+
         Self {
             camera: Camera3D::perspective(
                 Vector3::new(0.0, 10.0, 10.0),
@@ -66,6 +70,26 @@ impl Level {
                 }
             }
         }
+    }
+
+    pub fn handle_input_from_draw(&mut self, rl: &RaylibHandle, camera: &Camera3D) {
+        let is_clicked = rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT);
+        let mut new_selected = self.selected_group;
+
+        for (i, group) in self.groups.iter_mut().enumerate() {
+            if group.is_mouse_over(rl, camera) {
+                group.set_temporary_color(Color::YELLOW);
+                if is_clicked {
+                    new_selected = Some(i);
+                }
+            } else if Some(i) == new_selected {
+                group.set_temporary_color(Color::ORANGE);
+            } else {
+                group.reset_color();
+            }
+        }
+
+        self.selected_group = new_selected;
     }
 
     /// Handles keyboard input to trigger 90-degree rotations on valid axes.
@@ -113,7 +137,7 @@ impl Level {
         if let Some(rot) = rotation_to_apply {
             group.is_rotating = true;
             group.rotation_progress = 0.0;
-            group.target_orientation = rot * group.orientation;
+            group.target_orientation = group.orientation * rot;
         }
     }
 
@@ -151,6 +175,8 @@ impl Level {
                             let t_axis = v.dot(axis) / axis_len_sq;
 
                             group.position = group.start_pos + (axis * t_axis.clamp(0.0, 1.0));
+
+                            group.sync_colliders();
                         }
                     }
                 }
@@ -171,6 +197,7 @@ impl Level {
                     } else {
                         group.position = group.start_pos;
                     }
+                    group.sync_colliders();
                 }
                 group.is_dragging = false;
                 group.drag_timer = 0.0;
@@ -184,7 +211,7 @@ impl Level {
     pub fn collides_with(&self, other: &Collider, pos: Vector3) -> bool {
         self.groups.iter().any(|g| {
             g.children.iter().any(|child| {
-                let world_pos = g.position + child.position;
+                let world_pos = child.collider.offset;
                 child.collider.collides_with(world_pos, other, pos)
             })
         })
@@ -193,7 +220,7 @@ impl Level {
     pub fn resolve_collisions(&self, collider: &Collider, mut pos: Vector3) -> Vector3 {
         for group in &self.groups {
             for child in &group.children {
-                let world_pos = group.position + child.position;
+                let world_pos = child.collider.offset;
                 if let Some(push) = collider.get_penetration_vector(pos, &child.collider, world_pos)
                 {
                     pos += push;
@@ -209,39 +236,13 @@ impl Level {
     }
 
     /// Draws the map using the given 3D drawing context.
-    pub fn draw(&mut self, rl: &mut RaylibDrawHandle, assets: &Assets) {
-        let is_clicked = rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT);
-        let camera = self.camera;
-
-        let mut new_selected = self.selected_group;
-
-        //let mut d = rl.begin_drawing(thread);
-        //d.clear_background(Color::RAYWHITE);
-
-        for (i, group) in self.groups.iter_mut().enumerate() {
-            if group.is_mouse_over(&rl, &camera) {
-                group.set_temporary_color(Color::YELLOW);
-                if is_clicked {
-                    new_selected = Some(i);
-                }
-            } else if Some(i) == new_selected {
-                group.set_temporary_color(Color::ORANGE);
-            } else {
-                group.reset_color();
+    pub fn draw(&self, d3d: &mut RaylibMode3D<RaylibDrawHandle>, assets: &Assets) {
+        // Plus de begin_mode3D ici, on reçoit directement le contexte 3D
+        for group in self.groups.iter() {
+            group.draw(d3d, assets);
+            if group.is_dragging {
+                group.draw_drag_guides(d3d);
             }
-        }
-
-        self.selected_group = new_selected;
-
-        {
-            let mut d3d = rl.begin_mode3D(&camera);
-            for group in self.groups.iter() {
-                group.draw(&mut d3d, assets);
-                if group.is_dragging {
-                    group.draw_drag_guides(&mut d3d);
-                }
-            }
-            d3d.draw_grid(10, 1.0);
         }
     }
 }
