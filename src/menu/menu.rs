@@ -113,11 +113,17 @@ pub struct MenuManager<'a> {
     pub hovered_button: SelectMenuHoveredButtons,
     pub current_level: Option<Level>,
     pub assets: Assets,
+    pub sound_manager: SoundManager<'a>,
     //pub egg_menu: Option<Texture2D>,
 }
 
 impl<'a> MenuManager<'a> {
-    pub fn new(config: &'a Config, rl: &mut RaylibHandle, thread: &RaylibThread) -> Self {
+    pub fn new(
+        config: &'a Config,
+        rl: &mut RaylibHandle,
+        thread: &RaylibThread,
+        sound_manager: SoundManager<'a>,
+    ) -> Self {
         let button_width = (config.screen_width as f32) * 0.2;
         let button_height = (config.screen_height as f32) * 0.1;
         let assets = Assets::new(rl, thread);
@@ -204,6 +210,7 @@ impl<'a> MenuManager<'a> {
             hovered_button: SelectMenuHoveredButtons::None,
             current_level: None,
             assets,
+            sound_manager,
             //egg_menu,
         }
     }
@@ -249,25 +256,24 @@ impl<'a> MenuManager<'a> {
         map: &Map,
         crab: &mut Crab,
         camera: &Camera3D,
-        mut sound_manager: &mut SoundManager<'a>,
     ) {
         self.frame_count += 1;
         match self.current_menu {
-            Menu::Title => self.update_title(rl,&mut sound_manager),
-            Menu::Select => self.update_select(rl,&mut sound_manager),
-            Menu::LevelSelection => self.update_level_selection(rl, thread,&mut sound_manager),
-            Menu::Game => self.update_game(rl, thread, map, crab, camera, &mut sound_manager),
-            Menu::Settings => self.update_settings(rl, &mut sound_manager),
-            Menu::Multiplayer => self.update_multiplayer(rl, &mut sound_manager),
+            Menu::Title => self.update_title(rl),
+            Menu::Select => self.update_select(rl),
+            Menu::LevelSelection => self.update_level_selection(rl, thread),
+            Menu::Game => self.update_game(rl, thread, map, crab, camera),
+            Menu::Settings => self.update_settings(rl),
+            Menu::Multiplayer => self.update_multiplayer(rl),
             Menu::Loading => self.update_loading(rl),
-            Menu::Credit => self.update_credit(rl, sound_manager),
+            Menu::Credit => self.update_credit(rl),
         }
     }
 
     /// Update fonctions
-    fn update_title(&mut self, rl: &RaylibHandle, sound_manager: &mut SoundManager<'a>) {
+    fn update_title(&mut self, rl: &RaylibHandle) {
         if rl.is_key_pressed(KeyboardKey::KEY_ENTER) {
-            sound_manager.play_sound_effect(SoundEffect::Click);
+            self.sound_manager.play_sound_effect(SoundEffect::Click);
             self.current_menu = Menu::Loading;
             self.frame_count = 0;
         }
@@ -279,14 +285,14 @@ impl<'a> MenuManager<'a> {
     /// # Arguments
     /// * rl - raylib handler, handle the raylib librairie
     /// #TODO : make it more abstract to be able to use it for the settings menu and other menu with buttons
-    fn update_select(&mut self, rl: &RaylibHandle, sound_manager: &mut SoundManager<'a>) {
+    fn update_select(&mut self, rl: &RaylibHandle) {
         let mouse_pos = rl.get_mouse_position();
         self.hovered_button = SelectMenuHoveredButtons::None;
         for button in &self.buttons {
             if button.rectangle.check_collision_point_rec(mouse_pos) {
                 self.hovered_button = button.id;
                 if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
-                    sound_manager.play_sound_effect(SoundEffect::Click);
+                    self.sound_manager.play_sound_effect(SoundEffect::Click);
                     match button.id {
                         SelectMenuHoveredButtons::Game => self.current_menu = Menu::Game,
                         SelectMenuHoveredButtons::LevelSelection => {
@@ -311,10 +317,9 @@ impl<'a> MenuManager<'a> {
         map: &Map,
         crab: &mut Crab,
         camera: &Camera3D,
-        sound_manager: &mut SoundManager<'a>,
     ) {
         if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
-            sound_manager.play_sound_effect(SoundEffect::Click);
+            self.sound_manager.play_sound_effect(SoundEffect::Click);
             self.current_menu = Menu::Title;
         }
 
@@ -339,14 +344,14 @@ impl<'a> MenuManager<'a> {
         crab.teleport(t);
     }
 
-    fn update_level_selection(&mut self, rl: &mut RaylibHandle, thread: &RaylibThread, sound_manager: &mut SoundManager<'a>) {
-        self.handle_back_button(rl, sound_manager);
+    fn update_level_selection(&mut self, rl: &mut RaylibHandle, thread: &RaylibThread) {
+        self.handle_back_button(rl);
 
         let mouse_pos = rl.get_mouse_position();
         for (i, button) in self.level_buttons.iter().enumerate() {
             if button.rectangle.check_collision_point_rec(mouse_pos) {
                 if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
-                    sound_manager.play_sound_effect(SoundEffect::Click);
+                    self.sound_manager.play_sound_effect(SoundEffect::Click);
                     self.current_level = Some(Level::new((i + 1) as i8));
                     self.current_menu = Menu::Game;
                 }
@@ -354,18 +359,18 @@ impl<'a> MenuManager<'a> {
         }
     }
 
-    fn update_multiplayer(&mut self, rl: &RaylibHandle, sound_manager: &mut SoundManager<'a>) {
-        self.handle_back_button(rl, sound_manager);
+    fn update_multiplayer(&mut self, rl: &RaylibHandle) {
+        self.handle_back_button(rl);
         if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
-            sound_manager.play_sound_effect(SoundEffect::Click);
+            self.sound_manager.play_sound_effect(SoundEffect::Click);
             self.current_menu = Menu::Title;
         }
     }
 
-    fn update_settings(&mut self, rl: &RaylibHandle, sound_manager: &mut SoundManager<'a>) {
-        self.handle_back_button(rl, sound_manager);
+    fn update_settings(&mut self, rl: &RaylibHandle) {
+        self.handle_back_button(rl);
         if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
-            sound_manager.play_sound_effect(SoundEffect::Click);
+            self.sound_manager.play_sound_effect(SoundEffect::Click);
             self.current_menu = Menu::Title;
         }
     }
@@ -377,10 +382,10 @@ impl<'a> MenuManager<'a> {
         }
     }
 
-    fn update_credit(&mut self, rl: &RaylibHandle, sound_manager: &mut SoundManager<'a>) {
-        self.handle_back_button(rl, sound_manager);
+    fn update_credit(&mut self, rl: &RaylibHandle) {
+        self.handle_back_button(rl);
         if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
-            sound_manager.play_sound_effect(SoundEffect::Click);
+            self.sound_manager.play_sound_effect(SoundEffect::Click);
             self.current_menu = Menu::Title;
         }
     }
@@ -391,7 +396,7 @@ impl<'a> MenuManager<'a> {
     /// * rl - raylib handler (mouse position + click)
     /// * sound_manager - sound manager for playing sound effects
 
-    fn handle_back_button(&mut self, rl: &RaylibHandle,sound_manager: &mut SoundManager<'a>) {
+    fn handle_back_button(&mut self, rl: &RaylibHandle) {
         let mouse_pos = rl.get_mouse_position();
         if self
             .back_button
@@ -399,7 +404,7 @@ impl<'a> MenuManager<'a> {
             .check_collision_point_rec(mouse_pos)
         {
             if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
-                sound_manager.play_sound_effect(SoundEffect::Click);
+                self.sound_manager.play_sound_effect(SoundEffect::Click);
                 self.current_menu = Menu::Select;
             }
         }
