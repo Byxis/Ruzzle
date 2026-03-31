@@ -8,7 +8,7 @@ use crate::menu::utils::{
     draw_back_button, draw_button, draw_text_center, draw_texture_button, draw_texture_contain,
 };
 
-use crate::menu::screens::{draw_title, draw_select, draw_level_selection, draw_multiplayer};
+use crate::menu::screens::{draw_title, draw_select, draw_level_selection, draw_multiplayer, draw_credit};
 
 /// Enum for the differents states displayed currently by the application
 pub enum Menu {
@@ -375,7 +375,7 @@ impl MenuManager {
             Menu::Settings => self.draw_settings(d),
             Menu::Game => self.draw_game(d, crab, map, camera),
             Menu::Loading => self.draw_loading(d),
-            Menu::Credit => self.draw_credit(d),
+            Menu::Credit => draw_credit(d, &self.config, &self.back_button, &self.tex_back),
         }
     }
     fn draw_settings(&self, d: &mut RaylibDrawHandle) {
