@@ -5,7 +5,6 @@ use crate::menu::menu::Assets;
 use raylib::ffi;
 use raylib::prelude::*;
 
-// Permet d'activer l'autorisation de la comparaison entre valeurs
 #[derive(PartialEq, Clone, Copy)]
 pub enum BlockType {
     Fixe,
@@ -15,7 +14,7 @@ pub enum BlockType {
     All,
 }
 
-// Block avec sa fonction d'implementation
+/// Represents a single block unit with its properties and physics collider.
 pub struct BlockPrefab {
     pub position: crate::Vector3,
     pub size: crate::Vector3,
@@ -25,8 +24,9 @@ pub struct BlockPrefab {
     pub collider: Collider,
 }
 
-// Implémentation pour un block
 impl BlockPrefab {
+    /// Creates a new `BlockPrefab` with the specified position, type, and material.
+    /// Defaults to a 1x1x1 size if none is provided.
     pub fn new(
         pos: Vector3,
         size: Option<Vector3>,
@@ -45,6 +45,7 @@ impl BlockPrefab {
     }
 }
 
+/// A logical group of one or more blocks that can rotate or move as a single entity.
 pub struct GroupBlock {
     pub position: Vector3,
     pub orientation: Quaternion,
@@ -61,8 +62,8 @@ pub struct GroupBlock {
     pub drag_timer: f32,
 }
 
-// Implémentation pour un groupe de block(s)
 impl GroupBlock {
+    /// Creates a new `GroupBlock` from a list of existing block prefabs.
     pub fn new(
         pos: Vector3,
         children: Vec<blocks::modele::BlockPrefab>,
@@ -72,14 +73,12 @@ impl GroupBlock {
             position: pos,
             orientation: Quaternion::identity(),
             target_orientation: Quaternion::identity(),
-            children,   // Liste des blocks
-            block_type, // Type de groupe
+            children,
+            block_type,
 
-            // Rotation
             is_rotating: false,
             rotation_progress: 1.0,
 
-            // Drag
             start_pos: pos,
             end_pos: pos,
             is_dragging: false,
@@ -87,38 +86,28 @@ impl GroupBlock {
         }
     }
 
-    /*  Fonction pour créer un block unique avec:
-     * [pos] -> Vector3 : Position du block
-     * [block_type] -> BlockType : Type du block (Fixe, RotationH)
-     * [material] -> Materiel du block (sand, grass)
-     */
+    /// Helper to create a `GroupBlock` containing only one block at the given position.
     pub fn single(pos: Vector3, block_type: BlockType, material: BlockMaterial) -> Self {
         let child = BlockPrefab::new(Vector3::ZERO, None, block_type.clone(), material);
         Self::new(pos, vec![child], block_type)
     }
 
-    /* Fonction qui applique la couleur au groupe
-     * [color] -> Color : Couleur du block
-     */
+    /// Applies a temporary highlight color to all blocks in the group.
     pub fn set_temporary_color(&mut self, color: Color) {
         for child in self.children.iter_mut() {
             child.temp_color = Some(color);
         }
     }
 
-    // Fonction qui change la couleur du block a celui de départ
+    /// Removes the temporary highlight and restores the blocks' original material colors.
     pub fn reset_color(&mut self) {
         for child in self.children.iter_mut() {
             child.temp_color = None;
         }
     }
 
-    /* Fonction qui dessine tous les cubes du groupe à chaque appel
-     * [d] -> &mut RaylibMode3D<RaylibDrawHandle> : Reçoit le contexte de dessin 3D actif pour envoyer les ordres de rendu
-     * [assets] -> &Assets : permet de récupérer la texture des assets
-     */
+    /// Renders all blocks in the group, applying current rotation and translation matrices.
     pub fn draw(&self, d: &mut RaylibMode3D<RaylibDrawHandle>, assets: &Assets) {
-        // Calcul de l'orientation du groupe
         let animated_orientation = self
             .orientation
             .slerp(self.target_orientation, self.rotation_progress);
@@ -129,12 +118,10 @@ impl GroupBlock {
             mat.m10, mat.m14, mat.m3, mat.m7, mat.m11, mat.m15,
         ];
 
-        // Unsafe car [ffi] est écrit en C donc Rust ne peut plus garantir la sécurité de la mémoire
         unsafe {
             raylib::ffi::rlPushMatrix();
             raylib::ffi::rlTranslatef(self.position.x, self.position.y, self.position.z);
 
-            // On applique la rotation du groupe
             raylib::ffi::rlMultMatrixf(matrix_array.as_ptr());
 
             for child in &self.children {
@@ -167,10 +154,7 @@ impl GroupBlock {
         }
     }
 
-    /* Fonction qui est appelée lorsque la souris est sur le cube
-     * [rl] -> &RaylibHandle : Représente l'accès direct au moteur de jeu pour lire les entrées
-     * [camera] -> &Camera3D : permet d'avoir accès à la position de cubes par rapport a la caméra
-     */
+    /// Checks if the mouse cursor is currently hovering over any block in this group.
     pub fn is_mouse_over(&self, rl: &RaylibHandle, camera: &Camera3D) -> bool {
         let ray = rl.get_screen_to_world_ray(rl.get_mouse_position(), camera);
 
@@ -186,12 +170,10 @@ impl GroupBlock {
         false
     }
 
-    /* Fonction qui met à jour les animatiosn du cubes
-     * [dt] -> f32 : C'est le temps écoulé depuis la dernière image
-     */
+    /// Updates the group's rotation animation based on the delta time.
     pub fn update_animation(&mut self, dt: f32) {
         if self.is_rotating {
-            self.rotation_progress += 3.0 * dt; // Vitesse de rotation
+            self.rotation_progress += 3.0 * dt;
             if self.rotation_progress >= 1.0 {
                 self.rotation_progress = 1.0;
                 self.orientation = self.target_orientation;
@@ -201,15 +183,14 @@ impl GroupBlock {
         }
     }
 
+    /// Synchronizes the position of all block colliders with their current world positions.
     pub fn sync_colliders(&mut self) {
         for child in self.children.iter_mut() {
-            child.collider.offset = self.position + child.position; // world pos via offset
+            child.collider.offset = self.position + child.position;
         }
     }
 
-    /* Fonctionn qui dessine le drag guide
-     * [d] -> &mut RaylibMode3D<RaylibDrawHandle> : Reçoit le contexte de dessin 3D actif pour envoyer les ordres de rendu
-     */
+    /// Renders visual indicators for the movement path and destination when a group is being dragged.
     pub fn draw_drag_guides(&self, d: &mut RaylibMode3D<RaylibDrawHandle>) {
         if !self.is_dragging {
             return;
@@ -227,7 +208,6 @@ impl GroupBlock {
         unsafe {
             raylib::ffi::rlPushMatrix();
             raylib::ffi::rlTranslatef(self.end_pos.x, self.end_pos.y, self.end_pos.z);
-            // On applique la rotation actuelle pour le fantôme
             let mat = self.orientation.to_matrix();
 
             let matrix_array: [f32; 16] = [
@@ -249,7 +229,6 @@ impl GroupBlock {
             raylib::ffi::rlPopMatrix();
         }
 
-        // Dessine les petits points de trajectoire
         let segments = 10;
         for i in 0..=segments {
             let t = i as f32 / segments as f32;
@@ -258,14 +237,14 @@ impl GroupBlock {
         }
     }
 
-    // Si un cube à le drag, alors on peut lui rajouter une position de fin via cette fonction
+    /// Sets the destination position for groups that support dragging.
     pub fn with_end_pos(mut self, end: Vector3) -> Self {
         self.end_pos = end;
         self
     }
 }
 
-/* Fonction qui permet d'instancier la texture sur un cube */
+/// Custom renderer that applies a 2D texture to a 3D cube with correct UV mapping.
 fn draw_cube_with_texture(
     tex: &Texture2D,
     position: Vector3,
@@ -274,11 +253,9 @@ fn draw_cube_with_texture(
     length: f32,
     color: Color,
 ) {
-    // demi-dimensions pour centrer le cube sur sa position
     let (x, y, z) = (position.x, position.y, position.z);
     let (w, h, l) = (width / 2.0, height / 2.0, length / 2.0);
 
-    // les 8 coins du cube, nommés par position (avant/arrière, haut/bas, gauche/droite)
     let avant_bas_gauche = (x - w, y - h, z + l);
     let avant_bas_droit = (x + w, y - h, z + l);
     let avant_haut_gauche = (x - w, y + h, z + l);
@@ -294,52 +271,49 @@ fn draw_cube_with_texture(
         ffi::rlBegin(ffi::RL_QUADS as i32);
         ffi::rlColor4ub(color.r, color.g, color.b, color.a);
 
-        // chaque face = 4 sommets dans le sens anti-horaire vu de l'extérieur
-        // les coordonnées UV vont de (0,0) en haut-gauche à (1,1) en bas-droite
-
         draw_face(
             avant_bas_gauche,
             avant_bas_droit,
             avant_haut_droit,
             avant_haut_gauche,
-        ); // avant
+        ); // front
         draw_face(
             arr_bas_droit,
             arr_bas_gauche,
             arr_haut_gauche,
             arr_haut_droit,
-        ); // arrière
+        ); // back
         draw_face(
             arr_haut_gauche,
             avant_haut_gauche,
             avant_haut_droit,
             arr_haut_droit,
-        ); // dessus
+        ); // up
         draw_face(
             arr_bas_droit,
             avant_bas_droit,
             avant_bas_gauche,
             arr_bas_gauche,
-        ); // dessous
+        ); // down
         draw_face(
             avant_bas_droit,
             arr_bas_droit,
             arr_haut_droit,
             avant_haut_droit,
-        ); // droite
+        ); // right
         draw_face(
             arr_bas_gauche,
             avant_bas_gauche,
             avant_haut_gauche,
             arr_haut_gauche,
-        ); // gauche
+        ); // left
 
         ffi::rlEnd();
         ffi::rlSetTexture(0);
     }
 }
 
-// dessine un quad avec les UV aux 4 coins standard
+/// Draws a single quad face using vertex positions and standard UV coordinates.
 unsafe fn draw_face(
     bas_gauche: (f32, f32, f32),
     bas_droit: (f32, f32, f32),

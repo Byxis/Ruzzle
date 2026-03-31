@@ -4,6 +4,16 @@ use crate::components::collider::Collider;
 use crate::menu::menu::Assets;
 use raylib::prelude::*;
 
+/// Represents a 3D level with a group of blocks.
+///
+/// # Examples
+///
+/// ```
+/// use raylib::prelude::*;
+/// use crate::levels::level::Level;
+///
+/// self.current_level = Some(Level::new((i + 1) as i8));
+/// ```
 pub struct Level {
     pub groups: Vec<GroupBlock>,
     pub camera: Camera3D,
@@ -11,7 +21,8 @@ pub struct Level {
 }
 
 impl Level {
-    /// Initialise un niveau avec une configuration par défaut (ici celle du Level1)
+    /// Initialize a level
+    /// To add a new level, just add the index and the group of blocks wanted
     pub fn new(index: i8) -> Self {
         let mut groups = Vec::new();
 
@@ -40,24 +51,23 @@ impl Level {
         }
     }
 
+    /// Updates the 3D placement of all the blocks of the level
+    /// When it's rotating, dragging, or still
     pub fn update(&mut self, rl: &RaylibHandle) {
         let dt = rl.get_frame_time();
 
-        // 1. Mise à jour des animations pour tous les groupes
         for group in self.groups.iter_mut() {
             group.update_animation(dt);
         }
 
-        // 2. Gestion du groupe sélectionné
         if let Some(index) = self.selected_group {
-            let camera = self.camera; // Copie de la camera (Camera3D implémente Copy)
+            let camera = self.camera;
 
-            // On récupère le groupe sélectionné
             if let Some(group) = self.groups.get_mut(index) {
                 if !group.is_rotating {
                     let mut rotation_to_apply = None;
 
-                    // --- Logique de Drag ---
+                    // Dragging Logic
                     if group.block_type == BlockType::Drag {
                         if rl.is_mouse_button_down(MouseButton::MOUSE_BUTTON_LEFT) {
                             if !group.is_dragging {
@@ -93,7 +103,6 @@ impl Level {
                                 }
                             }
                         } else {
-                            // Relâchement du drag
                             if group.is_dragging {
                                 let axis = group.end_pos - group.start_pos;
                                 let current_v = group.position - group.start_pos;
@@ -117,8 +126,7 @@ impl Level {
                         }
                     }
 
-                    // --- Logique de Rotation ---
-                    // Note : On vérifie à nouveau car la sélection a pu être annulée par le drag
+                    // Rotation Logic
                     if self.selected_group.is_some() {
                         let is_h_type = group.block_type == BlockType::All
                             || group.block_type == BlockType::RotationH;
@@ -166,6 +174,8 @@ impl Level {
         }
     }
 
+    /// Checks if a given collider at a specific position is in collision with any block in the level
+    /// Returns `true` if the map collides with the given collider at the given position.
     pub fn collides_with(&self, other: &Collider, pos: Vector3) -> bool {
         self.groups.iter().any(|g| {
             g.children.iter().any(|child| {
@@ -174,7 +184,7 @@ impl Level {
             })
         })
     }
-
+    /// Resolves collisions for the given collider at the given position, returning the new position
     pub fn resolve_collisions(&self, collider: &Collider, mut pos: Vector3) -> Vector3 {
         for group in &self.groups {
             for child in &group.children {
@@ -188,18 +198,18 @@ impl Level {
         pos
     }
 
+    /// Returns `true` if the given collider is grounded (touching a map collider below).
     pub fn is_grounded(&self, collider: &Collider, pos: Vector3) -> bool {
         self.collides_with(collider, pos - Vector3::new(0.0, 0.05, 0.0))
     }
 
+    /// Draws the map using the given 3D drawing context.
     pub fn draw(&mut self, rl: &mut RaylibHandle, thread: &RaylibThread, assets: &Assets) {
         let is_clicked = rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT);
         let camera = self.camera;
 
-        // Gestion du survol et de la sélection visuelle
         let mut new_selected = self.selected_group;
 
-        // On commence le dessin pour pouvoir utiliser la RaylibDrawHandle
         let mut d = rl.begin_drawing(thread);
         d.clear_background(Color::RAYWHITE);
 
@@ -218,7 +228,6 @@ impl Level {
 
         self.selected_group = new_selected;
 
-        // Rendu 3D
         {
             let mut d3d = d.begin_mode3D(&camera);
             for group in self.groups.iter() {
