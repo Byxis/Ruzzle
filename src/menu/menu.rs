@@ -8,7 +8,7 @@ use crate::menu::utils::{
     draw_back_button, draw_button, draw_text_center, draw_texture_button, draw_texture_contain,
 };
 
-use crate::menu::screens::{draw_title, draw_select};
+use crate::menu::screens::{draw_title, draw_select, draw_level_selection};
 
 /// Enum for the differents states displayed currently by the application
 pub enum Menu {
@@ -370,7 +370,7 @@ impl MenuManager {
         match self.current_menu {
             Menu::Title => draw_title(d, &self.config),
             Menu::Select => draw_select(d, &self.config, &self.buttons),
-            Menu::LevelSelection => self.draw_level_selection(d),
+            Menu::LevelSelection => draw_level_selection(d, &self.config, &self.level_buttons, &self.tex_back, &self.back_button),
             Menu::Multiplayer => self.draw_multiplayer(d),
             Menu::Settings => self.draw_settings(d),
             Menu::Game => self.draw_game(d, crab, map, camera),
@@ -379,64 +379,37 @@ impl MenuManager {
         }
     }
 
-    // fn draw_select(&self, d: &mut RaylibDrawHandle) {
-    //     let color_hovered = Color::DARKORANGE;
-    //     let color_button = Color::DARKGRAY;
-
+    // fn draw_level_selection(&self, d: &mut RaylibDrawHandle) {
     //     draw_text_center(
     //         d,
-    //         "RUZZLE",
+    //         "Niveaux",
     //         self.config.screen_width,
-    //         (self.config.screen_height / 10) as i32,
-    //         self.config.font_size_h1,
+    //         (self.config.screen_height / 7) as i32,
+    //         self.config.font_size_h2,
     //         Color::WHITE,
     //     );
 
-    //     for button in &self.buttons {
-    //         let is_hovered = self.hovered_button == button.id;
+    //     // Afficher les boutons de niveaux
+    //     for button in &self.level_buttons {
     //         draw_button(
     //             d,
     //             button.rectangle,
     //             &button.label,
-    //             color_hovered,
-    //             color_button,
-    //             is_hovered,
-    //             self.config.font_size_h2,
+    //             Color::DARKORANGE,
+    //             Color::DARKGRAY,
+    //             false,
+    //             self.config.font_size_h2 / 2,
     //         );
     //     }
+
+    //     draw_back_button(
+    //         d,
+    //         self.back_button.rectangle,
+    //         &self.tex_back,
+    //         &self.back_button.label,
+    //         self.config.font_size_h2 / 3,
+    //     );
     // }
-
-    fn draw_level_selection(&self, d: &mut RaylibDrawHandle) {
-        draw_text_center(
-            d,
-            "Niveaux",
-            self.config.screen_width,
-            (self.config.screen_height / 7) as i32,
-            self.config.font_size_h2,
-            Color::WHITE,
-        );
-
-        // Afficher les boutons de niveaux
-        for button in &self.level_buttons {
-            draw_button(
-                d,
-                button.rectangle,
-                &button.label,
-                Color::DARKORANGE,
-                Color::DARKGRAY,
-                false,
-                self.config.font_size_h2 / 2,
-            );
-        }
-
-        draw_back_button(
-            d,
-            self.back_button.rectangle,
-            &self.tex_back,
-            &self.back_button.label,
-            self.config.font_size_h2 / 3,
-        );
-    }
 
     fn draw_multiplayer(&self, d: &mut RaylibDrawHandle) {
         draw_text_center(
