@@ -3,7 +3,7 @@ use crate::room::player::Player;
 pub enum RoomStatus {
     WaitingRoom,
     InGame(i32), // the number represents the level
-    Loading
+    Loading,
 }
 
 pub struct Room {
@@ -61,22 +61,20 @@ impl Room {
 
     pub fn player_count(&self) -> usize {
         let mut count = 0;
-        if self.player1.is_some() { count += 1; }
-        if self.player2.is_some() { count += 1; }
+        if self.player1.is_some() {
+            count += 1;
+        }
+        if self.player2.is_some() {
+            count += 1;
+        }
         count
     }
 
     pub fn load_new_level(&mut self, level_id: i32) {
         match self.status {
-            | RoomStatus::WaitingRoom => {
-                self.status = RoomStatus::InGame(level_id)
-            },
-            | RoomStatus::InGame(_) => {
-                self.status = RoomStatus::InGame(level_id)
-            },
-            | RoomStatus::Loading => {
-                self.status = RoomStatus::InGame(level_id)
-            }
+            RoomStatus::WaitingRoom => self.status = RoomStatus::InGame(level_id),
+            RoomStatus::InGame(_) => self.status = RoomStatus::InGame(level_id),
+            RoomStatus::Loading => self.status = RoomStatus::InGame(level_id),
         }
     }
 }

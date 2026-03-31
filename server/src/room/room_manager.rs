@@ -1,11 +1,11 @@
+use crate::room::player::{Player, Position};
 use crate::room::room::Room;
-use crate::room::player::Player;
-use std::collections::HashMap;
 use renet::ClientId;
+use std::collections::HashMap;
 
 pub struct RoomManager {
     rooms: HashMap<u64, Room>,
-    client_to_room: HashMap<ClientId, u64>,  // Track which room each client is in
+    client_to_room: HashMap<ClientId, u64>, // Track which room each client is in
     next_room_id: u64,
 }
 
@@ -26,21 +26,18 @@ impl RoomManager {
         room_id
     }
 
-    /// Find or create a room with space
-    pub fn find_or_create_available_room(&mut self) -> u64 {
-        for (room_id, room) in &self.rooms {
-            if !room.is_full() {
-                return *room_id;
-            }
-        }
-        self.create_room()
-    }
-
     /// Add a player to a room
-    pub fn add_player_to_room(&mut self, client_id: ClientId, player: Player, room_id: u64) -> Result<(), String> {
-        let room = self.rooms.get_mut(&room_id)
+    pub fn add_player_to_room(
+        &mut self,
+        client_id: ClientId,
+        player: Player,
+        room_id: u64,
+    ) -> Result<(), String> {
+        let room = self
+            .rooms
+            .get_mut(&room_id)
             .ok_or("Room not found".to_string())?;
-        
+
         room.add_player(player)?;
         self.client_to_room.insert(client_id, room_id);
         Ok(())
@@ -48,19 +45,23 @@ impl RoomManager {
 
     /// Remove player from room and clean up empty rooms
     pub fn remove_player(&mut self, client_id: ClientId) -> Result<u64, String> {
-        let room_id = self.client_to_room.remove(&client_id)
+        let room_id = self
+            .client_to_room
+            .remove(&client_id)
             .ok_or("Client not in any room".to_string())?;
-        
-        let room = self.rooms.get_mut(&room_id)
+
+        let room = self
+            .rooms
+            .get_mut(&room_id)
             .ok_or("Room not found".to_string())?;
-        
+
         room.remove_player(client_id as i32)?;
-        
+
         // Clean up empty rooms
         if room.is_empty() {
             self.rooms.remove(&room_id);
         }
-        
+
         Ok(room_id)
     }
 
@@ -72,7 +73,7 @@ impl RoomManager {
                 .iter()
                 .filter(|(cid, rid)| *rid == room_id && *cid != &client_id)
                 .map(|(cid, _)| *cid)
-                .collect()
+                .collect(),
         )
     }
 
@@ -89,5 +90,34 @@ impl RoomManager {
     /// Get room ID for a client
     pub fn get_client_room(&self, client_id: ClientId) -> Option<u64> {
         self.client_to_room.get(&client_id).copied()
+    }
+
+    pub fn update_player_position(
+        &mut self,
+        client_id: ClientId,
+        new_position: Position,
+    ) -> Result<(), String> {
+        let room_id = self
+            .get_client_room(client_id)
+            .ok_or("Client not in any room".to_string())?;
+
+        let room = self
+            .get_room_mut(room_id)
+            .ok_or("Room not found".to_string())?;
+
+        if let Some(player) = &mut room.player1 {
+            if player.id == client_id as u64 {
+                player.update_position(new_position);
+                return Ok(());
+            }
+        }
+        if let Some(player) = &mut room.player2 {
+            if player.id == client_id as u64 {
+                player.update_position(new_position);
+                return Ok(());
+            }
+        }
+
+        Err("Player not found in room".to_string())
     }
 }
