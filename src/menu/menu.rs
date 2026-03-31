@@ -244,15 +244,15 @@ impl MenuManager {
         }
     }
 
-    ///Draw the graphical elements
-    ///
-    /// # Arguments :
-    /// * d : rayLIbDrawHandle, borrows it to draw graphical elemetns
-    /// * c : crab : Crab (alexei's crabito)
-    /// * camera : Camera3D (not used for now)
+    /// Returns true if the game is currently in the Game state
+    pub fn is_in_game(&self) -> bool {
+        matches!(self.current_menu, Menu::Game)
+    }
+
+    /// Draw non-game menus (title, select, settings, etc.)
     pub fn draw(
         &self,
-        mut d: &mut RaylibDrawHandle,
+        d: &mut RaylibDrawHandle,
         map: &Map,
         crab: &mut Crab,
         camera: &Camera3D,
@@ -264,7 +264,7 @@ impl MenuManager {
             Menu::Title => self.draw_title(d),
             Menu::Select => self.draw_select(d),
             Menu::Settings => self.draw_settings(d),
-            Menu::Game => self.draw_game(d, crab, map, camera, shader),
+            Menu::Game => {} // Handled separately in main.rs with post-processing
             Menu::Loading => self.draw_loading(d),
             Menu::Credit => self.draw_credit(d),
         }
@@ -343,7 +343,8 @@ impl MenuManager {
         );
     }
 
-    fn draw_game(
+    /// Draw only the 3D game scene (goes through post-processing)
+    pub fn draw_game_scene(
         &self,
         d: &mut RaylibDrawHandle,
         crab: &mut Crab,
@@ -358,7 +359,10 @@ impl MenuManager {
             crab.draw(&mut s);
             map.draw(&mut s);
         }
+    }
 
+    /// Draw the game HUD overlay (drawn AFTER post-processing)
+    pub fn draw_game_hud(&self, d: &mut RaylibDrawHandle, crab: &Crab) {
         let coordonnees = format!(
             "({:.2}, {:.2}, {:.2})",
             crab.transform.position.x, crab.transform.position.y, crab.transform.position.z
