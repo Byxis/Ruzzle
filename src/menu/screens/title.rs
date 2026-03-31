@@ -3,8 +3,6 @@ use crate::menu::utils::draw_text_center;
 use raylib::prelude::Color;
 use raylib::prelude::RaylibDrawHandle;
 
-
-
 /// Draws the title menu screen.
 ///
 /// Displays the "Ruzzle" game title and an instruction prompt centered on screen.

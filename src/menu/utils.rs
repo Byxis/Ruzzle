@@ -176,9 +176,6 @@ pub fn draw_interactive_button(
     }
 }
 
-
-
-
 /// Draws a "back" button that can display either a texture or fallback to a styled rectangle+text.
 ///
 /// This is a convenience function for menus with a return/back button. It automatically
@@ -202,4 +199,3 @@ pub fn draw_back_button(
 ) {
     draw_interactive_button(d, rect, texture, label, font_size);
 }
-

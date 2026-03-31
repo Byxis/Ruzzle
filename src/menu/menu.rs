@@ -4,11 +4,12 @@ use crate::crab::crab::Crab;
 use raylib::prelude::*;
 use raylib::{ffi::KeyboardKey, RaylibHandle};
 
-use crate::menu::utils::{
-    draw_texture_contain,
-};
+use crate::menu::utils::draw_texture_contain;
 
-use crate::menu::screens::{draw_title, draw_loading, draw_game,  draw_select, draw_level_selection,  draw_multiplayer, draw_settings, draw_credit};
+use crate::menu::screens::{
+    draw_credit, draw_game, draw_level_selection, draw_loading, draw_multiplayer, draw_select,
+    draw_settings, draw_title,
+};
 
 /// Enum for the differents states displayed currently by the application
 pub enum Menu {
@@ -370,8 +371,16 @@ impl MenuManager {
         match self.current_menu {
             Menu::Title => draw_title(d, &self.config),
             Menu::Select => draw_select(d, &self.config, &self.buttons),
-            Menu::LevelSelection => draw_level_selection(d, &self.config, &self.level_buttons, &self.tex_back, &self.back_button),
-            Menu::Multiplayer => draw_multiplayer(d, &self.config, &self.back_button, &self.tex_back),
+            Menu::LevelSelection => draw_level_selection(
+                d,
+                &self.config,
+                &self.level_buttons,
+                &self.tex_back,
+                &self.back_button,
+            ),
+            Menu::Multiplayer => {
+                draw_multiplayer(d, &self.config, &self.back_button, &self.tex_back)
+            }
             Menu::Settings => draw_settings(d, &self.config, &self.back_button, &self.tex_back),
             Menu::Game => draw_game(d, crab, map, camera),
             Menu::Loading => draw_loading(d, &self.config, &self.bg_logo),

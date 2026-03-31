@@ -15,12 +15,7 @@ use raylib::prelude::RaylibDrawHandle;
 /// * d : &mut RaylibDrawHandle, borrows it to draw graphical elements
 /// * config : &Config, used for screen dimensions and font sizes
 /// * buttons : &[Button], the list of interactive buttons (Game, LevelSelection, Settings, etc.)
-pub fn draw_select(
-    d: &mut RaylibDrawHandle,
-    config: &Config,
-    buttons: &[Button],
-) {
-
+pub fn draw_select(d: &mut RaylibDrawHandle, config: &Config, buttons: &[Button]) {
     draw_text_center(
         d,
         "RUZZLE",

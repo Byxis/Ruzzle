@@ -1,13 +1,9 @@
-use raylib::prelude::*;
-use crate::config::{Config};
+use crate::config::Config;
 use crate::menu::menu::Button;
 use crate::menu::utils::{draw_back_button, draw_interactive_button, draw_text_center};
 use raylib::prelude::Color;
 use raylib::prelude::RaylibDrawHandle;
-
-
-
-
+use raylib::prelude::*;
 
 /// Draws the level selection screen.
 ///
@@ -22,32 +18,38 @@ use raylib::prelude::RaylibDrawHandle;
 /// * level_buttons : &[Button], the list of level selection buttons
 /// * back_button : &Button, the back button to return to the main menu
 /// * tex_back : &Option<Texture2D>, optional texture for the back button; if None, uses fallback styling
-  pub  fn draw_level_selection(
-    d: &mut RaylibDrawHandle, 
+pub fn draw_level_selection(
+    d: &mut RaylibDrawHandle,
     config: &Config,
     level_buttons: &[Button],
-    texture : &Option<Texture2D>,
-    back_button : &Button
+    texture: &Option<Texture2D>,
+    back_button: &Button,
 ) {
-        draw_text_center(
+    draw_text_center(
+        d,
+        "Niveaux",
+        config.screen_width,
+        (config.screen_height / 7) as i32,
+        config.font_size_h2,
+        Color::WHITE,
+    );
+
+    // Draw the buttons for the levels
+    for button in level_buttons {
+        draw_interactive_button(
             d,
-            "Niveaux",
-            config.screen_width,
-            (config.screen_height / 7) as i32,
+            button.rectangle,
+            &None,
+            &button.label,
             config.font_size_h2,
-            Color::WHITE,
-        );
-
-        // Draw the buttons for the levels
-        for button in level_buttons {
-            draw_interactive_button(d, button.rectangle, &None, &button.label, config.font_size_h2);
-        }
-
-        draw_back_button(
-            d,
-            back_button.rectangle,
-            texture,
-            &back_button.label,
-            config.font_size_h2 / 3,
         );
     }
+
+    draw_back_button(
+        d,
+        back_button.rectangle,
+        texture,
+        &back_button.label,
+        config.font_size_h2 / 3,
+    );
+}
