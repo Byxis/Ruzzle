@@ -85,7 +85,7 @@ fn main() {
         sound_manager.update_music_stream();
 
         //Updating the game
-        menu_manager.update(&mut rl, &thread, &map, &mut crab, &camera);
+        menu_manager.update(&mut rl, &thread, &map, &mut crab, &camera, &mut sound_manager);
 
         //Drawing the game
         let mut d = rl.begin_drawing(&thread);
