@@ -14,7 +14,7 @@ use raylib::prelude::*;
 /// * d : &mut RaylibDrawHandle, borrows it to draw graphical elements
 /// * config : &Config, used for screen dimensions and font sizes
 /// * bg_logo : &Option<Texture2D>, optional texture for the loading screen background or logo
-pub fn draw_loading(d: &mut RaylibDrawHandle, config: &Config, texture_logo: &Option<Texture2D>) {
+pub fn draw_loading(d: &mut RaylibDrawHandle, config: &Config, texture_logo: Option<&Texture2D>) {
     if let Some(texture) = texture_logo {
         let x: i32 = config.screen_width / 2 - texture.width / 2;
         let y: i32 = config.screen_height / 2 - texture.height / 2;

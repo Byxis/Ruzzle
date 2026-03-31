@@ -21,9 +21,16 @@ impl Assets {
     pub fn new(rl: &mut RaylibHandle, thread: &RaylibThread) -> Self {
         Self {
             textures: vec![
-                rl.load_texture(thread, "rsc/sand.png").expect("sand"),
-                rl.load_texture(thread, "rsc/bg_loading.png")
+                rl.load_texture(thread, "rsc/images/sand.png")
+                    .expect("sand"),
+                rl.load_texture(thread, "rsc/images/bg_loading.png")
                     .expect("bg_loading"),
+                rl.load_texture(thread, "rsc/images/bg_logo.png")
+                    .expect("bg_logo"),
+                rl.load_texture(thread, "rsc/images/back_button.png")
+                    .expect("bg_logo"),
+                rl.load_texture(thread, "rsc/images/background.png")
+                    .expect("background"),
             ],
         }
     }
@@ -103,9 +110,6 @@ pub struct MenuManager {
     pub hovered_button: SelectMenuHoveredButtons,
     pub current_level: Option<Level>,
     pub assets: Assets,
-    pub bg_logo: Option<Texture2D>,
-    pub tex_back: Option<Texture2D>,
-    pub background_menu: Option<Texture2D>,
     //pub egg_menu: Option<Texture2D>,
 }
 
@@ -115,9 +119,6 @@ impl MenuManager {
         let button_height = (config.screen_height as f32) * 0.1;
         let assets = Assets::new(rl, thread);
 
-        let bg_logo = rl.load_texture(thread, "assets/bg_logo.png").ok();
-        let tex_back = rl.load_texture(thread, "assets/back_button.png").ok();
-        let background_menu = rl.load_texture(thread, "assets/background.png").ok();
         //let egg_menu = rl.load_texture(thread, "assets/egg.png").ok();
         let level_buttons = vec![
             Self::create_level_button(&config, "Niveau 1", 0, button_width, button_height),
@@ -200,9 +201,6 @@ impl MenuManager {
             hovered_button: SelectMenuHoveredButtons::None,
             current_level: None,
             assets,
-            bg_logo,
-            tex_back,
-            background_menu,
             //egg_menu,
         }
     }
@@ -399,8 +397,14 @@ impl MenuManager {
     /// * d : rayLIbDrawHandle, borrows it to draw graphical elemetns
     /// * c : crab : Crab (alexei's crabito)
     /// * camera : Camera3D (not used for now)
-    pub fn draw(&self, d: &mut RaylibDrawHandle, map: &Map, crab: &mut Crab, camera: &Camera3D) {
-        if let Some(text) = &self.background_menu {
+    pub fn draw(
+        &mut self,
+        d: &mut RaylibDrawHandle,
+        map: &Map,
+        crab: &mut Crab,
+        camera: &Camera3D,
+    ) {
+        if let Some(text) = &self.assets.textures.get(4) {
             draw_texture_contain(d, text, self.config.screen_width, self.config.screen_height);
         } else {
             d.clear_background(Color::BLACK);
@@ -411,117 +415,37 @@ impl MenuManager {
             Menu::Select => draw_select(d, &self.config, &self.buttons),
             Menu::LevelSelection => draw_level_selection(
                 d,
-                button.rectangle,
-                &button.label,
-                color_hovered,
-                color_button,
-                is_hovered,
-                self.config.font_size_h2,
-            );
-        }
-    }
-
-    fn draw_level_selection(&self, d: &mut RaylibDrawHandle) {
-        draw_text_center(
-            d,
-            "Niveaux",
-            self.config.screen_width,
-            (self.config.screen_height / 7) as i32,
-            self.config.font_size_h2,
-            Color::WHITE,
-        );
-
-        // Afficher les boutons de niveaux
-        for button in &self.level_buttons {
-            draw_button(
-                d,
-                button.rectangle,
-                &button.label,
-                Color::DARKORANGE,
-                Color::DARKGRAY,
-                false,
-                self.config.font_size_h2 / 2,
-            );
-        }
-
-        draw_button(
-            d,
-            self.back_button.rectangle,
-            &self.back_button.label,
-            Color::DARKORANGE,
-            Color::DARKGRAY,
-            false,
-            self.config.font_size_h2 / 3,
-        );
-    }
-
-    fn draw_settings(&self, d: &mut RaylibDrawHandle) {
-        draw_text_center(
-            d,
-            "Settings Menu",
-            self.config.screen_width,
-            (self.config.screen_height / 7) as i32,
-            self.config.font_size_h2,
-            Color::WHITE,
-        );
-
-        draw_button(
-            d,
-            self.back_button.rectangle,
-            &self.back_button.label,
-            Color::DARKORANGE,
-            Color::DARKGRAY,
-            false,
-            self.config.font_size_h2 / 3,
-        );
-    }
-
-    fn draw_game(&self, d: &mut RaylibDrawHandle, crab: &mut Crab, map: &Map, camera: &Camera3D) {
-        {
-            let mut d3d = d.begin_mode3D(camera);
-            d3d.draw_grid(10, 1.0);
-            crab.draw(&mut d3d);
-            map.draw(&mut d3d);
-
-            if let Some(level) = &self.current_level {
-                for group in &level.groups {
-                    group.draw(&mut d3d, &self.assets);
-                }
-            }
-        }
-
-        let coordonnees = format!(
-            "({:.2}, {:.2}, {:.2})",
-            crab.transform.position.x, crab.transform.position.y, crab.transform.position.z
-        );
-
-        d.draw_text(
-            &coordonnees,
-            10,
-            40,
-            (self.config.screen_height / 36) as i32,
-            Color::DARKGRAY,
-        );
-        d.draw_fps(10, 10);
-    }
-
-    fn draw_loading(&self, d: &mut RaylibDrawHandle) {
-        if let Some(texture) = self.assets.textures.get(1) {
-            let x = self.config.screen_width / 2 - texture.width / 2;
-            let y = self.config.screen_height / 2 - texture.height / 2;
-            d.draw_texture(texture, x, y, Color::WHITE);
                 &self.config,
                 &self.level_buttons,
-                &self.tex_back,
+                &self.assets,
                 &self.back_button,
             ),
-            Menu::Multiplayer => {
-                draw_multiplayer(d, &self.config, &self.back_button, &self.tex_back)
+            Menu::Multiplayer => draw_multiplayer(
+                d,
+                &self.config,
+                &self.back_button,
+                self.assets.textures.get(3),
+            ),
+            Menu::Settings => draw_settings(
+                d,
+                &self.config,
+                &self.back_button,
+                self.assets.textures.get(3),
+            ),
+            Menu::Game => {
+                if let Some(level) = &mut self.current_level {
+                    draw_game(d, crab, map, camera, level, &self.assets);
+                } else {
+                    d.draw_text("Erreur : Aucun niveau chargé", 10, 10, 20, Color::RED);
+                }
             }
-            Menu::Settings => draw_settings(d, &self.config, &self.back_button, &self.tex_back),
-            Menu::Game => draw_game(d, crab, map, camera),
-            Menu::Loading => draw_loading(d, &self.config, &self.bg_logo),
-            Menu::Credit => draw_credit(d, &self.config, &self.back_button, &self.tex_back),
+            Menu::Loading => draw_loading(d, &self.config, self.assets.textures.get(2)),
+            Menu::Credit => draw_credit(
+                d,
+                &self.config,
+                &self.back_button,
+                self.assets.textures.get(3),
+            ),
         }
     }
 }

@@ -209,17 +209,17 @@ impl Level {
     }
 
     /// Draws the map using the given 3D drawing context.
-    pub fn draw(&mut self, rl: &mut RaylibHandle, thread: &RaylibThread, assets: &Assets) {
+    pub fn draw(&mut self, rl: &mut RaylibDrawHandle, assets: &Assets) {
         let is_clicked = rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT);
         let camera = self.camera;
 
         let mut new_selected = self.selected_group;
 
-        let mut d = rl.begin_drawing(thread);
-        d.clear_background(Color::RAYWHITE);
+        //let mut d = rl.begin_drawing(thread);
+        //d.clear_background(Color::RAYWHITE);
 
         for (i, group) in self.groups.iter_mut().enumerate() {
-            if group.is_mouse_over(&d, &camera) {
+            if group.is_mouse_over(&rl, &camera) {
                 group.set_temporary_color(Color::YELLOW);
                 if is_clicked {
                     new_selected = Some(i);
@@ -234,7 +234,7 @@ impl Level {
         self.selected_group = new_selected;
 
         {
-            let mut d3d = d.begin_mode3D(&camera);
+            let mut d3d = rl.begin_mode3D(&camera);
             for group in self.groups.iter() {
                 group.draw(&mut d3d, assets);
                 if group.is_dragging {

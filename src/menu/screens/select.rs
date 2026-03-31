@@ -29,7 +29,7 @@ pub fn draw_select(d: &mut RaylibDrawHandle, config: &Config, buttons: &[Button]
         draw_interactive_button(
             d,
             button.rectangle,
-            &None,
+            None,
             &button.label,
             config.font_size_h2,
         );
