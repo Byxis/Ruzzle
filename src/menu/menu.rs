@@ -441,34 +441,7 @@ impl MenuManager {
         crab: &mut Crab,
         camera: &Camera3D,
     ) {
-        if let Some(text) = &self.assets.textures.get(4) {
-            draw_texture_contain(d, text, self.config.screen_width, self.config.screen_height);
-        } else {
-            d.clear_background(Color::BLACK);
-        };
-
         match self.current_menu {
-            Menu::Title => draw_title(d, &self.config),
-            Menu::Select => draw_select(d, &self.config, &self.buttons),
-            Menu::LevelSelection => draw_level_selection(
-                d,
-                &self.config,
-                &self.level_buttons,
-                &self.assets,
-                &self.back_button,
-            ),
-            Menu::Multiplayer => draw_multiplayer(
-                d,
-                &self.config,
-                &self.back_button,
-                self.assets.textures.get(3),
-            ),
-            Menu::Settings => draw_settings(
-                d,
-                &self.config,
-                &self.back_button,
-                self.assets.textures.get(3),
-            ),
             Menu::Game => {
                 if let Some(level) = &mut self.current_level {
                     // Draw 3D scene into RenderTexture
@@ -489,6 +462,14 @@ impl MenuManager {
 
                     // Draw the RenderTexture to screen with post-process shader
                     {
+                        let menu_flag = 0i32;
+                        self.shader_manager.postprocess_shader.set_shader_value(
+                            self.shader_manager
+                                .postprocess_shader
+                                .get_shader_location("isMenuBackground"),
+                            menu_flag,
+                        );
+
                         let mut sd =
                             d.begin_shader_mode(&mut self.shader_manager.postprocess_shader);
                         sd.draw_texture_rec(
@@ -507,13 +488,78 @@ impl MenuManager {
                     d.draw_text("Erreur : Aucun niveau chargé", 10, 10, 20, Color::RED);
                 }
             }
-            Menu::Loading => draw_loading(d, &self.config, self.assets.textures.get(2)),
-            Menu::Credit => draw_credit(
-                d,
-                &self.config,
-                &self.back_button,
-                self.assets.textures.get(3),
-            ),
+            _ => {
+                if let Some(text) = &self.assets.textures.get(4) {
+                    {
+                        let mut td = d.begin_texture_mode(thread, &mut self.render_target);
+                        td.clear_background(Color::BLACK);
+                        draw_texture_contain(
+                            &mut td,
+                            text,
+                            self.config.screen_width,
+                            self.config.screen_height,
+                        );
+                    }
+
+                    {
+                        let menu_flag = 1i32;
+                        self.shader_manager.postprocess_shader.set_shader_value(
+                            self.shader_manager
+                                .postprocess_shader
+                                .get_shader_location("isMenu"),
+                            menu_flag,
+                        );
+
+                        let mut sd =
+                            d.begin_shader_mode(&mut self.shader_manager.postprocess_shader);
+                        sd.draw_texture_rec(
+                            self.render_target.texture(),
+                            Rectangle::new(
+                                0.0,
+                                0.0,
+                                self.render_target.texture().width as f32,
+                                -(self.render_target.texture().height as f32),
+                            ),
+                            Vector2::new(0.0, 0.0),
+                            Color::WHITE,
+                        );
+                    }
+                } else {
+                    d.clear_background(Color::BLACK);
+                }
+
+                match self.current_menu {
+                    Menu::Title => draw_title(d, &self.config),
+                    Menu::Select => draw_select(d, &self.config, &self.buttons),
+                    Menu::LevelSelection => draw_level_selection(
+                        d,
+                        &self.config,
+                        &self.level_buttons,
+                        &self.assets,
+                        &self.back_button,
+                    ),
+                    Menu::Multiplayer => draw_multiplayer(
+                        d,
+                        &self.config,
+                        &self.back_button,
+                        self.assets.textures.get(3),
+                    ),
+                    Menu::Settings => draw_settings(
+                        d,
+                        &self.config,
+                        &self.back_button,
+                        self.assets.textures.get(3),
+                    ),
+                    Menu::Loading => draw_loading(d, &self.config, self.assets.textures.get(2)),
+                    Menu::Credit => draw_credit(
+                        d,
+                        &self.config,
+                        &self.back_button,
+                        self.assets.textures.get(3),
+                    ),
+                    _ => {}
+                }
+            }
         }
     }
 }

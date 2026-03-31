@@ -7,6 +7,7 @@ uniform vec2 resolution;
 
 uniform vec3 bgTop;
 uniform vec3 bgBottom;
+uniform int isMenuBackground;
 
 out vec4 finalColor;
 
@@ -69,12 +70,18 @@ void main()
     vec4 texColor = texture(texture0, uv);
     vec3 color = texColor.rgb;
 
-    // If background (alpha from RenderTexture is 0), use dynamic background colors from day cycle
-    if (texColor.a < 0.1) {
-        color = mix(bgBottom, bgTop, uv.y);
-    } else {
+    if (isMenuBackground == 1) {
         vec3 bloom = applyBloom(uv);
         color += bloom;
+    }
+    else
+    {
+        if (texColor.a < 0.1) {
+            color = mix(bgBottom, bgTop, uv.y);
+        } else {
+            vec3 bloom = applyBloom(uv);
+            color += bloom;
+        }
     }
 
     finalColor = vec4(color, 1.0);
