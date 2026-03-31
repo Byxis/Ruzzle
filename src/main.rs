@@ -50,6 +50,8 @@ fn main() {
 
     let audio = RaylibAudio::init_audio_device().expect("Failed to initialize audio device");
     let mut sound_manager = SoundManager::new(&audio);
+    sound_manager.set_background_music(&audio, BackgroundMusic::CrabRave);
+    sound_manager.start_background_music();
 
     let spawn_point = Transform3D::new(Vector3::new(0.0, 5.0, 0.0), 0.0);
     let mut map = Map::new(&mut rl, &thread, "rsc/map.glb");
@@ -76,11 +78,6 @@ fn main() {
 
     rl.set_target_fps(60);
 
-    // Apply default sound parameters and start game music
-    sound_manager.set_background_music(&audio, BackgroundMusic::CrabRave);
-    sound_manager.start_background_music();
-
-    // Apply cel_shade shader to all model materials
     menu_manager
         .shader_manager
         .apply_cel_shade_to_model(&mut map.model);
@@ -89,17 +86,13 @@ fn main() {
         .apply_cel_shade_to_model(&mut crab.crab_animator.model);
 
     while !rl.window_should_close() {
-        // Update background music stream (for continuous playing)
         sound_manager.update_music_stream();
-
-        // Update menu state (handles game logic when in-game)
         menu_manager.update(&mut rl, &thread, &map, &mut crab, &camera);
 
         {
             let mut d = rl.begin_drawing(&thread);
             d.clear_background(Color::BLACK);
 
-            // Draw everything through MenuManager
             menu_manager.draw(&mut d, &thread, &map, &mut crab, &camera);
         }
     }

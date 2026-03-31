@@ -77,8 +77,8 @@ impl DayCycleManager {
     /// Early morning (7-9) - 2 hour transition
     /// Peak daylight (LONG stable)
     /// Dusk (17-19) - 2 hour transition
-    /// Evening (19-22) - 2 hour transition
-    /// Night (22-24)
+    /// Evening (19-21) - 2 hour transition
+    /// Night (21-24)
     fn get_lighting_state_at(&self, hour: f32) -> LightingState {
         if hour < 5.0 {
             Self::midnight_lighting()
@@ -101,35 +101,35 @@ impl DayCycleManager {
         } else if hour < 19.0 {
             let local_t = (hour - 17.0) / 2.0;
             Self::lerp_lighting(Self::noon_lighting(), Self::dusk_lighting(), local_t)
-        } else if hour < 22.0 {
-            Self::dusk_lighting()
-        } else {
-            let local_t = (hour - 22.0) / 2.0;
+        } else if hour < 21.0 {
+            let local_t = (hour - 19.0) / 2.0;
             Self::lerp_lighting(Self::dusk_lighting(), Self::midnight_lighting(), local_t)
+        } else {
+            Self::midnight_lighting()
         }
     }
 
-    /// Midnight lighting (0-5) - 2 hour transition
+    /// Midnight lighting
     fn midnight_lighting() -> LightingState {
         LightingState {
-            color: Color::new(51, 51, 77, 255), // Cool blue light (moonlight)
-            ambient: Color::new(13, 13, 26, 255), // Very dim
-            bg_top: Color::new(38, 38, 64, 255), // Dark blue
-            bg_bottom: Color::new(26, 26, 51, 255), // Darker blue
+            color: Color::new(80, 90, 120, 255), // Cool moonlight (more subtle)
+            ambient: Color::new(45, 50, 75, 255), // Gentle moonlit night
+            bg_top: Color::new(50, 55, 80, 255), // Subtle dark blue
+            bg_bottom: Color::new(35, 40, 65, 255), // Subtle darker blue
         }
     }
 
-    /// Early morning lighting (7-9) - 2 hour transition
+    /// Early morning lighting
     fn early_morning_lighting() -> LightingState {
         LightingState {
-            color: Color::new(255, 179, 102, 255),    // Warm orange
-            ambient: Color::new(77, 51, 38, 255),     // Warm dim
-            bg_top: Color::new(255, 153, 77, 255),    // Orange sky
-            bg_bottom: Color::new(204, 102, 51, 255), // Orange-red
+            color: Color::new(200, 150, 120, 255),    // Warm light
+            ambient: Color::new(60, 45, 35, 255),     // Dim
+            bg_top: Color::new(200, 140, 100, 255),   // Orange sky
+            bg_bottom: Color::new(150, 100, 70, 255), // Orange-brown
         }
     }
 
-    /// Noon lighting (9-17) - 8 hour stable period
+    /// Noon lighting
     fn noon_lighting() -> LightingState {
         LightingState {
             color: Color::new(255, 230, 191, 255),     // Warm sunlight
@@ -139,13 +139,13 @@ impl DayCycleManager {
         }
     }
 
-    /// Dusk lighting (17-19) - 2 hour transition
+    /// Dusk lighting
     fn dusk_lighting() -> LightingState {
         LightingState {
-            color: Color::new(255, 153, 128, 255),   // Red-orange
-            ambient: Color::new(64, 38, 51, 255),    // Warm dim
-            bg_top: Color::new(230, 102, 77, 255),   // Red-orange sky
-            bg_bottom: Color::new(77, 51, 102, 255), // Purple
+            color: Color::new(200, 130, 110, 255),  // Muted red-orange
+            ambient: Color::new(55, 40, 45, 255),   // Softer warm dim
+            bg_top: Color::new(180, 100, 80, 255),  // Muted red-orange sky
+            bg_bottom: Color::new(70, 55, 90, 255), // Purple
         }
     }
 
