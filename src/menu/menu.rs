@@ -254,7 +254,7 @@ impl<'a> MenuManager<'a> {
         self.frame_count += 1;
         match self.current_menu {
             Menu::Title => self.update_title(rl,&mut sound_manager),
-            Menu::Select => self.update_select(rl),
+            Menu::Select => self.update_select(rl,&mut sound_manager),
             Menu::LevelSelection => self.update_level_selection(rl, thread,&mut sound_manager),
             Menu::Game => self.update_game(rl, thread, map, crab, camera, &mut sound_manager),
             Menu::Settings => self.update_settings(rl, &mut sound_manager),
@@ -279,13 +279,14 @@ impl<'a> MenuManager<'a> {
     /// # Arguments
     /// * rl - raylib handler, handle the raylib librairie
     /// #TODO : make it more abstract to be able to use it for the settings menu and other menu with buttons
-    fn update_select(&mut self, rl: &RaylibHandle) {
+    fn update_select(&mut self, rl: &RaylibHandle, sound_manager: &mut SoundManager<'a>) {
         let mouse_pos = rl.get_mouse_position();
         self.hovered_button = SelectMenuHoveredButtons::None;
         for button in &self.buttons {
             if button.rectangle.check_collision_point_rec(mouse_pos) {
                 self.hovered_button = button.id;
                 if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
+                    sound_manager.play_sound_effect(SoundEffect::Click);
                     match button.id {
                         SelectMenuHoveredButtons::Game => self.current_menu = Menu::Game,
                         SelectMenuHoveredButtons::LevelSelection => {
