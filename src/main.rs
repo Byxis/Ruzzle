@@ -13,7 +13,7 @@ mod menu;
 use crate::menu::menu::MenuManager;
 
 mod sound_manager;
-use crate::sound_manager::sound_manager::{BackgroundMusic, SoundEffect, SoundManager};
+use crate::sound_manager::sound_manager::{BackgroundMusic, SoundManager};
 
 const SCREEN_WIDTH: i32 = 1280;
 const SCREEN_HEIGHT: i32 = 720;

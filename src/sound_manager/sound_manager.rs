@@ -67,7 +67,7 @@ pub struct SoundManager<'a> {
 }
 
 impl<'a> SoundManager<'a> {
-    pub fn new(audio: &'a RaylibAudio) -> Self {
+    pub fn new(_audio: &'a RaylibAudio) -> Self {
         SoundManager {
             background_music: None, // Initialize later (allows for future track choice)
             music_volume: DEFAULT_MUSIC_VOLUME,
