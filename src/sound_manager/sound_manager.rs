@@ -71,7 +71,7 @@ impl<'a> SoundManager<'a> {
             background_music: None, // Initialize later (allows for future track choice)
             music_volume: config.music_volume,
             effects_cache: HashMap::new(), // Initialize the effects cache
-            effect_volume: config.sound_effects_volume, // Volumes set to default
+            effect_volume: config.sound_effects_volume,
             music_playing: false,
             default_config: config,
             audio,
