@@ -323,7 +323,7 @@ impl MenuManager {
         }
     }
 
-    fn update_loading(&mut self, rl: &RaylibHandle) {
+    fn update_loading(&mut self, _rl: &RaylibHandle) {
         if self.frame_count >= 100 {
             self.current_menu = Menu::Select;
             self.frame_count = 0;
