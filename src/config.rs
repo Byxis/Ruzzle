@@ -1,14 +1,17 @@
 pub struct Config {
     pub screen_width: i32,
     pub screen_height: i32,
+    pub sound_effects_volume: f32,
+    pub music_volume: f32,
     pub font_size_h1: i32,
     pub font_size_h2: i32,
 }
 /// Configuration files for the game
-/// #TODO : add the sound level and music level
 impl Config {
     pub fn new(screen_width: i32, screen_height: i32) -> Self {
         Config {
+            sound_effects_volume: 0.5,
+            music_volume: 0.5,
             screen_width,
             screen_height,
             font_size_h1: (screen_height / 14) as i32,
