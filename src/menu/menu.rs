@@ -1,6 +1,7 @@
 use crate::components::map::Map;
 use crate::config::Config;
 use crate::crab::crab::Crab;
+use crate::sound_manager;
 use raylib::prelude::*;
 use raylib::{ffi::KeyboardKey, RaylibHandle};
 
@@ -12,6 +13,8 @@ use crate::menu::screens::{
 };
 
 use crate::levels::level::Level;
+
+use crate::sound_manager::sound_manager::{SoundManager,SoundEffect};
 
 pub struct Assets {
     pub textures: Vec<Texture2D>,

@@ -31,6 +31,9 @@ fn main() {
         .title("Ruzzle")
         .build();
 
+    let audio = RaylibAudio::init_audio_device().expect("Failed to initialize audio device");
+    let mut sound_manager = SoundManager::new(&audio, &config);
+
     // let mut current_menu = Menu::Title;
     let mut menu_manager = MenuManager::new(&config, &mut rl, &thread);
     if rl.get_screen_width() != menu_manager.config.screen_width
@@ -46,9 +49,6 @@ fn main() {
         Vector3::new(0.0, 1.0, 0.0),
         45.0,
     );
-
-    let audio = RaylibAudio::init_audio_device().expect("Failed to initialize audio device");
-    let mut sound_manager = SoundManager::new(&audio, &config);
 
     let spawn_point = Transform3D::new(Vector3::new(0.0, 5.0, 0.0), 0.0);
     let mut map = Map::new(&mut rl, &thread, "rsc/map.glb");
