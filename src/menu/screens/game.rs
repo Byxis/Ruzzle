@@ -42,8 +42,8 @@ pub fn draw_game(
             level.draw(&mut d3d, assets);
 
             {
-                let mut s = d3d.begin_shader_mode(shader);
-                map.draw(&mut s);
+                d3d.begin_shader_mode(shader);
+                //map.draw(&mut s);
             }
 
             if let Some(ep) = level.endpoint_world() {

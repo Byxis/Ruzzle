@@ -568,9 +568,11 @@ impl<'a> MenuManager<'a> {
         match self.current_menu {
             Menu::Game => {
                 if let Some(level) = &mut self.current_level {
+                    // Draw 3D scene into RenderTexture
                     {
                         let mut td = d.begin_texture_mode(thread, &mut self.render_target);
                         td.clear_background(Color::new(0, 0, 0, 0));
+
                         draw_game(
                             &mut td,
                             &self.config,
@@ -612,21 +614,6 @@ impl<'a> MenuManager<'a> {
                     d.draw_text("Erreur : Aucun niveau chargé", 10, 10, 20, Color::RED);
                 }
             }
-            Menu::Loading => draw_loading(d, &self.config, self.assets.textures.get(2)),
-            Menu::Credit => draw_credit(
-                d,
-                &self.config,
-                &self.back_button,
-                self.assets.textures.get(3),
-            ),
-            Menu::Win => draw_win(
-                d,
-                &self.config,
-                &self.back_button,
-                self.assets.textures.get(3),
-                &self.win_buttons,
-            ),
-            Menu::Finish => draw_finish(d, &self.config),
             _ => {
                 if let Some(text) = &self.assets.textures.get(4) {
                     {
