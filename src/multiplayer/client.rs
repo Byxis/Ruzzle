@@ -1,15 +1,13 @@
 use std::{
     net::{SocketAddr, UdpSocket},
-    sync::mpsc::{Sender, Receiver},
+    sync::mpsc::{Receiver, Sender},
     thread,
     time::{Duration, Instant, SystemTime},
 };
 
+use crate::multiplayer::{Message, Position, Room};
 use renet::{ConnectionConfig, DefaultChannel, RenetClient};
-use renet_netcode::{
-    ClientAuthentication, NetcodeClientTransport, NETCODE_USER_DATA_BYTES,
-};
-use crate::multiplayer::{Message, Position};
+use renet_netcode::{ClientAuthentication, NetcodeClientTransport, NETCODE_USER_DATA_BYTES};
 
 // Helper struct to pass an username in the user data
 struct Username(String);
@@ -26,6 +24,12 @@ impl Username {
     }
 }
 
+/// Main function for the client network logic.
+/// Initialise the connection to the server, ask the creation or not of a room to the server.
+/// Send the position of the player to the server that has been received from the main thread,
+/// Receive the position of the other player from the server and send it to the main thread.
+///
+/// Based on the Renet example, that I adapted to Ruzzle logic.
 pub fn client(tx: Sender<Position>, rx: Receiver<Position>, is_host: bool) {
     let connection_config = ConnectionConfig::default();
     let mut client = RenetClient::new(connection_config);
@@ -35,7 +39,9 @@ pub fn client(tx: Sender<Position>, rx: Receiver<Position>, is_host: bool) {
     let protocol_id: u64 = 7;
 
     let socket = UdpSocket::bind("127.0.0.1:0").unwrap();
-    let current_time = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap();
+    let current_time = SystemTime::now()
+        .duration_since(SystemTime::UNIX_EPOCH)
+        .unwrap();
     let client_id = current_time.as_millis() as u64;
     let authentication = ClientAuthentication::Unsecure {
         server_addr,
@@ -48,7 +54,7 @@ pub fn client(tx: Sender<Position>, rx: Receiver<Position>, is_host: bool) {
 
     let mut last_updated = Instant::now();
 
-    let mut room_joined = false;
+    let mut room: Room = Room::new(1, tx.clone());
 
     loop {
         let now = Instant::now();
@@ -58,20 +64,8 @@ pub fn client(tx: Sender<Position>, rx: Receiver<Position>, is_host: bool) {
         client.update(duration);
         transport.update(duration, &mut client).unwrap();
 
-
         if client.is_connected() {
-            if !room_joined && is_host {
-                let msg = Message::CreateRoom;
-                let serialized = bincode::serialize(&msg).unwrap();
-                client.send_message(DefaultChannel::ReliableOrdered, serialized);
-                room_joined = true;
-            }
-            if !room_joined && !is_host {
-                let msg = Message::JoinRoom { room_id: 1 };
-                let serialized = bincode::serialize(&msg).unwrap();
-                client.send_message(DefaultChannel::ReliableOrdered, serialized);
-                room_joined = true;
-            }
+            room.init_room(is_host, &mut client);
 
             // Receive local position from main thread and send to server
             if let Ok(position) = rx.try_recv() {
@@ -82,12 +76,10 @@ pub fn client(tx: Sender<Position>, rx: Receiver<Position>, is_host: bool) {
             }
 
             // Receive messages from server and send to main thread
-            while let Some(message_bytes) = client.receive_message(DefaultChannel::ReliableOrdered) {
+            while let Some(message_bytes) = client.receive_message(DefaultChannel::ReliableOrdered)
+            {
                 if let Ok(msg) = bincode::deserialize::<Message>(&message_bytes) {
-                    if let Message::UpdatePosition { position } = msg {
-                        println!("Received position from server: ({}, {}, {})", position.x, position.y, position.z);
-                        let _ = tx.send(position); // Send remote player position to main thread
-                    }
+                    room.treat_message(msg);
                 }
             }
         }

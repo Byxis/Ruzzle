@@ -14,7 +14,7 @@ const PROTOCOL_ID: u64 = 7;
 /// Main function that control all the server logic.
 /// Contains the initialisation of the socket, main loop of execution,
 /// the treatment of the messages received and sended.
-/// 
+///
 /// Based on the Renet example, that I adapted to Ruzzle logic.
 pub fn server(public_addr: SocketAddr) {
     let connection_config = ConnectionConfig::default();
