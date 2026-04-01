@@ -1,6 +1,6 @@
 use crate::components::map::Map;
 use crate::config::Config;
-use crate::crab::crab::{Crab, CrabAction};
+use crate::crab::crab::Crab;
 use crate::sound_manager;
 use raylib::prelude::*;
 use raylib::{ffi::KeyboardKey, RaylibHandle};
@@ -74,7 +74,7 @@ pub enum SelectMenuHoveredButtons {
 /// * id as SelectMenuHoveredButtons #FIXME : i need to find a way to be more abstract on the button
 ///
 ///
-/// #Examples :
+/// # Examples :
 ///
 /// Create a button displaying hello
 /// let rec = Rectangle::new((config.screen_width / 2 - button_width as i32 / 2) as f32, (config.screen_height as f32) * 0.3,  button_width,button_height)
@@ -364,26 +364,14 @@ impl<'a> MenuManager<'a> {
             crab.effective_position() - Vector3::new(0.0, 0.4, 0.0),
         );
 
-        let res = crab.calculate_next_transform(rl, &camera, &thread, is_grounded, will_grounded);
-        // Unwrap tuple returned 
-        let mut t = res.0;
-        let action = res.1;
-
-        // Play sound effect based on crab action
-        match action {
-            CrabAction::Move => {
-                self.sound_manager.play_sound_effect(SoundEffect::Walking);
-            }
-            CrabAction::Jump => {
-                self.sound_manager.play_sound_effect(SoundEffect::Jump);
-            }
-            CrabAction::Emote => {
-                self.sound_manager.play_sound_effect(SoundEffect::Boing);
-            }
-            CrabAction::Idle => {
-                // No sound effect for idle (could add one if desired)
-            }
-        }
+        let mut t = crab.calculate_next_transform(
+            rl,
+            &camera,
+            &thread,
+            is_grounded,
+            will_grounded,
+            &mut self.sound_manager,
+        );
 
         t.position = map.resolve_collisions(&crab.collider, t.position);
 
@@ -449,7 +437,6 @@ impl<'a> MenuManager<'a> {
     ///
     /// # Arguments
     /// * rl - raylib handler (mouse position + click)
-
     fn handle_back_button(&mut self, rl: &RaylibHandle) {
         let mouse_pos = rl.get_mouse_position();
         if self

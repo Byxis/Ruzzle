@@ -3,20 +3,9 @@ use crate::components::transform::Transform3D;
 use crate::crab::crab_animator::CrabAnimation;
 use crate::crab::crab_animator::CrabAnimator;
 use crate::crab::crab_stats::CrabStats;
+use crate::sound_manager::sound_manager::{SoundEffect, SoundManager};
 use raylib::prelude::*;
 use std::f32::consts::PI;
-
-/// Enum representing the actions a crab can perform
-/// 
-/// They are used for sound effecting purposes
-/// Each action will trigger a sound effect played in the menu manager
-#[derive(PartialEq, Eq, Hash, Clone, Copy)]
-pub enum CrabAction {
-    Idle,
-    Move,
-    Jump,
-    Emote,
-}
 
 /// Represents a crab character in the game world.
 ///
@@ -106,9 +95,9 @@ impl Crab {
         thread: &RaylibThread,
         is_grounded: bool,
         will_grounded: bool,
-    ) -> (Transform3D,CrabAction) {
+        sound_manager: &mut SoundManager,
+    ) -> Transform3D {
         let mut transform = self.transform.clone();
-        let mut action = CrabAction::Idle; // Default action is Idle, will be updated based on input
 
         self.crab_animator.handle_animation(rl, thread);
         let dt = rl.get_frame_time();
@@ -124,7 +113,7 @@ impl Crab {
         move_vec = move_vec.normalize();
 
         if move_vec.length() > 0.0 {
-            action = CrabAction::Move;
+            sound_manager.play_sound_effect(SoundEffect::Walking);
             transform.position += move_vec * CrabStats::CRAB_SPEED * dt;
 
             let angle_rad = move_vec.x.atan2(move_vec.z);
@@ -133,7 +122,7 @@ impl Crab {
 
         // Y movement (jump mechanic)
         if rl.is_key_down(KeyboardKey::KEY_SPACE) && self.jump_timer <= 0.0 && is_grounded {
-            action = CrabAction::Jump;
+            sound_manager.play_sound_effect(SoundEffect::Jump);
             self.jump_timer = PI;
             self.jump_start_y = transform.position.y;
             self.has_landed = false;
@@ -167,11 +156,11 @@ impl Crab {
         }
 
         if self.crab_animator.current == CrabAnimation::Idle && rl.is_key_down(KeyboardKey::KEY_E) {
-            action = CrabAction::Emote;
+            sound_manager.play_sound_effect(SoundEffect::Boing);
             self.crab_animator.change_animation(CrabAnimation::Emote);
         }
 
-        return (transform, action);
+        transform
     }
 
     /// Get crab effective position (position - model offset)
