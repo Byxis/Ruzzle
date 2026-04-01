@@ -6,6 +6,7 @@ use crate::components::camera_controller::CameraController;
 use crate::components::collider::Collider;
 use crate::components::map::Map;
 use crate::components::transform::Transform3D;
+use crate::levels::level::Level;
 
 mod crab;
 use crate::crab::crab::Crab;
@@ -58,6 +59,7 @@ fn main() {
     map.set_position(Vector3::new(0.0, -0.2, 0.0));
     map.set_spawn_point(spawn_point);
 
+    /*
     map.add_collider(Collider::with_box_from_size(16.0, 0.2, 16.0));
     map.add_collider(Collider::with_box_from_size_offset(
         1.0,
@@ -72,6 +74,7 @@ fn main() {
         Vec3::new(-4.5, 0.0, -4.5),
     ));
 
+    */
     let mut crab = Crab::new(&mut rl, &thread, "rsc/crab.glb");
     crab.teleport(map.spawn_point);
 

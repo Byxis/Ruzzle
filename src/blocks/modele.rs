@@ -1,6 +1,7 @@
 use crate::blocks;
 use crate::blocks::material::{self, BlockMaterial};
 use crate::components::collider::Collider;
+use crate::components::collider::CollisionShape;
 use crate::menu::menu::Assets;
 use raylib::ffi;
 use raylib::prelude::*;
@@ -60,6 +61,11 @@ pub struct GroupBlock {
     pub end_pos: Vector3,
     pub is_dragging: bool,
     pub drag_timer: f32,
+
+    pub endpoint_local: Option<Vector3>,
+    pub model: Option<Model>,
+    pub model_offset: Vector3,
+    pub model_orientation: Quaternion,
 }
 
 impl GroupBlock {
@@ -83,13 +89,20 @@ impl GroupBlock {
             end_pos: pos,
             is_dragging: false,
             drag_timer: 0.0,
+
+            endpoint_local: None,
+            model: None,
+            model_offset: Vector3::ZERO,
+            model_orientation: Quaternion::identity(),
         }
     }
 
     /// Helper to create a `GroupBlock` containing only one block at the given position.
     pub fn single(pos: Vector3, block_type: BlockType, material: BlockMaterial) -> Self {
         let child = BlockPrefab::new(Vector3::ZERO, None, block_type.clone(), material);
-        Self::new(pos, vec![child], block_type)
+        let mut group = Self::new(pos, vec![child], block_type);
+        group.sync_colliders();
+        group
     }
 
     /// Applies a temporary highlight color to all blocks in the group.
@@ -142,6 +155,7 @@ impl GroupBlock {
                     color_to_draw,
                 );
 
+                /*
                 d.draw_cube_wires(
                     child.position,
                     child.size.x,
@@ -149,20 +163,87 @@ impl GroupBlock {
                     child.size.z,
                     Color::BLACK,
                 );
+                */
             }
             raylib::ffi::rlPopMatrix();
         }
+        if let Some(model) = &self.model {
+            let x = self.model_offset.x;
+            let y = self.model_offset.y;
+            let z = self.model_offset.z;
+
+            let rx = mat.m0 * x + mat.m1 * y + mat.m2 * z;
+            let ry = mat.m4 * x + mat.m5 * y + mat.m6 * z;
+            let rz = mat.m8 * x + mat.m9 * y + mat.m10 * z;
+
+            let world_pos = Vector3::new(
+                self.position.x + rx,
+                self.position.y + ry,
+                self.position.z + rz,
+            );
+
+            let animated_model_orientation = self.model_orientation
+                * self
+                    .orientation
+                    .slerp(self.target_orientation, self.rotation_progress);
+
+            let (axis, angle) = animated_model_orientation.to_axis_angle();
+
+            d.draw_model_ex(
+                model,
+                world_pos,
+                axis,
+                angle.to_degrees(),
+                Vector3::ONE,
+                Color::WHITE,
+            );
+        }
+    }
+
+    /// Calculates the world-space position of the group's endpoint
+    /// Returns `None` if no local endpoint is defined
+    pub fn endpoint_world(&self) -> Option<Vector3> {
+        self.endpoint_local.map(|local| {
+            let mat = self.orientation.to_matrix();
+            let x = local.x;
+            let y = local.y;
+            let z = local.z;
+
+            let rx = mat.m0 * x + mat.m1 * y + mat.m2 * z;
+            let ry = mat.m4 * x + mat.m5 * y + mat.m6 * z;
+            let rz = mat.m8 * x + mat.m9 * y + mat.m10 * z;
+
+            Vector3::new(
+                self.position.x + rx,
+                self.position.y + ry,
+                self.position.z + rz,
+            )
+        })
     }
 
     /// Checks if the mouse cursor is currently hovering over any block in this group.
     pub fn is_mouse_over(&self, rl: &RaylibHandle, camera: &Camera3D) -> bool {
         let ray = rl.get_screen_to_world_ray(rl.get_mouse_position(), camera);
+        let mat = self
+            .orientation
+            .slerp(self.target_orientation, self.rotation_progress)
+            .to_matrix();
 
         for child in &self.children {
-            let world_child_pos = self.position + child.position;
+            // Transformation manuelle du point local en point monde
+            let x = child.position.x;
+            let y = child.position.y;
+            let z = child.position.z;
+
+            let rx = mat.m0 * x + mat.m1 * y + mat.m2 * z;
+            let ry = mat.m4 * x + mat.m5 * y + mat.m6 * z;
+            let rz = mat.m8 * x + mat.m9 * y + mat.m10 * z;
+
+            let world_child_pos = self.position + Vector3::new(rx, ry, rz);
 
             let half_size = child.size * 0.5;
             let bbox = BoundingBox::new(world_child_pos - half_size, world_child_pos + half_size);
+
             if bbox.get_ray_collision_box(ray).hit {
                 return true;
             }
@@ -178,15 +259,95 @@ impl GroupBlock {
                 self.rotation_progress = 1.0;
                 self.orientation = self.target_orientation;
                 self.is_rotating = false;
+                self.bake_rotation();
             }
-            self.sync_colliders()
+            self.sync_colliders();
         }
+    }
+
+    ///Permanently applies the current orientation to the children's local offsets
+    pub fn bake_rotation(&mut self) {
+        let mat = self.orientation.to_matrix();
+
+        for child in self.children.iter_mut() {
+            let x = child.position.x;
+            let y = child.position.y;
+            let z = child.position.z;
+
+            child.position = Vector3::new(
+                mat.m0 * x + mat.m1 * y + mat.m2 * z,
+                mat.m4 * x + mat.m5 * y + mat.m6 * z,
+                mat.m8 * x + mat.m9 * y + mat.m10 * z,
+            );
+
+            child.position.x = (child.position.x * 100.0).round() / 100.0;
+            child.position.y = (child.position.y * 100.0).round() / 100.0;
+            child.position.z = (child.position.z * 100.0).round() / 100.0;
+        }
+
+        if let Some(local) = self.endpoint_local {
+            let baked = Vector3::new(
+                mat.m0 * local.x + mat.m4 * local.y + mat.m8 * local.z,
+                mat.m1 * local.x + mat.m5 * local.y + mat.m9 * local.z,
+                mat.m2 * local.x + mat.m6 * local.y + mat.m10 * local.z,
+            );
+            self.endpoint_local = Some(Vector3::new(
+                (baked.x * 100.0).round() / 100.0,
+                (baked.y * 100.0).round() / 100.0,
+                (baked.z * 100.0).round() / 100.0,
+            ));
+        }
+
+        self.model_offset = transform_point(&mat, self.model_offset);
+
+        self.model_offset = Vector3::new(
+            (self.model_offset.x * 100.0).round() / 100.0,
+            (self.model_offset.y * 100.0).round() / 100.0,
+            (self.model_offset.z * 100.0).round() / 100.0,
+        );
+
+        self.model_orientation = self.model_orientation * self.orientation;
+        self.orientation = Quaternion::identity();
+        self.target_orientation = Quaternion::identity();
+
+        self.sync_colliders();
     }
 
     /// Synchronizes the position of all block colliders with their current world positions.
     pub fn sync_colliders(&mut self) {
+        let current_rot = if self.is_rotating {
+            self.orientation
+                .slerp(self.target_orientation, self.rotation_progress)
+        } else {
+            self.orientation
+        };
+
+        let mat = current_rot.to_matrix();
+
         for child in self.children.iter_mut() {
-            child.collider.offset = self.position + child.position;
+            let x = child.position.x;
+            let y = child.position.y;
+            let z = child.position.z;
+
+            let rx = mat.m0 * x + mat.m1 * y + mat.m2 * z;
+            let ry = mat.m4 * x + mat.m5 * y + mat.m6 * z;
+            let rz = mat.m8 * x + mat.m9 * y + mat.m10 * z;
+
+            child.collider.offset = Vector3::new(
+                self.position.x + rx,
+                self.position.y + ry,
+                self.position.z + rz,
+            );
+
+            let hs = child.size * 0.5;
+
+            let new_hs = Vector3::new(
+                (mat.m0 * hs.x).abs() + (mat.m4 * hs.y).abs() + (mat.m8 * hs.z).abs(),
+                (mat.m1 * hs.x).abs() + (mat.m5 * hs.y).abs() + (mat.m9 * hs.z).abs(),
+                (mat.m2 * hs.x).abs() + (mat.m6 * hs.y).abs() + (mat.m10 * hs.z).abs(),
+            );
+
+            child.collider.shape = CollisionShape::Box { half_size: new_hs };
         }
     }
 
@@ -244,7 +405,7 @@ impl GroupBlock {
     }
 }
 
-/// Custom renderer that applies a 2D texture to a 3D cube with correct UV mapping.
+///Renders a 3D cube with a texture applied to each of its six faces
 fn draw_cube_with_texture(
     tex: &Texture2D,
     position: Vector3,
@@ -313,4 +474,12 @@ unsafe fn draw_face(
     ffi::rlVertex3f(up_right.0, up_right.1, up_right.2);
     ffi::rlTexCoord2f(0.0, 0.0);
     ffi::rlVertex3f(up_left.0, up_left.1, up_left.2);
+}
+
+fn transform_point(mat: &Matrix, p: Vector3) -> Vector3 {
+    Vector3::new(
+        mat.m0 * p.x + mat.m1 * p.y + mat.m2 * p.z,
+        mat.m4 * p.x + mat.m5 * p.y + mat.m6 * p.z,
+        mat.m8 * p.x + mat.m9 * p.y + mat.m10 * p.z,
+    )
 }
