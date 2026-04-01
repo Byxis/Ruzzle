@@ -25,6 +25,7 @@ impl Room {
         }
     }
 
+    // Add a player to the room, if there is a place
     pub fn add_player(&mut self, player: Player) -> Result<(), String> {
         if self.player1.is_none() {
             self.player1 = Some(player);
@@ -37,6 +38,7 @@ impl Room {
         }
     }
 
+    // Remove a player from the room
     pub fn remove_player(&mut self, player: i32) -> Result<(), String> {
         if let Some(p) = &self.player1 {
             if p.id == player as u64 {
@@ -53,14 +55,17 @@ impl Room {
         Err("Player not found in room".to_string())
     }
 
+    // Check if the room is full
     pub fn is_full(&self) -> bool {
         self.player1.is_some() && self.player2.is_some()
     }
 
+    // Check if the room is empty
     pub fn is_empty(&self) -> bool {
         self.player1.is_none() && self.player2.is_none()
     }
 
+    // Return the number of players in the room
     pub fn player_count(&self) -> usize {
         let mut count = 0;
         if self.player1.is_some() {
@@ -72,6 +77,7 @@ impl Room {
         count
     }
 
+    // function that could be use in the future to change the state of the room depending of the game progress
     pub fn load_new_level(&mut self, level_id: i32) {
         match self.status {
             RoomStatus::WaitingRoom => self.status = RoomStatus::InGame(level_id),

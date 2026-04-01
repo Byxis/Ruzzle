@@ -53,7 +53,6 @@ pub fn treat_message(msg: RoomMessage, player: u64, room_manager: &mut RoomManag
             }
         }
         RoomMessage::UpdatePosition { position } => {
-            // println!("Updating position for player: {} to ({}, {}, {})", player, position.x, position.y, position.z);
             let _ = room_manager.update_player_position(player, position);
             RoomMessage::UpdatePosition { position }
         }

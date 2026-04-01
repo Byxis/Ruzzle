@@ -29,7 +29,7 @@ impl Username {
 /// Send the position of the player to the server that has been received from the main thread,
 /// Receive the position of the other player from the server and send it to the main thread.
 ///
-/// Based on the Renet example, that I adapted to Ruzzle logic.
+/// Based on the Renet example, that I adapted to Ruzzle logic: https://github.com/lucaspoffo/renet/blob/master/renetcode/examples/echo.rs
 pub fn client(tx: Sender<Position>, rx: Receiver<Position>, is_host: bool) {
     let connection_config = ConnectionConfig::default();
     let mut client = RenetClient::new(connection_config);

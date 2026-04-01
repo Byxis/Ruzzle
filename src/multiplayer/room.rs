@@ -9,7 +9,7 @@ pub enum RoomStatus {
     // Loading,
 }
 
-/// Struct to store all the information abour the current multiplayer session
+/// Struct to store all the information about the current multiplayer session
 /// Not used that much for now, but could be useful in the future
 pub struct Room {
     pub room_id: u64,

@@ -15,7 +15,7 @@ const PROTOCOL_ID: u64 = 7;
 /// Contains the initialisation of the socket, main loop of execution,
 /// the treatment of the messages received and sended.
 ///
-/// Based on the Renet example, that I adapted to Ruzzle logic.
+/// Based on the Renet example, that I adapted to Ruzzle logic: https://github.com/lucaspoffo/renet/blob/master/renetcode/examples/echo.rs
 pub fn server(public_addr: SocketAddr) {
     let connection_config = ConnectionConfig::default();
     let mut server: RenetServer = RenetServer::new(connection_config);
