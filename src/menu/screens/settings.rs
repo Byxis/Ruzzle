@@ -24,6 +24,7 @@ pub fn draw_settings(
     back_button: &Button,
     texture: Option<&Texture2D>,
     volume_slider : &mut Slider,
+    sound_slider : &mut Slider,
 ) {
     draw_text_center(
         d,
@@ -36,13 +37,22 @@ pub fn draw_settings(
 
     volume_slider.draw(d);
     d.draw_text(
-        "Volume",
+        "Musique",
         (config.screen_width / 4) as i32,
         (config.screen_height / 3 - 40) as i32,
         config.font_size_h2,
         Color::WHITE,
     );
 
+
+    sound_slider.draw(d);
+    d.draw_text(
+        "Effets sonores",
+        (config.screen_width / 4) as i32,
+        (config.screen_height / 2 - 40) as i32,
+        config.font_size_h2,
+        Color::WHITE,
+    );
     draw_back_button(
         d,
         back_button.rectangle,

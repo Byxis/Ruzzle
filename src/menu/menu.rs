@@ -1,7 +1,6 @@
 use crate::components::map::Map;
 use crate::config::Config;
 use crate::crab::crab::Crab;
-use crate::sound_manager;
 use raylib::prelude::*;
 use raylib::{ffi::KeyboardKey, RaylibHandle};
 
@@ -123,6 +122,7 @@ pub struct MenuManager<'a> {
     pub render_target: RenderTexture2D,
     pub sound_manager: SoundManager<'a>,
     pub volume_slider: Slider,
+    pub sound_slider: Slider,
 }
 
 impl<'a> MenuManager<'a> {
@@ -214,6 +214,13 @@ impl<'a> MenuManager<'a> {
             (config.screen_width / 2) as f32,
             30.0,
         );
+        let sound_slider = Slider::new(
+            (config.screen_width / 4) as f32,
+            (config.screen_height / 2) as f32,
+            (config.screen_width / 2) as f32,
+            30.0,
+        );
+        
 
         let shader_manager = ShaderManager::new(rl, thread);
         let day_cycle = DayCycleManager::new();
@@ -240,6 +247,7 @@ impl<'a> MenuManager<'a> {
             render_target,
             sound_manager,
             volume_slider,
+            sound_slider,
         }
     }
     /// Helper to build level selection buttons with a simple vertical layout.
@@ -413,6 +421,12 @@ impl<'a> MenuManager<'a> {
     fn update_settings(&mut self, rl: &RaylibHandle) {
         self.handle_back_button(rl);
         self.volume_slider.update(rl);
+
+        self.sound_slider.update(rl);
+
+        self.sound_manager.set_music_volume(self.volume_slider.value);
+        self.sound_manager.set_effect_volume(self.sound_slider.value);
+
         if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
             self.sound_manager.play_sound_effect(SoundEffect::Click);
             self.current_menu = Menu::Title;
@@ -581,6 +595,7 @@ impl<'a> MenuManager<'a> {
                         &self.back_button,
                         self.assets.textures.get(3),
                         &mut self.volume_slider,
+                        &mut self.sound_slider,
                     ),
                     Menu::Loading => draw_loading(d, &self.config, self.assets.textures.get(2)),
                     Menu::Credit => draw_credit(
