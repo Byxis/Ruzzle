@@ -1,7 +1,7 @@
 use crate::blocks::material::BlockMaterial;
 use crate::blocks::modele::{BlockType, GroupBlock};
 use crate::blocks::prefab::beach::{
-    flag_block, level1_moving_block, level2_moving_block, level_start,
+    flag_block, level1_moving_block, level2_moving_block, level3_rotating_block, level_start,
 };
 use crate::components::collider::Collider;
 use crate::menu::menu::Assets;
@@ -53,6 +53,13 @@ impl Level {
                     level2_moving_block(Vector3::new(5.0, 0.0, 5.0))
                         .with_end_pos(Vector3::new(0.0, 0.0, 5.0)),
                 );
+                spawnpoint = Vector3::new(0.0, 2.0, -8.0);
+                endpoint_group = Some(1);
+            }
+            3 => {
+                groups.push(level_start(Vector3::new(0.0, 0.0, -3.0)));
+                groups.push(flag_block(Vector3::new(0.0, 0.0, 8.0), rl, thread));
+                groups.push(level3_rotating_block(Vector3::new(0.0, 0.0, 0.0)));
                 spawnpoint = Vector3::new(0.0, 2.0, -8.0);
                 endpoint_group = Some(1);
             }

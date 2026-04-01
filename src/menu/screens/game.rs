@@ -61,6 +61,26 @@ pub fn draw_game(
                     Color::WHITE,
                 );
             }
+            2 => {
+                draw_text_center(
+                    d,
+                    "The problems",
+                    config.screen_width,
+                    (config.screen_height / 7) * 6 as i32,
+                    config.font_size_h2,
+                    Color::WHITE,
+                );
+            }
+            3 => {
+                draw_text_center(
+                    d,
+                    "Cubes can be rotated with the arrows of the keyboard...",
+                    config.screen_width,
+                    (config.screen_height / 7) * 6 as i32,
+                    config.font_size_h2,
+                    Color::WHITE,
+                );
+            }
             _ => {}
         }
     }

@@ -107,7 +107,7 @@ pub fn level2_moving_block(pos: Vector3) -> GroupBlock {
 pub fn level3_rotating_block(pos: Vector3) -> GroupBlock {
     let mut groups = vec![];
 
-    for z in -4..=-1 {
+    for z in -5..=5 {
         groups.push(BlockPrefab::new(
             Vector3::new(0.0, z as f32, 0.0),
             None,
@@ -115,13 +115,13 @@ pub fn level3_rotating_block(pos: Vector3) -> GroupBlock {
             BlockMaterial::sand(),
         ));
         groups.push(BlockPrefab::new(
-            Vector3::new(0.0, z as f32, 1.0),
+            Vector3::new(-1.0, z as f32, 0.0),
             None,
             BlockType::Fixe,
             BlockMaterial::sand(),
         ));
         groups.push(BlockPrefab::new(
-            Vector3::new(0.0, z as f32, -1.0),
+            Vector3::new(1.0, z as f32, 0.0),
             None,
             BlockType::Fixe,
             BlockMaterial::sand(),
