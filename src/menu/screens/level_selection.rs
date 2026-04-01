@@ -3,7 +3,6 @@ use crate::menu::menu::{Assets, Button};
 use crate::menu::utils::{draw_back_button, draw_interactive_button, draw_text_center};
 use raylib::prelude::Color;
 use raylib::prelude::RaylibDrawHandle;
-use raylib::prelude::*;
 
 /// Draws the level selection screen.
 ///
