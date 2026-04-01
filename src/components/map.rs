@@ -55,7 +55,7 @@ impl Map {
     }
 
     /// Draws the map using the given 3D drawing context.
-    pub fn draw(&self, d3d: &mut RaylibMode3D<'_, impl RaylibDraw>) {
+    pub fn draw(&self, d3d: &mut impl RaylibDraw3D) {
         d3d.draw_model_ex(
             &self.model,
             self.transform.position,
@@ -67,7 +67,7 @@ impl Map {
     }
 
     /// Draws the map's colliders using the given 3D drawing context.
-    pub fn draw_collider(&self, d3d: &mut RaylibMode3D<'_, impl RaylibDraw>) {
+    pub fn draw_collider(&self, d3d: &mut impl RaylibDraw3D) {
         for collider in &self.colliders {
             collider.draw(d3d, self.transform);
         }
