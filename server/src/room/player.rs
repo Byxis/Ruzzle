@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+/// Struct to store the data of a player connected to the server
+/// The id is the ClientId of the player
 #[derive(Clone)]
 pub struct Player {
     pub id: u64,
@@ -7,6 +9,8 @@ pub struct Player {
     pub position: Position,
 }
 
+/// Struct to store the position of a player in the game
+/// 3 axis position (x,y,z) and a rotation for the direction of the player
 #[derive(Serialize, Deserialize, Clone, Copy, Debug)]
 pub struct Position {
     pub x: f32,

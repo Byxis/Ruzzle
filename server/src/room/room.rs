@@ -1,5 +1,7 @@
 use crate::room::player::Player;
 
+/// Represents the status of a room,
+/// Not really used for the moment but could be useful for future versions
 pub enum RoomStatus {
     WaitingRoom,
     InGame(i32), // the number represents the level

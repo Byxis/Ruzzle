@@ -6,7 +6,7 @@ use server::server;
 
 fn main() {
     env_logger::init();
-    println!("Usage: server [SERVER_PORT] or client [SERVER_ADDR] [USER_NAME]");
+    println!("Usage: server [SERVER_PORT]");
     let args: Vec<String> = std::env::args().collect();
 
     let exec_type = &args[1];

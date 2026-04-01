@@ -3,6 +3,8 @@ use crate::room::room::Room;
 use renet::ClientId;
 use std::collections::HashMap;
 
+/// Structure to store the rooms of the server and find them easily
+/// Either by the room id, and also through the client thanks to HashMap in O(1)
 pub struct RoomManager {
     rooms: HashMap<u64, Room>,
     client_to_room: HashMap<ClientId, u64>, // Track which room each client is in
@@ -93,6 +95,7 @@ impl RoomManager {
         self.client_to_room.get(&client_id).copied()
     }
 
+    /// Update player position in the room
     pub fn update_player_position(
         &mut self,
         client_id: ClientId,
