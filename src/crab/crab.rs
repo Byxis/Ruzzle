@@ -11,6 +11,7 @@ use raylib::prelude::*;
 /// Each action will trigger a sound effect played in the menu manager
 #[derive(PartialEq, Eq, Hash, Clone, Copy)]
 pub enum CrabAction {
+    Idle,
     Move,
     Jump,
     Emote,
@@ -106,7 +107,7 @@ impl Crab {
         will_grounded: bool,
     ) -> (Transform3D,CrabAction) {
         let mut transform = self.transform.clone();
-        let mut action = CrabAction::Move; // Default action is Move, will be updated based on input
+        let mut action = CrabAction::Idle; // Default action is Idle, will be updated based on input
 
         self.crab_animator.handle_animation(rl, thread);
         let dt = rl.get_frame_time();
@@ -122,7 +123,7 @@ impl Crab {
         move_vec = move_vec.normalize();
 
         if move_vec.length() > 0.0 {
-            // Action is already set to Move
+            action = CrabAction::Move;
             transform.position += move_vec * CrabStats::CRAB_SPEED * dt;
 
             let angle_rad = move_vec.x.atan2(move_vec.z);

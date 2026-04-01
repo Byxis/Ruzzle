@@ -350,6 +350,9 @@ impl<'a> MenuManager<'a> {
             CrabAction::Emote => {
                 self.sound_manager.play_sound_effect(SoundEffect::Boing);
             }
+            CrabAction::Idle => {
+                // No sound effect for idle (could add one if desired)
+            }
         }
 
         t.position = map.resolve_collisions(&crab.collider, t.position);
