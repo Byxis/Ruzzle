@@ -336,7 +336,7 @@ impl<'a> MenuManager<'a> {
         let res = crab.calculate_next_transform(rl, &camera, &thread, is_grounded, will_grounded);
         // Unwrap tuple returned 
         let mut t = res.0;
-        let mut action = res.1;
+        let action = res.1;
 
         // Play sound effect based on crab action
         match action {
