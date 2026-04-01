@@ -46,3 +46,8 @@ jobs:
 
       - name: Run tests
         run: cargo test --verbose
+      
+      - name: Build server
+        run: |
+          cd server
+          cargo build --verbose
