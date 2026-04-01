@@ -110,6 +110,7 @@ impl Crab {
         move_vec = move_vec.normalize();
 
         if move_vec.length() > 0.0 {
+            //TODO : walking sound effect here (with a timer to avoid spamming ?)
             transform.position += move_vec * CrabStats::CRAB_SPEED * dt;
 
             let angle_rad = move_vec.x.atan2(move_vec.z);
@@ -118,6 +119,7 @@ impl Crab {
 
         // Y movement (jump mechanic)
         if rl.is_key_down(KeyboardKey::KEY_SPACE) && self.jump_timer <= 0.0 && is_grounded {
+            //TODO : jump sound effect here
             self.jump_timer = std::f32::consts::PI;
             self.jump_start_y = transform.position.y;
             self.has_landed = false;
@@ -151,6 +153,7 @@ impl Crab {
         }
 
         if self.crab_animator.current == CrabAnimation::Idle && rl.is_key_down(KeyboardKey::KEY_E) {
+            //TODO : emote sound effect here
             self.crab_animator.change_animation(CrabAnimation::Emote);
         }
 
