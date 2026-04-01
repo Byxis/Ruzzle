@@ -7,8 +7,9 @@ use crate::components::map::Map;
 use crate::components::transform::Transform3D;
 
 mod crab;
-
 use crate::crab::crab::Crab;
+
+mod discord;
 use crate::discord::rpc::discord_rpc;
 
 mod menu;

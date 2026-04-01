@@ -1,5 +1,4 @@
-use std::{env, thread, time};
-use discord_rpc_client::{Client, Event};
+use discord_rpc_client::{Client};
 
 pub fn discord_rpc() -> Client {
     let state_message = "Crab Rave";
