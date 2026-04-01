@@ -61,6 +61,8 @@ pub struct GroupBlock {
     pub end_pos: Vector3,
     pub is_dragging: bool,
     pub drag_timer: f32,
+
+    pub endpoint_local: Option<Vector3>,
 }
 
 impl GroupBlock {
@@ -84,6 +86,8 @@ impl GroupBlock {
             end_pos: pos,
             is_dragging: false,
             drag_timer: 0.0,
+
+            endpoint_local: None,
         }
     }
 
@@ -157,6 +161,26 @@ impl GroupBlock {
         }
     }
 
+    /// Returns the position of the world if endpoint
+    pub fn endpoint_world(&self) -> Option<Vector3> {
+        self.endpoint_local.map(|local| {
+            let mat = self.orientation.to_matrix();
+            let x = local.x;
+            let y = local.y;
+            let z = local.z;
+
+            let rx = mat.m0 * x + mat.m1 * y + mat.m2 * z;
+            let ry = mat.m4 * x + mat.m5 * y + mat.m6 * z;
+            let rz = mat.m8 * x + mat.m9 * y + mat.m10 * z;
+
+            Vector3::new(
+                self.position.x + rx,
+                self.position.y + ry,
+                self.position.z + rz,
+            )
+        })
+    }
+
     /// Checks if the mouse cursor is currently hovering over any block in this group.
     pub fn is_mouse_over(&self, rl: &RaylibHandle, camera: &Camera3D) -> bool {
         let ray = rl.get_screen_to_world_ray(rl.get_mouse_position(), camera);
@@ -197,7 +221,7 @@ impl GroupBlock {
                 self.is_rotating = false;
                 self.bake_rotation();
             }
-            self.sync_colliders(); // appelé pendant ET après l'animation
+            self.sync_colliders();
         }
     }
 
@@ -209,20 +233,35 @@ impl GroupBlock {
             let y = child.position.y;
             let z = child.position.z;
 
-            // Applique la rotation à la position locale
             child.position = Vector3::new(
                 mat.m0 * x + mat.m4 * y + mat.m8 * z,
                 mat.m1 * x + mat.m5 * y + mat.m9 * z,
                 mat.m2 * x + mat.m6 * y + mat.m10 * z,
             );
 
-            // Arrondi pour éviter l'accumulation d'erreurs flottantes
             child.position.x = (child.position.x * 100.0).round() / 100.0;
             child.position.y = (child.position.y * 100.0).round() / 100.0;
             child.position.z = (child.position.z * 100.0).round() / 100.0;
         }
 
-        // Reset orientation : le visuel repart de zéro, les positions locales portent la rotation
+        if let Some(local) = self.endpoint_local {
+            let x = local.x;
+            let y = local.y;
+            let z = local.z;
+
+            let baked = Vector3::new(
+                mat.m0 * x + mat.m1 * y + mat.m2 * z,
+                mat.m4 * x + mat.m5 * y + mat.m6 * z,
+                mat.m8 * x + mat.m9 * y + mat.m10 * z,
+            );
+
+            self.endpoint_local = Some(Vector3::new(
+                (baked.x * 100.0).round() / 100.0,
+                (baked.y * 100.0).round() / 100.0,
+                (baked.z * 100.0).round() / 100.0,
+            ));
+        }
+
         self.orientation = Quaternion::identity();
         self.target_orientation = Quaternion::identity();
 

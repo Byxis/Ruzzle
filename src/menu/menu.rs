@@ -283,7 +283,7 @@ impl MenuManager {
             Menu::Title => self.update_title(rl),
             Menu::Select => self.update_select(rl),
             Menu::LevelSelection => self.update_level_selection(rl, thread, crab),
-            Menu::Game => self.update_game(rl, thread, map, crab, camera, level),
+            Menu::Game => self.update_game(rl, thread, map, crab, camera),
             Menu::Settings => self.update_settings(rl),
             Menu::Multiplayer => self.update_multiplayer(rl),
             Menu::Loading => self.update_loading(rl),
@@ -377,7 +377,6 @@ impl MenuManager {
         map: &Map,
         crab: &mut Crab,
         camera: &Camera3D,
-        level: &Level,
     ) {
         if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
             self.current_menu = Menu::Title;
@@ -385,24 +384,21 @@ impl MenuManager {
 
         if let Some(level) = &mut self.current_level {
             level.update(rl);
-        }
 
-        let is_grounded = level.is_grounded(&crab.collider, crab.effective_position());
-        let will_grounded = level.is_grounded(
-            &crab.collider,
-            crab.effective_position() - Vector3::new(0.0, 0.4, 0.0),
-        );
+            let is_grounded = level.is_grounded(&crab.collider, crab.effective_position());
+            let will_grounded = level.is_grounded(
+                &crab.collider,
+                crab.effective_position() - Vector3::new(0.0, 0.4, 0.0),
+            );
 
-        let mut t = crab.calculate_next_transform(rl, &camera, &thread, is_grounded, will_grounded);
+            let mut t =
+                crab.calculate_next_transform(rl, &camera, &thread, is_grounded, will_grounded);
 
-        if let Some(level) = &self.current_level {
             t.position = level.resolve_collisions(&crab.collider, t.position);
-        }
 
-        t.position = level.handle_out_of_map(t.position);
-        crab.teleport(t);
+            t.position = level.handle_out_of_map(t.position);
+            crab.teleport(t);
 
-        if let Some(level) = &self.current_level {
             let radius = match crab.collider.shape {
                 CollisionShape::Sphere { radius } => radius,
                 _ => 1.0,

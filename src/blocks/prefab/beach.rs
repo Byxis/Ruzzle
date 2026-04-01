@@ -25,7 +25,10 @@ pub fn create_level1(pos: Vector3) -> GroupBlock {
             BlockMaterial::sand(),
         ));
     }
-    GroupBlock::new(pos, groups, BlockType::All)
+    let mut group = GroupBlock::new(pos, groups, BlockType::All);
+
+    group.endpoint_local = Some(Vector3::new(5.0, 1.0, 0.0));
+    group
 }
 
 pub fn create_level2(pos: Vector3) -> GroupBlock {

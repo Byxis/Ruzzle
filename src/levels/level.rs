@@ -20,7 +20,7 @@ pub struct Level {
     pub camera: Camera3D,
     pub selected_group: Option<usize>,
     pub spawnpoint: Vector3,
-    pub endpoint: Vector3,
+    pub endpoint_group: Option<usize>,
 }
 
 impl Level {
@@ -29,24 +29,24 @@ impl Level {
     pub fn new(index: i8) -> Self {
         let mut groups = Vec::new();
         let spawnpoint: Vector3;
-        let endpoint: Vector3;
+        let endpoint_group;
 
         match index {
             1 => {
                 groups.push(create_level1(Vector3::new(0.0, 0.0, 0.0)));
                 spawnpoint = Vector3::new(-5.0, 1.0, 0.0);
-                endpoint = Vector3::new(5.0, 0.0, 0.0);
+                endpoint_group = Some(0);
             }
             2 => {
                 //groups.push(create_level2(Vector3::new(0.0, 0.0, 0.0)));
                 spawnpoint = Vector3::new(-5.0, 1.0, 0.0);
-                endpoint = Vector3::new(5.0, 0.0, 0.0);
+                endpoint_group = Some(0);
             }
 
             _ => {
                 spawnpoint = Vector3::new(0.0, 0.0, 0.0);
 
-                endpoint = Vector3::new(0.0, 0.0, 0.0);
+                endpoint_group = None;
             }
         }
 
@@ -64,8 +64,20 @@ impl Level {
             groups,
             selected_group: None,
             spawnpoint: spawnpoint,
-            endpoint: endpoint,
+            endpoint_group,
         }
+    }
+
+    pub fn endpoint_world(&self) -> Option<Vector3> {
+        self.endpoint_group
+            .and_then(|i| self.groups.get(i))
+            .and_then(|g| g.endpoint_world())
+    }
+
+    pub fn is_at_endpoint(&self, pos: Vector3, radius: f32) -> bool {
+        self.endpoint_world()
+            .map(|ep| (pos - ep).length() < radius + 0.5)
+            .unwrap_or(false)
     }
 
     /// Updates the 3D placement of all the blocks of the level
@@ -157,10 +169,6 @@ impl Level {
             group.rotation_progress = 0.0;
             group.target_orientation = group.orientation * rot;
         }
-    }
-
-    pub fn is_at_endpoint(&self, pos: Vector3, radius: f32) -> bool {
-        (pos - self.endpoint).length() < radius + 0.5
     }
 
     pub fn update_drag(

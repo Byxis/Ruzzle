@@ -33,6 +33,9 @@ pub fn draw_game(
             let mut d3d = d.begin_mode3D(camera); // ← un seul begin_mode3D
             crab.draw(&mut d3d);
             level.draw(&mut d3d, assets);
+            if let Some(ep) = level.endpoint_world() {
+                d3d.draw_sphere(ep, 0.3, Color::GREEN);
+            }
         }
     }
 }
