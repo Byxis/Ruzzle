@@ -157,3 +157,30 @@ pub fn level4_rotating_block(pos: Vector3) -> GroupBlock {
 
     GroupBlock::new(pos, groups, BlockType::RotationV)
 }
+
+pub fn flag_block_hidden(pos: Vector3, rl: &mut RaylibHandle, thread: &RaylibThread) -> GroupBlock {
+    let mat = BlockMaterial::sand();
+    let children = vec![
+        BlockPrefab::new(Vector3::new(-0.5, 0.0, -0.5), None, BlockType::Fixe, mat),
+        BlockPrefab::new(Vector3::new(0.5, 0.0, -0.5), None, BlockType::Fixe, mat),
+        BlockPrefab::new(Vector3::new(-0.5, 0.0, 0.5), None, BlockType::Fixe, mat),
+        BlockPrefab::new(Vector3::new(0.5, 0.0, 0.5), None, BlockType::Fixe, mat),
+        BlockPrefab::new(Vector3::new(-0.5, 1.0, -0.5), None, BlockType::Fixe, mat),
+        BlockPrefab::new(Vector3::new(0.5, 1.0, -0.5), None, BlockType::Fixe, mat),
+        BlockPrefab::new(Vector3::new(-0.5, 1.0, 0.5), None, BlockType::Fixe, mat),
+        BlockPrefab::new(Vector3::new(0.5, 1.0, 0.5), None, BlockType::Fixe, mat),
+    ];
+
+    let mut group = GroupBlock::new(pos, children, BlockType::All);
+    group.endpoint_local = Some(Vector3::new(0.0, 1.0, 0.0));
+
+    group.model = rl.load_model(thread, "rsc/flag.glb").ok();
+    group.model_offset = Vector3::new(0.0, 1.0, 0.0);
+
+    group.orientation =
+        Quaternion::from_axis_angle(Vector3::new(0.0, 0.0, 1.0), 180.0f32.to_radians());
+
+    group.bake_rotation();
+
+    group
+}

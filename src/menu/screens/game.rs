@@ -84,7 +84,7 @@ pub fn draw_game(
             4 => {
                 draw_text_center(
                     d,
-                    "Patient must you be",
+                    "Patient, you must be - Yoda ",
                     config.screen_width,
                     (config.screen_height / 7) * 6 as i32,
                     config.font_size_h2,
