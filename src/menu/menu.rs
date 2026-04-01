@@ -19,6 +19,8 @@ use crate::menu::quotes::load_quotes;
 use crate::shader::daylight::DayCycleManager;
 use crate::shader::shader::ShaderManager;
 
+use crate::menu::slider::Slider;
+
 use crate::sound_manager::sound_manager::{SoundEffect, SoundManager};
 
 use crate::Transform3D;
@@ -128,6 +130,8 @@ pub struct MenuManager<'a> {
     pub day_cycle: DayCycleManager,
     pub render_target: RenderTexture2D,
     pub sound_manager: SoundManager<'a>,
+    pub volume_slider: Slider,
+    pub sound_slider: Slider,
     quotes : Vec<String>,
     current_quote : String,
     hidden_button : Button,
@@ -246,6 +250,19 @@ impl<'a> MenuManager<'a> {
             },
         ];
 
+        let volume_slider = Slider::new(
+            (config.screen_width / 4) as f32,
+            (config.screen_height / 3) as f32,
+            (config.screen_width / 2) as f32,
+            30.0,
+        );
+        let sound_slider = Slider::new(
+            (config.screen_width / 4) as f32,
+            (config.screen_height / 2) as f32,
+            (config.screen_width / 2) as f32,
+            30.0,
+        );
+
         let shader_manager = ShaderManager::new(rl, thread);
         let day_cycle = DayCycleManager::new();
         let render_target = rl
@@ -272,6 +289,8 @@ impl<'a> MenuManager<'a> {
             day_cycle,
             render_target,
             sound_manager,
+            volume_slider,
+            sound_slider,
             quotes,
             current_quote : current_quote,
             hidden_button,
@@ -548,6 +567,15 @@ impl<'a> MenuManager<'a> {
 
     fn update_settings(&mut self, rl: &RaylibHandle) {
         self.handle_back_button(rl);
+        self.volume_slider.update(rl);
+
+        self.sound_slider.update(rl);
+
+        self.sound_manager
+            .set_music_volume(self.volume_slider.value);
+        self.sound_manager
+            .set_effect_volume(self.sound_slider.value);
+
         if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
             self.sound_manager.play_sound_effect(SoundEffect::Click);
             self.current_menu = Menu::Title;
@@ -724,6 +752,8 @@ impl<'a> MenuManager<'a> {
                         &self.config,
                         &self.back_button,
                         self.assets.textures.get(3),
+                        &mut self.volume_slider,
+                        &mut self.sound_slider,
                     ),
                     Menu::Loading => draw_loading(d, &self.config, self.assets.textures.get(2)),
                     Menu::Credit => draw_credit(
