@@ -33,7 +33,10 @@ fn main() {
         .title("Ruzzle")
         .build();
 
-    let mut menu_manager = MenuManager::new(config, &mut rl, &thread);
+    let audio = RaylibAudio::init_audio_device().expect("Failed to initialize audio device");
+    let sound_manager = SoundManager::new(&audio, &config);
+
+    let mut menu_manager = MenuManager::new(&config, &mut rl, &thread, sound_manager);
     if rl.get_screen_width() != menu_manager.config.screen_width
         || rl.get_screen_height() != menu_manager.config.screen_height
     {
@@ -47,11 +50,6 @@ fn main() {
         Vector3::new(0.0, 1.0, 0.0),
         45.0,
     );
-
-    let audio = RaylibAudio::init_audio_device().expect("Failed to initialize audio device");
-    let mut sound_manager = SoundManager::new(&audio);
-    sound_manager.set_background_music(&audio, BackgroundMusic::CrabRave);
-    sound_manager.start_background_music();
 
     let spawn_point = Transform3D::new(Vector3::new(0.0, 5.0, 0.0), 0.0);
     let mut map = Map::new(&mut rl, &thread, "rsc/map.glb");
@@ -85,8 +83,14 @@ fn main() {
         .shader_manager
         .apply_cel_shade_to_model(&mut crab.crab_animator.model);
 
+    menu_manager
+        .sound_manager
+        .set_background_music(BackgroundMusic::CrabRave);
+    menu_manager.sound_manager.start_background_music();
+
     while !rl.window_should_close() {
-        sound_manager.update_music_stream();
+        menu_manager.sound_manager.update_music_stream();
+
         menu_manager.update(&mut rl, &thread, &map, &mut crab, &camera);
 
         {
