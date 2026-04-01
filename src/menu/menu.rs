@@ -15,6 +15,7 @@ use crate::menu::screens::{
 };
 
 use crate::levels::level::Level;
+use crate::menu::quotes::load_quotes;
 use crate::shader::daylight::DayCycleManager;
 use crate::shader::shader::ShaderManager;
 
@@ -127,6 +128,10 @@ pub struct MenuManager<'a> {
     pub day_cycle: DayCycleManager,
     pub render_target: RenderTexture2D,
     pub sound_manager: SoundManager<'a>,
+    quotes : Vec<String>,
+    current_quote : String,
+    hidden_button : Button,
+    show_quote : bool,
 }
 
 impl<'a> MenuManager<'a> {
@@ -140,7 +145,15 @@ impl<'a> MenuManager<'a> {
         let button_height = (config.screen_height as f32) * 0.1;
         let assets = Assets::new(rl, thread);
 
-        //let egg_menu = rl.load_texture(thread, "assets/egg.png").ok();
+
+        let quotes = load_quotes("rsc/citations.md");
+        let current_quote = quotes.get(0).cloned().unwrap_or_default();
+
+        let hidden_button = Button::new(
+            Rectangle::new(170.0, (config.screen_height - 100) as f32, 150.0, 100.0),
+            String::new(),
+            SelectMenuHoveredButtons::None,
+        );
         let level_buttons = vec![
             Self::create_level_button(&config, "Niveau 1", 0, button_width, button_height),
             Self::create_level_button(&config, "Niveau 2", 1, button_width, button_height),
@@ -259,6 +272,10 @@ impl<'a> MenuManager<'a> {
             day_cycle,
             render_target,
             sound_manager,
+            quotes,
+            current_quote : current_quote,
+            hidden_button,
+            show_quote: false,
         }
     }
     /// Helper to build level selection buttons with a simple vertical layout.
@@ -391,6 +408,22 @@ impl<'a> MenuManager<'a> {
     fn update_select(&mut self, rl: &mut RaylibHandle, thread: &RaylibThread, crab: &mut Crab) {
         let mouse_pos = rl.get_mouse_position();
         self.hovered_button = SelectMenuHoveredButtons::None;
+
+        
+        if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT)
+            && self.hidden_button.rectangle.check_collision_point_rec(mouse_pos)
+        {
+            if !self.quotes.is_empty() {
+                let max_index = self.quotes.len() as i32 - 1;
+                let index: i32 = rl.get_random_value::<i32>(0..max_index);
+                let safe_index = (index as usize).min(self.quotes.len() - 1);
+                self.current_quote = self.quotes[safe_index].clone();
+                self.show_quote = true;
+            }
+            }
+        
+
+
         for button in &self.buttons {
             if button.rectangle.check_collision_point_rec(mouse_pos) {
                 self.hovered_button = button.id;
@@ -653,7 +686,15 @@ impl<'a> MenuManager<'a> {
 
                 match self.current_menu {
                     Menu::Title => draw_title(d, &self.config),
-                    Menu::Select => draw_select(d, &self.config, &self.buttons),
+                    Menu::Select => draw_select(d, 
+                        &self.config, 
+                        &self.buttons,
+                        if self.show_quote {
+                            &self.current_quote
+                        } else {
+                            ""
+                        }
+                    ),
                     Menu::LevelSelection => draw_level_selection(
                         d,
                         &self.config,

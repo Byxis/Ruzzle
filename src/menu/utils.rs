@@ -199,3 +199,42 @@ pub fn draw_back_button(
 ) {
     draw_interactive_button(d, rect, texture, label, font_size);
 }
+
+/// Draws a text bubble for quotes.
+///
+/// # Arguments
+/// * d : &mut RaylibDrawHandle, to draw on the screen
+/// * text : &str, the quote to display
+/// * pos : Vector2, the top-left position of the bubble
+/// * font_size : i32, the font size for the text
+/// * max_width : f32, the maximum width of the bubble
+pub fn draw_quote_bubble(
+    d: &mut RaylibDrawHandle,
+    text: &str,
+    pos: Vector2,
+    font_size: i32,
+    max_width: f32,
+) {
+    let padding = 15.0;
+    let line_height = font_size as f32 + 5.0;
+    
+    // Estimer le nombre de lignes
+    let text_width = d.measure_text(text, font_size) as f32;
+    let approximate_lines = ((text_width / (max_width - padding * 2.0)).ceil()).max(1.0);
+    let text_height = approximate_lines * line_height;
+
+    let bubble_rect = Rectangle::new(pos.x, pos.y, max_width, text_height + padding * 2.0);
+
+    // Dessiner la bulle
+    d.draw_rectangle_rounded(bubble_rect, 0.2, 8, Color::new(240, 240, 240, 220));
+    d.draw_rectangle_rounded_lines(bubble_rect, 0.2, 8, Color::DARKGRAY);
+
+    // Dessiner le texte
+    d.draw_text(
+        text,
+        (pos.x + padding) as i32,
+        (pos.y + padding) as i32,
+        font_size,
+        Color::BLACK,
+    );
+}
