@@ -107,7 +107,7 @@ impl GroupBlock {
     }
 
     /// Renders all blocks in the group, applying current rotation and translation matrices.
-    pub fn draw(&self, d: &mut RaylibMode3D<RaylibDrawHandle>, assets: &Assets) {
+    pub fn draw(&self, d: &mut impl RaylibDraw3D, assets: &Assets) {
         let animated_orientation = self
             .orientation
             .slerp(self.target_orientation, self.rotation_progress);
@@ -191,7 +191,7 @@ impl GroupBlock {
     }
 
     /// Renders visual indicators for the movement path and destination when a group is being dragged.
-    pub fn draw_drag_guides(&self, d: &mut RaylibMode3D<RaylibDrawHandle>) {
+    pub fn draw_drag_guides(&self, d: &mut impl RaylibDraw3D) {
         if !self.is_dragging {
             return;
         }

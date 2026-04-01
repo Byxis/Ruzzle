@@ -241,7 +241,6 @@ impl Level {
                     group.draw_drag_guides(&mut d3d);
                 }
             }
-            d3d.draw_grid(10, 1.0);
         }
     }
 }

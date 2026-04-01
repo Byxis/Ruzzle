@@ -4,6 +4,7 @@ use crate::crab::crab_animator::CrabAnimation;
 use crate::crab::crab_animator::CrabAnimator;
 use crate::crab::crab_stats::CrabStats;
 use raylib::prelude::*;
+use std::f32::consts::PI;
 
 /// Enum representing the actions a crab can perform
 /// 
@@ -37,7 +38,7 @@ pub struct Crab {
     pub collider: Collider,
     jump_timer: f32,
     jump_start_y: f32,
-    crab_animator: CrabAnimator,
+    pub crab_animator: CrabAnimator,
     has_landed: bool,
 }
 
@@ -133,7 +134,7 @@ impl Crab {
         // Y movement (jump mechanic)
         if rl.is_key_down(KeyboardKey::KEY_SPACE) && self.jump_timer <= 0.0 && is_grounded {
             action = CrabAction::Jump;
-            self.jump_timer = std::f32::consts::PI;
+            self.jump_timer = PI;
             self.jump_start_y = transform.position.y;
             self.has_landed = false;
             self.crab_animator.jump();
@@ -145,7 +146,7 @@ impl Crab {
             let jump_displacement = self.jump_timer.max(0.0).sin() * CrabStats::JUMP_HIGH;
             transform.position.y = self.jump_start_y + jump_displacement;
 
-            let is_descending = self.jump_timer < std::f32::consts::PI / 2.0;
+            let is_descending = self.jump_timer < PI / 2.0;
 
             if is_descending && will_grounded && !self.has_landed {
                 self.crab_animator.land();
