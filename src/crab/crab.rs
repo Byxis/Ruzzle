@@ -25,7 +25,7 @@ pub struct Crab {
     pub collider: Collider,
     jump_timer: f32,
     jump_start_y: f32,
-    crab_animator: CrabAnimator,
+    pub crab_animator: CrabAnimator,
     has_landed: bool,
 }
 

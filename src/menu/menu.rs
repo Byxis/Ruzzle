@@ -3,6 +3,7 @@ use crate::components::map::Map;
 use crate::config::Config;
 use crate::crab::crab::Crab;
 use crate::menu::screens::draw_finish;
+use crate::sound_manager;
 use raylib::prelude::*;
 use raylib::{ffi::KeyboardKey, RaylibHandle};
 
@@ -14,6 +15,10 @@ use crate::menu::screens::{
 };
 
 use crate::levels::level::Level;
+use crate::shader::daylight::DayCycleManager;
+use crate::shader::shader::ShaderManager;
+
+use crate::sound_manager::sound_manager::{SoundEffect, SoundManager};
 
 use crate::Transform3D;
 
@@ -106,22 +111,31 @@ impl Button {
 /// It is used with two functions :
 /// * update to affect game logic and variables
 /// * draw to draw the graphical elements
-pub struct MenuManager {
+pub struct MenuManager<'a> {
     pub current_menu: Menu,
     pub frame_count: i32,
     pub buttons: Vec<Button>,
     pub level_buttons: Vec<Button>,
     pub back_button: Button,
-    pub config: Config,
+    pub config: &'a Config,
     pub hovered_button: SelectMenuHoveredButtons,
     pub current_level: Option<Level>,
     pub assets: Assets,
     pub win_buttons: Vec<Button>,
     pub current_level_index: i8,
+    pub shader_manager: ShaderManager,
+    pub day_cycle: DayCycleManager,
+    pub render_target: RenderTexture2D,
+    pub sound_manager: SoundManager<'a>,
 }
 
-impl MenuManager {
-    pub fn new(config: Config, rl: &mut RaylibHandle, thread: &RaylibThread) -> Self {
+impl<'a> MenuManager<'a> {
+    pub fn new(
+        config: &'a Config,
+        rl: &mut RaylibHandle,
+        thread: &RaylibThread,
+        sound_manager: SoundManager<'a>,
+    ) -> Self {
         let button_width = (config.screen_width as f32) * 0.2;
         let button_height = (config.screen_height as f32) * 0.1;
         let assets = Assets::new(rl, thread);
@@ -220,6 +234,16 @@ impl MenuManager {
             },
         ];
 
+        let shader_manager = ShaderManager::new(rl, thread);
+        let day_cycle = DayCycleManager::new();
+        let render_target = rl
+            .load_render_texture(
+                thread,
+                config.screen_width as u32,
+                config.screen_height as u32,
+            )
+            .expect("Failed to load render texture");
+
         MenuManager {
             current_menu: Menu::Title,
             frame_count: 0,
@@ -232,6 +256,10 @@ impl MenuManager {
             assets,
             win_buttons,
             current_level_index: 1,
+            shader_manager,
+            day_cycle,
+            render_target,
+            sound_manager,
         }
     }
     /// Helper to build level selection buttons with a simple vertical layout.
@@ -278,6 +306,21 @@ impl MenuManager {
         camera: &Camera3D,
     ) {
         self.frame_count += 1;
+
+        // Update shader uniforms and day cycle
+        self.shader_manager
+            .set_sunlight_color(self.day_cycle.get_light_color());
+        self.shader_manager
+            .set_ambient_color(self.day_cycle.get_ambient_color());
+        self.shader_manager.update_background_colors(
+            self.day_cycle.get_background_top(),
+            self.day_cycle.get_background_bottom(),
+        );
+        self.shader_manager.update_postprocess_resolution(
+            self.config.screen_width as f32,
+            self.config.screen_height as f32,
+        );
+
         match self.current_menu {
             Menu::Title => self.update_title(rl),
             Menu::Select => self.update_select(rl),
@@ -295,6 +338,7 @@ impl MenuManager {
     /// Update fonctions
     fn update_title(&mut self, rl: &RaylibHandle) {
         if rl.is_key_pressed(KeyboardKey::KEY_ENTER) {
+            self.sound_manager.play_sound_effect(SoundEffect::Click);
             self.current_menu = Menu::Loading;
             self.frame_count = 0;
         }
@@ -352,6 +396,7 @@ impl MenuManager {
             if button.rectangle.check_collision_point_rec(mouse_pos) {
                 self.hovered_button = button.id;
                 if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
+                    self.sound_manager.play_sound_effect(SoundEffect::Click);
                     match button.id {
                         SelectMenuHoveredButtons::Game => self.current_menu = Menu::Game,
                         SelectMenuHoveredButtons::LevelSelection => {
@@ -378,6 +423,7 @@ impl MenuManager {
         camera: &Camera3D,
     ) {
         if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
+            self.sound_manager.play_sound_effect(SoundEffect::Click);
             self.current_menu = Menu::Title;
         }
 
@@ -443,6 +489,8 @@ impl MenuManager {
                         };
                         crab.teleport(new_transform);
                     }
+                    self.sound_manager.play_sound_effect(SoundEffect::Click);
+                    self.current_level = Some(Level::new((i + 1) as i8));
                     self.current_menu = Menu::Game;
                 }
             }
@@ -452,6 +500,7 @@ impl MenuManager {
     fn update_multiplayer(&mut self, rl: &RaylibHandle) {
         self.handle_back_button(rl);
         if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
+            self.sound_manager.play_sound_effect(SoundEffect::Click);
             self.current_menu = Menu::Title;
         }
     }
@@ -459,6 +508,7 @@ impl MenuManager {
     fn update_settings(&mut self, rl: &RaylibHandle) {
         self.handle_back_button(rl);
         if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
+            self.sound_manager.play_sound_effect(SoundEffect::Click);
             self.current_menu = Menu::Title;
         }
     }
@@ -473,8 +523,14 @@ impl MenuManager {
     fn update_credit(&mut self, rl: &RaylibHandle) {
         self.handle_back_button(rl);
         if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
+            self.sound_manager.play_sound_effect(SoundEffect::Click);
             self.current_menu = Menu::Title;
         }
+    }
+
+    /// Returns true if the game is currently in the Game state
+    pub fn is_in_game(&self) -> bool {
+        matches!(self.current_menu, Menu::Game)
     }
 
     /// handle_back_button: common helper for menus that have a "Retour" button.
@@ -490,6 +546,7 @@ impl MenuManager {
             .check_collision_point_rec(mouse_pos)
         {
             if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
+                self.sound_manager.play_sound_effect(SoundEffect::Click);
                 self.current_menu = Menu::Select;
             }
         }
@@ -504,38 +561,12 @@ impl MenuManager {
     pub fn draw(
         &mut self,
         d: &mut RaylibDrawHandle,
+        thread: &RaylibThread,
         map: &Map,
         crab: &mut Crab,
         camera: &Camera3D,
     ) {
-        if let Some(text) = &self.assets.textures.get(4) {
-            draw_texture_contain(d, text, self.config.screen_width, self.config.screen_height);
-        } else {
-            d.clear_background(Color::BLACK);
-        };
-
         match self.current_menu {
-            Menu::Title => draw_title(d, &self.config),
-            Menu::Select => draw_select(d, &self.config, &self.buttons),
-            Menu::LevelSelection => draw_level_selection(
-                d,
-                &self.config,
-                &self.level_buttons,
-                &self.assets,
-                &self.back_button,
-            ),
-            Menu::Multiplayer => draw_multiplayer(
-                d,
-                &self.config,
-                &self.back_button,
-                self.assets.textures.get(3),
-            ),
-            Menu::Settings => draw_settings(
-                d,
-                &self.config,
-                &self.back_button,
-                self.assets.textures.get(3),
-            ),
             Menu::Game => {
                 if let Some(level) = &mut self.current_level {
                     draw_game(
@@ -548,6 +579,46 @@ impl MenuManager {
                         &self.assets,
                         self.current_level_index,
                     );
+                    // Draw 3D scene into RenderTexture
+                    {
+                        let mut td = d.begin_texture_mode(thread, &mut self.render_target);
+                        td.clear_background(Color::new(0, 0, 0, 0));
+
+                        draw_game(
+                            &mut td,
+                            crab,
+                            map,
+                            camera,
+                            level,
+                            &self.assets,
+                            &mut self.shader_manager.cel_shade_shader,
+                        );
+                    }
+
+                    // Draw the RenderTexture to screen with post-process shader
+                    {
+                        let menu_flag = 0i32;
+                        self.shader_manager.postprocess_shader.set_shader_value(
+                            self.shader_manager
+                                .postprocess_shader
+                                .get_shader_location("isMenuBackground"),
+                            menu_flag,
+                        );
+
+                        let mut sd =
+                            d.begin_shader_mode(&mut self.shader_manager.postprocess_shader);
+                        sd.draw_texture_rec(
+                            self.render_target.texture(),
+                            Rectangle::new(
+                                0.0,
+                                0.0,
+                                self.render_target.texture().width as f32,
+                                -(self.render_target.texture().height as f32),
+                            ),
+                            Vector2::new(0.0, 0.0),
+                            Color::WHITE,
+                        );
+                    }
                 } else {
                     d.draw_text("Erreur : Aucun niveau chargé", 10, 10, 20, Color::RED);
                 }
@@ -567,6 +638,78 @@ impl MenuManager {
                 &self.win_buttons,
             ),
             Menu::Finish => draw_finish(d, &self.config),
+            _ => {
+                if let Some(text) = &self.assets.textures.get(4) {
+                    {
+                        let mut td = d.begin_texture_mode(thread, &mut self.render_target);
+                        td.clear_background(Color::BLACK);
+                        draw_texture_contain(
+                            &mut td,
+                            text,
+                            self.config.screen_width,
+                            self.config.screen_height,
+                        );
+                    }
+
+                    {
+                        let menu_flag = 1i32;
+                        self.shader_manager.postprocess_shader.set_shader_value(
+                            self.shader_manager
+                                .postprocess_shader
+                                .get_shader_location("isMenu"),
+                            menu_flag,
+                        );
+
+                        let mut sd =
+                            d.begin_shader_mode(&mut self.shader_manager.postprocess_shader);
+                        sd.draw_texture_rec(
+                            self.render_target.texture(),
+                            Rectangle::new(
+                                0.0,
+                                0.0,
+                                self.render_target.texture().width as f32,
+                                -(self.render_target.texture().height as f32),
+                            ),
+                            Vector2::new(0.0, 0.0),
+                            Color::WHITE,
+                        );
+                    }
+                } else {
+                    d.clear_background(Color::BLACK);
+                }
+
+                match self.current_menu {
+                    Menu::Title => draw_title(d, &self.config),
+                    Menu::Select => draw_select(d, &self.config, &self.buttons),
+                    Menu::LevelSelection => draw_level_selection(
+                        d,
+                        &self.config,
+                        &self.level_buttons,
+                        &self.assets,
+                        &self.back_button,
+                    ),
+                    Menu::Multiplayer => draw_multiplayer(
+                        d,
+                        &self.config,
+                        &self.back_button,
+                        self.assets.textures.get(3),
+                    ),
+                    Menu::Settings => draw_settings(
+                        d,
+                        &self.config,
+                        &self.back_button,
+                        self.assets.textures.get(3),
+                    ),
+                    Menu::Loading => draw_loading(d, &self.config, self.assets.textures.get(2)),
+                    Menu::Credit => draw_credit(
+                        d,
+                        &self.config,
+                        &self.back_button,
+                        self.assets.textures.get(3),
+                    ),
+                    _ => {}
+                }
+            }
         }
     }
 }

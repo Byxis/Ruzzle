@@ -30,14 +30,20 @@ pub fn draw_game(
     level: &mut Level,
     assets: &Assets,
     level_id: i8,
+    shader: &mut Shader,
 ) {
     {
-        level.handle_input_from_draw(d, camera); // ← sélection avec la bonne caméra
+        level.handle_input_from_draw(d, camera);
 
         {
-            let mut d3d = d.begin_mode3D(camera); // ← un seul begin_mode3D
+            let mut d3d = d.begin_mode3D(camera);
+          
+            let mut s = d3d.begin_shader_mode(shader);
             crab.draw(&mut d3d);
             level.draw(&mut d3d, assets);
+          
+            map.draw(&mut s);
+     
             if let Some(ep) = level.endpoint_world() {
                 d3d.draw_sphere(ep, 0.3, Color::GREEN);
             }
