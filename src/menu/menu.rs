@@ -342,7 +342,6 @@ impl<'a> MenuManager<'a> {
         match action {
             CrabAction::Move => {
                 self.sound_manager.play_sound_effect(SoundEffect::Walking);
-                //TODO : add a timer to avoid spamming the sound effect when moving ?
             }
             CrabAction::Jump => {
                 self.sound_manager.play_sound_effect(SoundEffect::Jump);
