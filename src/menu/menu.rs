@@ -463,19 +463,6 @@ impl<'a> MenuManager<'a> {
                 self.current_menu = Menu::Win;
                 self.current_level = None;
             }
-
-            if let Some(level) = &self.current_level {
-                for group in &level.groups {
-                    for child in &group.children {
-                        println!(
-                            "offset={:.1},{:.1},{:.1}",
-                            child.collider.offset.x,
-                            child.collider.offset.y,
-                            child.collider.offset.z
-                        );
-                    }
-                }
-            }
         }
     }
 
