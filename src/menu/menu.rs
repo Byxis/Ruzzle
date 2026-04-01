@@ -406,6 +406,19 @@ impl MenuManager {
                 self.current_menu = Menu::Win;
                 self.current_level = None;
             }
+
+            if let Some(level) = &self.current_level {
+                for group in &level.groups {
+                    for child in &group.children {
+                        println!(
+                            "offset={:.1},{:.1},{:.1}",
+                            child.collider.offset.x,
+                            child.collider.offset.y,
+                            child.collider.offset.z
+                        );
+                    }
+                }
+            }
         }
     }
 
@@ -525,7 +538,16 @@ impl MenuManager {
             ),
             Menu::Game => {
                 if let Some(level) = &mut self.current_level {
-                    draw_game(d, crab, map, camera, level, &self.assets);
+                    draw_game(
+                        d,
+                        &self.config,
+                        crab,
+                        map,
+                        camera,
+                        level,
+                        &self.assets,
+                        self.current_level_index,
+                    );
                 } else {
                     d.draw_text("Erreur : Aucun niveau chargé", 10, 10, 20, Color::RED);
                 }

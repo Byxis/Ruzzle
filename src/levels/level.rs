@@ -1,6 +1,8 @@
 use crate::blocks::material::BlockMaterial;
 use crate::blocks::modele::{BlockType, GroupBlock};
-use crate::blocks::prefab::beach::{create_level1, create_level2, flag_block};
+use crate::blocks::prefab::beach::{
+    flag_block, level1_moving_block, level2_moving_block, level_start,
+};
 use crate::components::collider::Collider;
 use crate::menu::menu::Assets;
 use raylib::prelude::*;
@@ -33,15 +35,26 @@ impl Level {
 
         match index {
             1 => {
-                groups.push(create_level1(Vector3::new(0.0, 0.0, 0.0)));
-                groups.push(flag_block(Vector3::new(5.0, 1.0, 0.0), rl, thread));
-                spawnpoint = Vector3::new(-5.0, 1.0, 0.0);
+                groups.push(level_start(Vector3::new(0.0, 0.0, -3.0)));
+                groups.push(flag_block(Vector3::new(0.0, 0.0, 8.0), rl, thread));
+                groups.push(
+                    level1_moving_block(Vector3::new(-10.0, 0.0, 0.0)).with_end_pos(Vector3::ZERO),
+                );
+                spawnpoint = Vector3::new(0.0, 2.0, -8.0);
                 endpoint_group = Some(1);
             }
             2 => {
-                //groups.push(create_level2(Vector3::new(0.0, 0.0, 0.0)));
-                spawnpoint = Vector3::new(-5.0, 1.0, 0.0);
-                endpoint_group = Some(0);
+                groups.push(level_start(Vector3::new(0.0, 0.0, -3.0)));
+                groups.push(flag_block(Vector3::new(0.0, 0.0, 8.0), rl, thread));
+                groups.push(
+                    level2_moving_block(Vector3::new(-10.0, 0.0, 0.0)).with_end_pos(Vector3::ZERO),
+                );
+                groups.push(
+                    level2_moving_block(Vector3::new(5.0, 0.0, 5.0))
+                        .with_end_pos(Vector3::new(0.0, 0.0, 5.0)),
+                );
+                spawnpoint = Vector3::new(0.0, 2.0, -8.0);
+                endpoint_group = Some(1);
             }
 
             _ => {
@@ -241,18 +254,17 @@ impl Level {
     /// Returns `true` if the map collides with the given collider at the given position.
     pub fn collides_with(&self, other: &Collider, pos: Vector3) -> bool {
         self.groups.iter().any(|g| {
-            g.children.iter().any(|child| {
-                let world_pos = child.collider.offset;
-                child.collider.collides_with(world_pos, other, pos)
-            })
+            g.children
+                .iter()
+                .any(|child| child.collider.collides_with(Vector3::ZERO, other, pos))
         })
     }
     /// Resolves collisions for the given collider at the given position, returning the new position
     pub fn resolve_collisions(&self, collider: &Collider, mut pos: Vector3) -> Vector3 {
         for group in &self.groups {
             for child in &group.children {
-                let world_pos = child.collider.offset;
-                if let Some(push) = collider.get_penetration_vector(pos, &child.collider, world_pos)
+                if let Some(push) =
+                    collider.get_penetration_vector(pos, &child.collider, Vector3::ZERO)
                 {
                     pos += push;
                 }

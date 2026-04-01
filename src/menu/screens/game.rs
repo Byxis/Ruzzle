@@ -1,7 +1,10 @@
+use crate::components::collider::CollisionShape;
 use crate::components::map::Map;
 use crate::crab::crab::Crab;
 use crate::levels::level::Level;
-use crate::menu::menu::Assets;
+use crate::menu::menu::{self, Assets};
+use crate::menu::utils::draw_text_center;
+use crate::Config;
 use raylib::prelude::RaylibDrawHandle;
 use raylib::prelude::*;
 
@@ -20,11 +23,13 @@ use raylib::prelude::*;
 /// * config : &Config, used for screen dimensions and configuration settings
 pub fn draw_game(
     d: &mut RaylibDrawHandle,
+    config: &Config,
     crab: &mut Crab,
     map: &Map,
     camera: &Camera3D,
     level: &mut Level,
     assets: &Assets,
+    level_id: i8,
 ) {
     {
         level.handle_input_from_draw(d, camera); // ← sélection avec la bonne caméra
@@ -36,6 +41,27 @@ pub fn draw_game(
             if let Some(ep) = level.endpoint_world() {
                 d3d.draw_sphere(ep, 0.3, Color::GREEN);
             }
+
+            for group in &level.groups {
+                for child in &group.children {
+                    if let CollisionShape::Box { half_size } = child.collider.shape {
+                        d3d.draw_cube_wires_v(child.collider.offset, half_size * 2.0, Color::RED);
+                    }
+                }
+            }
+        }
+        match level_id {
+            1 => {
+                draw_text_center(
+                    d,
+                    "You can drag group of cubes to a certain position to help you",
+                    config.screen_width,
+                    (config.screen_height / 7) * 6 as i32,
+                    config.font_size_h2,
+                    Color::WHITE,
+                );
+            }
+            _ => {}
         }
     }
 }

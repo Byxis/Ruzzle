@@ -100,7 +100,9 @@ impl GroupBlock {
     /// Helper to create a `GroupBlock` containing only one block at the given position.
     pub fn single(pos: Vector3, block_type: BlockType, material: BlockMaterial) -> Self {
         let child = BlockPrefab::new(Vector3::ZERO, None, block_type.clone(), material);
-        Self::new(pos, vec![child], block_type)
+        let mut group = Self::new(pos, vec![child], block_type);
+        group.sync_colliders();
+        group
     }
 
     /// Applies a temporary highlight color to all blocks in the group.
@@ -282,16 +284,11 @@ impl GroupBlock {
         }
 
         if let Some(local) = self.endpoint_local {
-            let x = local.x;
-            let y = local.y;
-            let z = local.z;
-
             let baked = Vector3::new(
-                mat.m0 * x + mat.m1 * y + mat.m2 * z,
-                mat.m4 * x + mat.m5 * y + mat.m6 * z,
-                mat.m8 * x + mat.m9 * y + mat.m10 * z,
+                mat.m0 * local.x + mat.m4 * local.y + mat.m8 * local.z,
+                mat.m1 * local.x + mat.m5 * local.y + mat.m9 * local.z,
+                mat.m2 * local.x + mat.m6 * local.y + mat.m10 * local.z,
             );
-
             self.endpoint_local = Some(Vector3::new(
                 (baked.x * 100.0).round() / 100.0,
                 (baked.y * 100.0).round() / 100.0,
@@ -331,7 +328,6 @@ impl GroupBlock {
         let mat = current_rot.to_matrix();
 
         for child in self.children.iter_mut() {
-            // 1. Rotation de la position relative
             let x = child.position.x;
             let y = child.position.y;
             let z = child.position.z;
@@ -340,26 +336,20 @@ impl GroupBlock {
             let ry = mat.m1 * x + mat.m5 * y + mat.m9 * z;
             let rz = mat.m2 * x + mat.m6 * y + mat.m10 * z;
 
-            // On met à jour l'offset (position mondiale du collider)
             child.collider.offset = Vector3::new(
                 self.position.x + rx,
                 self.position.y + ry,
                 self.position.z + rz,
             );
 
-            // 2. Mise à jour de la forme (CollisionShape)
-            // On récupère la demi-taille initiale du bloc (avant rotation)
-            let hs = Vector3::new(child.size.x / 2.0, child.size.y / 2.0, child.size.z / 2.0);
+            let hs = child.size * 0.5;
 
-            // On calcule l'extension maximale sur chaque axe après rotation
-            // pour garder une AABB (Axis-Aligned Bounding Box) cohérente
             let new_hs = Vector3::new(
                 (mat.m0 * hs.x).abs() + (mat.m4 * hs.y).abs() + (mat.m8 * hs.z).abs(),
                 (mat.m1 * hs.x).abs() + (mat.m5 * hs.y).abs() + (mat.m9 * hs.z).abs(),
                 (mat.m2 * hs.x).abs() + (mat.m6 * hs.y).abs() + (mat.m10 * hs.z).abs(),
             );
 
-            // SYNTAXE CORRECTE pour ta variante struct :
             child.collider.shape = CollisionShape::Box { half_size: new_hs };
         }
     }
