@@ -5,6 +5,16 @@ use crate::crab::crab_animator::CrabAnimator;
 use crate::crab::crab_stats::CrabStats;
 use raylib::prelude::*;
 
+/// Enum representing the actions a crab can perform
+/// 
+/// They are used for sound effecting purposes
+/// Each action will trigger a sound effect played in the menu manager
+enum CrabAction {
+    Move,
+    Jump,
+    Emote,
+}
+
 /// Represents a crab character in the game world.
 ///
 /// Contains a transform and collider for positioning and collision detection,
@@ -93,8 +103,9 @@ impl Crab {
         thread: &RaylibThread,
         is_grounded: bool,
         will_grounded: bool,
-    ) -> Transform3D {
+    ) -> (Transform3D,CrabAction) {
         let mut transform = self.transform.clone();
+        let mut action = CrabAction::Move; // Default action is Move, will be updated based on input
 
         self.crab_animator.handle_animation(rl, thread);
         let dt = rl.get_frame_time();
@@ -110,7 +121,7 @@ impl Crab {
         move_vec = move_vec.normalize();
 
         if move_vec.length() > 0.0 {
-            //TODO : walking sound effect here (with a timer to avoid spamming ?)
+            // Action is already set to Move
             transform.position += move_vec * CrabStats::CRAB_SPEED * dt;
 
             let angle_rad = move_vec.x.atan2(move_vec.z);
@@ -119,7 +130,7 @@ impl Crab {
 
         // Y movement (jump mechanic)
         if rl.is_key_down(KeyboardKey::KEY_SPACE) && self.jump_timer <= 0.0 && is_grounded {
-            //TODO : jump sound effect here
+            action = CrabAction::Jump;
             self.jump_timer = std::f32::consts::PI;
             self.jump_start_y = transform.position.y;
             self.has_landed = false;
@@ -153,11 +164,11 @@ impl Crab {
         }
 
         if self.crab_animator.current == CrabAnimation::Idle && rl.is_key_down(KeyboardKey::KEY_E) {
-            //TODO : emote sound effect here
+            action = CrabAction::Emote;
             self.crab_animator.change_animation(CrabAnimation::Emote);
         }
 
-        return transform;
+        return (transform, action);
     }
 
     /// Get crab effective position (position - model offset)
