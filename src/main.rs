@@ -5,6 +5,7 @@ mod components;
 use crate::components::collider::Collider;
 use crate::components::map::Map;
 use crate::components::transform::Transform3D;
+use crate::levels::level::Level;
 
 mod crab;
 use crate::crab::crab::Crab;
@@ -56,6 +57,8 @@ fn main() {
     map.set_position(Vector3::new(0.0, -0.2, 0.0));
     map.set_spawn_point(spawn_point);
 
+    let mut level = Level::new(1);
+
     /*
     map.add_collider(Collider::with_box_from_size(16.0, 0.2, 16.0));
     map.add_collider(Collider::with_box_from_size_offset(
@@ -87,7 +90,7 @@ fn main() {
         sound_manager.update_music_stream();
 
         //Updating the game
-        menu_manager.update(&mut rl, &thread, &map, &mut crab, &camera);
+        menu_manager.update(&mut rl, &thread, &map, &mut crab, &camera, &level);
 
         //Drawing the game
         let mut d = rl.begin_drawing(&thread);

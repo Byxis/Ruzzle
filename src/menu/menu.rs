@@ -13,6 +13,8 @@ use crate::menu::screens::{
 
 use crate::levels::level::Level;
 
+use crate::Transform3D;
+
 pub struct Assets {
     pub textures: Vec<Texture2D>,
 }
@@ -246,13 +248,14 @@ impl MenuManager {
         map: &Map,
         crab: &mut Crab,
         camera: &Camera3D,
+        level: &Level,
     ) {
         self.frame_count += 1;
         match self.current_menu {
             Menu::Title => self.update_title(rl),
             Menu::Select => self.update_select(rl),
-            Menu::LevelSelection => self.update_level_selection(rl, thread),
-            Menu::Game => self.update_game(rl, thread, map, crab, camera),
+            Menu::LevelSelection => self.update_level_selection(rl, thread, crab),
+            Menu::Game => self.update_game(rl, thread, map, crab, camera, level),
             Menu::Settings => self.update_settings(rl),
             Menu::Multiplayer => self.update_multiplayer(rl),
             Menu::Loading => self.update_loading(rl),
@@ -305,6 +308,7 @@ impl MenuManager {
         map: &Map,
         crab: &mut Crab,
         camera: &Camera3D,
+        level: &Level,
     ) {
         if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
             self.current_menu = Menu::Title;
@@ -314,24 +318,28 @@ impl MenuManager {
             level.update(rl);
         }
 
-        let is_grounded = map.is_grounded(&crab.collider, crab.effective_position());
-        let will_grounded = map.is_grounded(
+        let is_grounded = level.is_grounded(&crab.collider, crab.effective_position());
+        let will_grounded = level.is_grounded(
             &crab.collider,
             crab.effective_position() - Vector3::new(0.0, 0.4, 0.0),
         );
 
         let mut t = crab.calculate_next_transform(rl, &camera, &thread, is_grounded, will_grounded);
 
-        t.position = map.resolve_collisions(&crab.collider, t.position);
-
         if let Some(level) = &self.current_level {
             t.position = level.resolve_collisions(&crab.collider, t.position);
         }
-        t.position = map.handle_out_of_map(t.position);
+
+        t.position = level.handle_out_of_map(t.position);
         crab.teleport(t);
     }
 
-    fn update_level_selection(&mut self, rl: &mut RaylibHandle, thread: &RaylibThread) {
+    fn update_level_selection(
+        &mut self,
+        rl: &mut RaylibHandle,
+        thread: &RaylibThread,
+        crab: &mut Crab,
+    ) {
         self.handle_back_button(rl);
 
         let mouse_pos = rl.get_mouse_position();
@@ -339,6 +347,13 @@ impl MenuManager {
             if button.rectangle.check_collision_point_rec(mouse_pos) {
                 if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
                     self.current_level = Some(Level::new((i + 1) as i8));
+                    if let Some(level) = self.current_level.as_ref() {
+                        let new_transform = Transform3D {
+                            position: level.spawnpoint,
+                            rotation: 0.0,
+                        };
+                        crab.teleport(new_transform);
+                    }
                     self.current_menu = Menu::Game;
                 }
             }

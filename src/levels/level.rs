@@ -3,7 +3,6 @@ use crate::blocks::modele::{BlockType, GroupBlock};
 use crate::blocks::prefab::beach::{create_level1, create_level2};
 use crate::components::collider::Collider;
 use crate::menu::menu::Assets;
-use raylib::math::glam::vec3;
 use raylib::prelude::*;
 
 /// Represents a 3D level with a group of blocks.
@@ -20,6 +19,7 @@ pub struct Level {
     pub groups: Vec<GroupBlock>,
     pub camera: Camera3D,
     pub selected_group: Option<usize>,
+    pub spawnpoint: Vector3,
 }
 
 impl Level {
@@ -27,11 +27,21 @@ impl Level {
     /// To add a new level, just add the index and the group of blocks wanted
     pub fn new(index: i8) -> Self {
         let mut groups = Vec::new();
+        let spawnpoint: Vector3;
 
         match index {
-            1 => groups.push(create_level1(Vector3::new(0.0, 0.0, 0.0))),
-            2 => groups.push(create_level2(Vector3::new(0.0, 0.0, 0.0))),
-            _ => {}
+            1 => {
+                groups.push(create_level1(Vector3::new(0.0, 0.0, 0.0)));
+                spawnpoint = Vector3::new(-5.0, 1.0, 0.0);
+            }
+            2 => {
+                groups.push(create_level2(Vector3::new(0.0, 0.0, 0.0)));
+                spawnpoint = Vector3::new(-5.0, 1.0, 0.0);
+            }
+
+            _ => {
+                spawnpoint = Vector3::new(0.0, 0.0, 0.0);
+            }
         }
 
         for group in groups.iter_mut() {
@@ -47,6 +57,7 @@ impl Level {
             ),
             groups,
             selected_group: None,
+            spawnpoint: spawnpoint,
         }
     }
 
@@ -244,5 +255,18 @@ impl Level {
                 group.draw_drag_guides(d3d);
             }
         }
+    }
+
+    /// Check if the given position is out of the map bounds, and returns the spawn point position in that case.
+    pub fn handle_out_of_map(&self, position: Vector3) -> Vector3 {
+        if position.x < -50.0
+            || position.x > 50.0
+            || position.z < -50.0
+            || position.z > 50.0
+            || position.y < -20.0
+        {
+            return self.spawnpoint;
+        }
+        position
     }
 }
