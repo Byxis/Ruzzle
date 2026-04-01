@@ -49,17 +49,17 @@ pub fn draw_game(
             1 => {
                 draw_text_center(
                     d,
-                    "Tu peux bouger de place les blocks en cliquant longtemps et en déplaçant la souris",
+                    "Tu peux bouger les cubes en cliquant longtemps et en déplaçant la souris.",
                     config.screen_width,
                     (config.screen_height / 7) * 6 as i32,
-                    config.font_size_h2,
+                    config.font_size_h2 -2,
                     Color::WHITE,
                 );
             }
             2 => {
                 draw_text_center(
                     d,
-                    "Les problèmes",
+                    "Les problèmes...",
                     config.screen_width,
                     (config.screen_height / 7) * 6 as i32,
                     config.font_size_h2,
@@ -69,7 +69,7 @@ pub fn draw_game(
             3 => {
                 draw_text_center(
                     d,
-                    "Certains cubes peuvent être rotationner avec les flèches du claviers ...",
+                    "Si seulement des cubes pouvaient être bougés avec les flèches du clavier ...",
                     config.screen_width,
                     (config.screen_height / 7) * 6 as i32,
                     config.font_size_h2,
@@ -79,7 +79,7 @@ pub fn draw_game(
             4 => {
                 draw_text_center(
                     d,
-                    "Patient, tu dois l'être - Yoda ",
+                    "Être patient, tu dois. - Yoda ",
                     config.screen_width,
                     (config.screen_height / 7) * 6 as i32,
                     config.font_size_h2,
