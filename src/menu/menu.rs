@@ -683,6 +683,14 @@ impl<'a> MenuManager<'a> {
                         &self.back_button,
                         self.assets.textures.get(3),
                     ),
+                    Menu::Win => draw_win(
+                        d,
+                        &self.config,
+                        &self.back_button,
+                        self.assets.textures.get(3),
+                        &self.win_buttons,
+                    ),
+                    Menu::Finish => draw_finish(d, &self.config),
                     _ => {}
                 }
             }
