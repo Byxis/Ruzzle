@@ -50,6 +50,7 @@ pub fn draw_game(
                 d3d.draw_sphere(ep, 0.3, Color::GREEN);
             }
 
+            /*
             for group in &level.groups {
                 for child in &group.children {
                     if let CollisionShape::Box { half_size } = child.collider.shape {
@@ -57,6 +58,7 @@ pub fn draw_game(
                     }
                 }
             }
+            */
         }
         match level_id {
             1 => {

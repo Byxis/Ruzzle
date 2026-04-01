@@ -323,7 +323,7 @@ impl<'a> MenuManager<'a> {
 
         match self.current_menu {
             Menu::Title => self.update_title(rl),
-            Menu::Select => self.update_select(rl),
+            Menu::Select => self.update_select(rl, thread, crab),
             Menu::LevelSelection => self.update_level_selection(rl, thread, crab),
             Menu::Game => self.update_game(rl, thread, map, crab, camera),
             Menu::Settings => self.update_settings(rl),
@@ -389,7 +389,7 @@ impl<'a> MenuManager<'a> {
     /// # Arguments
     /// * rl - raylib handler, handle the raylib librairieupdate_sele
     /// #TODO : make it more abstract to be able to use it for the settings menu and other menu with buttons
-    fn update_select(&mut self, rl: &RaylibHandle) {
+    fn update_select(&mut self, rl: &mut RaylibHandle, thread: &RaylibThread, crab: &mut Crab) {
         let mouse_pos = rl.get_mouse_position();
         self.hovered_button = SelectMenuHoveredButtons::None;
         for button in &self.buttons {
@@ -398,7 +398,18 @@ impl<'a> MenuManager<'a> {
                 if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
                     self.sound_manager.play_sound_effect(SoundEffect::Click);
                     match button.id {
-                        SelectMenuHoveredButtons::Game => self.current_menu = Menu::Game,
+                        SelectMenuHoveredButtons::Game => {
+                            self.current_level = Some(Level::new((1) as i8, rl, thread));
+                            self.current_level_index = (1) as i8;
+                            self.current_menu = Menu::Game;
+                            if let Some(level) = self.current_level.as_ref() {
+                                let new_transform = Transform3D {
+                                    position: level.spawnpoint,
+                                    rotation: 0.0,
+                                };
+                                crab.teleport(new_transform);
+                            }
+                        }
                         SelectMenuHoveredButtons::LevelSelection => {
                             self.current_menu = Menu::LevelSelection
                         }
