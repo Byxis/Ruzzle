@@ -31,6 +31,9 @@ impl Level {
         match index {
             1 => groups.push(create_level1(Vector3::new(0.0, 0.0, 0.0))),
             2 => groups.push(create_level2(Vector3::new(0.0, 0.0, 0.0))),
+            3 => groups.push(create_level1(Vector3::new(0.0, 0.0, 0.0))),
+            4 => groups.push(create_level1(Vector3::new(0.0, 0.0, 0.0))),
+            5 => groups.push(create_level1(Vector3::new(0.0, 0.0, 0.0))),
             _ => {}
         }
 
