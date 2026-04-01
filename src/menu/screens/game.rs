@@ -37,13 +37,15 @@ pub fn draw_game(
 
         {
             let mut d3d = d.begin_mode3D(camera);
-          
-            let mut s = d3d.begin_shader_mode(shader);
+
             crab.draw(&mut d3d);
             level.draw(&mut d3d, assets);
-          
-            map.draw(&mut s);
-     
+
+            {
+                let mut s = d3d.begin_shader_mode(shader);
+                map.draw(&mut s);
+            }
+
             if let Some(ep) = level.endpoint_world() {
                 d3d.draw_sphere(ep, 0.3, Color::GREEN);
             }

@@ -480,8 +480,10 @@ impl<'a> MenuManager<'a> {
         for (i, button) in self.level_buttons.iter().enumerate() {
             if button.rectangle.check_collision_point_rec(mouse_pos) {
                 if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
+                    self.sound_manager.play_sound_effect(SoundEffect::Click);
                     self.current_level = Some(Level::new((i + 1) as i8, rl, thread));
                     self.current_level_index = (i + 1) as i8;
+                    self.current_menu = Menu::Game;
                     if let Some(level) = self.current_level.as_ref() {
                         let new_transform = Transform3D {
                             position: level.spawnpoint,
@@ -489,9 +491,6 @@ impl<'a> MenuManager<'a> {
                         };
                         crab.teleport(new_transform);
                     }
-                    self.sound_manager.play_sound_effect(SoundEffect::Click);
-                    self.current_level = Some(Level::new((i + 1) as i8));
-                    self.current_menu = Menu::Game;
                 }
             }
         }
@@ -569,28 +568,18 @@ impl<'a> MenuManager<'a> {
         match self.current_menu {
             Menu::Game => {
                 if let Some(level) = &mut self.current_level {
-                    draw_game(
-                        d,
-                        &self.config,
-                        crab,
-                        map,
-                        camera,
-                        level,
-                        &self.assets,
-                        self.current_level_index,
-                    );
-                    // Draw 3D scene into RenderTexture
                     {
                         let mut td = d.begin_texture_mode(thread, &mut self.render_target);
                         td.clear_background(Color::new(0, 0, 0, 0));
-
                         draw_game(
                             &mut td,
+                            &self.config,
                             crab,
                             map,
                             camera,
                             level,
                             &self.assets,
+                            self.current_level_index,
                             &mut self.shader_manager.cel_shade_shader,
                         );
                     }
