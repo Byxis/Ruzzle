@@ -298,20 +298,15 @@ impl GroupBlock {
             ));
         }
 
-        let x = self.model_offset.x;
-        let y = self.model_offset.y;
-        let z = self.model_offset.z;
-        let baked_x = mat.m0 * x + mat.m1 * y + mat.m2 * z;
-        let baked_y = mat.m4 * x + mat.m5 * y + mat.m6 * z;
-        let baked_z = mat.m8 * x + mat.m9 * y + mat.m10 * z;
+        self.model_offset = transform_point(&mat, self.model_offset);
 
         self.model_offset = Vector3::new(
-            (baked_x * 100.0).round() / 100.0,
-            (baked_y * 100.0).round() / 100.0,
-            (baked_z * 100.0).round() / 100.0,
+            (self.model_offset.x * 100.0).round() / 100.0,
+            (self.model_offset.y * 100.0).round() / 100.0,
+            (self.model_offset.z * 100.0).round() / 100.0,
         );
 
-        self.model_orientation = self.orientation * self.model_orientation;
+        self.model_orientation = self.model_orientation * self.orientation;
         self.orientation = Quaternion::identity();
         self.target_orientation = Quaternion::identity();
 
@@ -479,4 +474,12 @@ unsafe fn draw_face(
     ffi::rlVertex3f(up_right.0, up_right.1, up_right.2);
     ffi::rlTexCoord2f(0.0, 0.0);
     ffi::rlVertex3f(up_left.0, up_left.1, up_left.2);
+}
+
+fn transform_point(mat: &Matrix, p: Vector3) -> Vector3 {
+    Vector3::new(
+        mat.m0 * p.x + mat.m1 * p.y + mat.m2 * p.z,
+        mat.m4 * p.x + mat.m5 * p.y + mat.m6 * p.z,
+        mat.m8 * p.x + mat.m9 * p.y + mat.m10 * p.z,
+    )
 }
