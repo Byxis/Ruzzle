@@ -1,7 +1,8 @@
+use crate::components::collider::CollisionShape;
 use crate::components::map::Map;
 use crate::config::Config;
 use crate::crab::crab::Crab;
-// use crate::sound_manager;
+use crate::menu::screens::draw_finish;
 use raylib::prelude::*;
 use raylib::{ffi::KeyboardKey, RaylibHandle};
 
@@ -9,7 +10,7 @@ use crate::menu::utils::draw_texture_contain;
 
 use crate::menu::screens::{
     draw_credit, draw_game, draw_level_selection, draw_loading, draw_multiplayer, draw_select,
-    draw_settings, draw_title,
+    draw_settings, draw_title, draw_win,
 };
 
 use crate::levels::level::Level;
@@ -17,6 +18,8 @@ use crate::levels::level::Level;
 // use crate::shader::shader::ShaderManager;
 
 use crate::sound_manager::sound_manager::{SoundEffect, SoundManager};
+
+use crate::Transform3D;
 
 pub struct Assets {
     pub textures: Vec<Texture2D>,
@@ -51,6 +54,8 @@ pub enum Menu {
     Multiplayer,
     Loading,
     Credit,
+    Win,
+    Finish,
 }
 
 #[derive(Copy, Clone, PartialEq)]
@@ -115,8 +120,8 @@ pub struct MenuManager<'a> {
     pub hovered_button: SelectMenuHoveredButtons,
     pub current_level: Option<Level>,
     pub assets: Assets,
-    // pub shader_manager: ShaderManager,
-    // pub day_cycle: DayCycleManager,
+    pub win_buttons: Vec<Button>,
+    pub current_level_index: i8,
     pub render_target: RenderTexture2D,
     pub sound_manager: SoundManager<'a>,
 }
@@ -138,7 +143,6 @@ impl<'a> MenuManager<'a> {
             Self::create_level_button(&config, "Niveau 2", 1, button_width, button_height),
             Self::create_level_button(&config, "Niveau 3", 2, button_width, button_height),
             Self::create_level_button(&config, "Niveau 4", 3, button_width, button_height),
-            Self::create_level_button(&config, "Niveau 5", 4, button_width, button_height),
         ];
 
         let my_buttons_select = vec![
@@ -203,6 +207,28 @@ impl<'a> MenuManager<'a> {
             label: "Retour".to_string(),
             id: SelectMenuHoveredButtons::None,
         };
+        let win_buttons = vec![
+            Button {
+                rectangle: Rectangle::new(
+                    (config.screen_width / 2 - button_width as i32 / 2) as f32,
+                    (config.screen_height as f32) * 0.52,
+                    button_width,
+                    button_height,
+                ),
+                label: "Suivant".to_string(),
+                id: SelectMenuHoveredButtons::LevelSelection,
+            },
+            Button {
+                rectangle: Rectangle::new(
+                    (config.screen_width / 2 - button_width as i32 / 2) as f32,
+                    (config.screen_height as f32) * 0.67,
+                    button_width,
+                    button_height,
+                ),
+                label: "Menu".to_string(),
+                id: SelectMenuHoveredButtons::Game,
+            },
+        ];
 
         // let shader_manager = ShaderManager::new(rl, thread);
         // let day_cycle = DayCycleManager::new();
@@ -224,8 +250,8 @@ impl<'a> MenuManager<'a> {
             hovered_button: SelectMenuHoveredButtons::None,
             current_level: None,
             assets,
-            // shader_manager,
-            // day_cycle,
+            win_buttons,
+            current_level_index: 1,
             render_target,
             sound_manager,
         }
@@ -291,13 +317,15 @@ impl<'a> MenuManager<'a> {
 
         match self.current_menu {
             Menu::Title => self.update_title(rl),
-            Menu::Select => self.update_select(rl),
-            Menu::LevelSelection => self.update_level_selection(rl, thread),
+            Menu::Select => self.update_select(rl, thread, crab),
+            Menu::LevelSelection => self.update_level_selection(rl, thread, crab),
             Menu::Game => self.update_game(rl, thread, map, crab, camera),
             Menu::Settings => self.update_settings(rl),
             Menu::Multiplayer => self.update_multiplayer(rl),
             Menu::Loading => self.update_loading(rl),
             Menu::Credit => self.update_credit(rl),
+            Menu::Win => self.update_win(rl, thread, crab),
+            Menu::Finish => self.update_finish(rl),
         }
     }
 
@@ -310,13 +338,52 @@ impl<'a> MenuManager<'a> {
         }
     }
 
+    fn update_win(&mut self, rl: &mut RaylibHandle, thread: &RaylibThread, crab: &mut Crab) {
+        let mouse_pos = rl.get_mouse_position();
+        for button in &self.win_buttons {
+            if button.rectangle.check_collision_point_rec(mouse_pos) {
+                if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
+                    match button.id {
+                        SelectMenuHoveredButtons::LevelSelection => {
+                            let next_index = self.current_level_index + 1;
+                            let next_level = Level::new(next_index, rl, thread);
+
+                            if !next_level.groups.is_empty() {
+                                self.current_level_index = next_index;
+                                let spawn = next_level.spawnpoint;
+                                self.current_level = Some(next_level);
+                                crab.teleport(Transform3D {
+                                    position: spawn,
+                                    rotation: 0.0,
+                                });
+                                self.current_menu = Menu::Game;
+                            } else {
+                                self.current_menu = Menu::Finish;
+                            }
+                        }
+                        SelectMenuHoveredButtons::Game => {
+                            self.current_menu = Menu::Select;
+                        }
+                        _ => {}
+                    }
+                }
+            }
+        }
+    }
+
+    fn update_finish(&mut self, rl: &RaylibHandle) {
+        if rl.is_key_pressed(KeyboardKey::KEY_ENTER) || rl.is_key_pressed(KeyboardKey::KEY_ESCAPE) {
+            self.current_menu = Menu::Select;
+        }
+    }
+
     /// update_selects allows to check if mouse is hovering a button,
     ///  and if it's the case, to update the hovered butto state for the menu manager,
     ///  and if the mouse is clicked, to change the menu accordingly to the button
     /// # Arguments
-    /// * rl - raylib handler, handle the raylib librairie
+    /// * rl - raylib handler, handle the raylib librairieupdate_sele
     /// #TODO : make it more abstract to be able to use it for the settings menu and other menu with buttons
-    fn update_select(&mut self, rl: &RaylibHandle) {
+    fn update_select(&mut self, rl: &mut RaylibHandle, thread: &RaylibThread, crab: &mut Crab) {
         let mouse_pos = rl.get_mouse_position();
         self.hovered_button = SelectMenuHoveredButtons::None;
         for button in &self.buttons {
@@ -325,7 +392,18 @@ impl<'a> MenuManager<'a> {
                 if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
                     // self.sound_manager.play_sound_effect(SoundEffect::Click);
                     match button.id {
-                        SelectMenuHoveredButtons::Game => self.current_menu = Menu::Game,
+                        SelectMenuHoveredButtons::Game => {
+                            self.current_level = Some(Level::new((1) as i8, rl, thread));
+                            self.current_level_index = (1) as i8;
+                            self.current_menu = Menu::Game;
+                            if let Some(level) = self.current_level.as_ref() {
+                                let new_transform = Transform3D {
+                                    position: level.spawnpoint,
+                                    rotation: 0.0,
+                                };
+                                crab.teleport(new_transform);
+                            }
+                        }
                         SelectMenuHoveredButtons::LevelSelection => {
                             self.current_menu = Menu::LevelSelection
                         }
@@ -356,35 +434,54 @@ impl<'a> MenuManager<'a> {
 
         if let Some(level) = &mut self.current_level {
             level.update(rl);
-        }
 
-        let is_grounded = map.is_grounded(&crab.collider, crab.effective_position());
-        let will_grounded = map.is_grounded(
-            &crab.collider,
-            crab.effective_position() - Vector3::new(0.0, 0.4, 0.0),
-        );
+            let is_grounded = level.is_grounded(&crab.collider, crab.effective_position());
+            let will_grounded = level.is_grounded(
+                &crab.collider,
+                crab.effective_position() - Vector3::new(0.0, 0.4, 0.0),
+            );
 
-        let mut t = crab.calculate_next_transform(rl, &camera, &thread, is_grounded, will_grounded);
+            let mut t =
+                crab.calculate_next_transform(rl, &camera, &thread, is_grounded, will_grounded);
 
-        t.position = map.resolve_collisions(&crab.collider, t.position);
-
-        if let Some(level) = &self.current_level {
             t.position = level.resolve_collisions(&crab.collider, t.position);
+
+            t.position = level.handle_out_of_map(t.position);
+            crab.teleport(t);
+
+            let radius = match crab.collider.shape {
+                CollisionShape::Sphere { radius } => radius,
+                _ => 1.0,
+            };
+            if level.is_at_endpoint(crab.transform.position, radius) {
+                self.current_menu = Menu::Win;
+                self.current_level = None;
+            }
         }
-        t.position = map.handle_out_of_map(t.position);
-        crab.teleport(t);
     }
 
-    fn update_level_selection(&mut self, rl: &mut RaylibHandle, thread: &RaylibThread) {
+    fn update_level_selection(
+        &mut self,
+        rl: &mut RaylibHandle,
+        thread: &RaylibThread,
+        crab: &mut Crab,
+    ) {
         self.handle_back_button(rl);
 
         let mouse_pos = rl.get_mouse_position();
         for (i, button) in self.level_buttons.iter().enumerate() {
             if button.rectangle.check_collision_point_rec(mouse_pos) {
                 if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
-                    // self.sound_manager.play_sound_effect(SoundEffect::Click);
-                    self.current_level = Some(Level::new((i + 1) as i8));
+                    self.current_level = Some(Level::new((i + 1) as i8, rl, thread));
+                    self.current_level_index = (i + 1) as i8;
                     self.current_menu = Menu::Game;
+                    if let Some(level) = self.current_level.as_ref() {
+                        let new_transform = Transform3D {
+                            position: level.spawnpoint,
+                            rotation: 0.0,
+                        };
+                        crab.teleport(new_transform);
+                    }
                 }
             }
         }
@@ -474,12 +571,13 @@ impl<'a> MenuManager<'a> {
 
                         draw_game(
                             &mut td,
+                            &self.config,
                             crab,
                             map,
                             camera,
                             level,
                             &self.assets,
-                            // &mut self.shader_manager.cel_shade_shader,
+                            self.current_level_index,
                         );
                     }
 
@@ -571,6 +669,8 @@ impl<'a> MenuManager<'a> {
                         &self.back_button,
                         self.assets.textures.get(3),
                     ),
+                    Menu::Win => draw_win(d, &self.config, &self.win_buttons),
+                    Menu::Finish => draw_finish(d, &self.config),
                     _ => {}
                 }
             }

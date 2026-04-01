@@ -1,9 +1,12 @@
 use crate::blocks::material::BlockMaterial;
 use crate::blocks::modele::{BlockType, GroupBlock};
-use crate::blocks::prefab::beach::{create_level1, create_level2};
+use crate::blocks::prefab::beach::{
+    flag_block, flag_block_hidden, level1_moving_block, level2_moving_block, level3_rotating_block,
+    level4_rotating_block, level_start,
+};
 use crate::components::collider::Collider;
 use crate::menu::menu::Assets;
-use raylib::math::glam::vec3;
+use raylib::ffi::RaylibPalette;
 use raylib::prelude::*;
 
 /// Represents a 3D level with a group of blocks.
@@ -20,21 +23,66 @@ pub struct Level {
     pub groups: Vec<GroupBlock>,
     pub camera: Camera3D,
     pub selected_group: Option<usize>,
+    pub spawnpoint: Vector3,
+    pub endpoint_group: Option<usize>,
 }
 
 impl Level {
     /// Initialize a level
     /// To add a new level, just add the index and the group of blocks wanted
-    pub fn new(index: i8) -> Self {
+    pub fn new(index: i8, rl: &mut RaylibHandle, thread: &RaylibThread) -> Self {
         let mut groups = Vec::new();
+        let spawnpoint: Vector3;
+        let endpoint_group;
 
         match index {
-            1 => groups.push(create_level1(Vector3::new(0.0, 0.0, 0.0))),
-            2 => groups.push(create_level2(Vector3::new(0.0, 0.0, 0.0))),
-            3 => groups.push(create_level1(Vector3::new(0.0, 0.0, 0.0))),
-            4 => groups.push(create_level1(Vector3::new(0.0, 0.0, 0.0))),
-            5 => groups.push(create_level1(Vector3::new(0.0, 0.0, 0.0))),
-            _ => {}
+            1 => {
+                groups.push(level_start(Vector3::new(0.0, 0.0, -3.0)));
+                groups.push(flag_block(Vector3::new(0.0, 0.0, 8.0), rl, thread));
+                groups.push(
+                    level1_moving_block(Vector3::new(-10.0, 0.0, 0.0)).with_end_pos(Vector3::ZERO),
+                );
+                spawnpoint = Vector3::new(0.0, 2.0, -8.0);
+                endpoint_group = Some(1);
+            }
+            2 => {
+                groups.push(level_start(Vector3::new(0.0, 0.0, -3.0)));
+                groups.push(flag_block(Vector3::new(0.0, 0.0, 8.0), rl, thread));
+                groups.push(
+                    level2_moving_block(Vector3::new(-10.0, 0.0, 0.0)).with_end_pos(Vector3::ZERO),
+                );
+                groups.push(
+                    level2_moving_block(Vector3::new(5.0, 0.0, 5.0))
+                        .with_end_pos(Vector3::new(0.0, 0.0, 5.0)),
+                );
+                spawnpoint = Vector3::new(0.0, 2.0, -8.0);
+                endpoint_group = Some(1);
+            }
+            3 => {
+                groups.push(level_start(Vector3::new(0.0, 0.0, -3.0)));
+                groups.push(flag_block(Vector3::new(0.0, 0.0, 8.0), rl, thread));
+                groups.push(level3_rotating_block(Vector3::new(0.0, 0.0, 0.0)));
+                spawnpoint = Vector3::new(0.0, 2.0, -8.0);
+                endpoint_group = Some(1);
+            }
+            4 => {
+                groups.push(level_start(Vector3::new(0.0, 0.0, -3.0)));
+                groups.push(flag_block_hidden(Vector3::new(-5.0, 0.0, 0.0), rl, thread));
+                groups.push(level4_rotating_block(Vector3::new(0.0, 0.0, 0.0)));
+                groups.push(level_start(Vector3::new(0.0, 0.0, 15.0)));
+                spawnpoint = Vector3::new(0.0, 2.0, -8.0);
+                endpoint_group = Some(1);
+            }
+
+            _ => {
+                spawnpoint = Vector3::new(0.0, 0.0, 0.0);
+
+                endpoint_group = None;
+            }
+        }
+
+        for group in groups.iter_mut() {
+            group.sync_colliders();
         }
 
         Self {
@@ -46,7 +94,21 @@ impl Level {
             ),
             groups,
             selected_group: None,
+            spawnpoint: spawnpoint,
+            endpoint_group,
         }
+    }
+
+    pub fn endpoint_world(&self) -> Option<Vector3> {
+        self.endpoint_group
+            .and_then(|i| self.groups.get(i))
+            .and_then(|g| g.endpoint_world())
+    }
+
+    pub fn is_at_endpoint(&self, pos: Vector3, radius: f32) -> bool {
+        self.endpoint_world()
+            .map(|ep| (pos - ep).length() < radius + 0.5)
+            .unwrap_or(false)
     }
 
     /// Updates the 3D placement of all the blocks of the level
@@ -69,6 +131,26 @@ impl Level {
                 }
             }
         }
+    }
+
+    pub fn handle_input_from_draw(&mut self, rl: &RaylibHandle, camera: &Camera3D) {
+        let is_clicked = rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT);
+        let mut new_selected = self.selected_group;
+
+        for (i, group) in self.groups.iter_mut().enumerate() {
+            if group.is_mouse_over(rl, camera) {
+                group.set_temporary_color(Color::ORANGE);
+                if is_clicked {
+                    new_selected = Some(i);
+                }
+            } else if Some(i) == new_selected {
+                group.set_temporary_color(Color::RED);
+            } else {
+                group.reset_color();
+            }
+        }
+
+        self.selected_group = new_selected;
     }
 
     /// Handles keyboard input to trigger 90-degree rotations on valid axes.
@@ -116,7 +198,7 @@ impl Level {
         if let Some(rot) = rotation_to_apply {
             group.is_rotating = true;
             group.rotation_progress = 0.0;
-            group.target_orientation = rot * group.orientation;
+            group.target_orientation = group.orientation * rot;
         }
     }
 
@@ -154,6 +236,8 @@ impl Level {
                             let t_axis = v.dot(axis) / axis_len_sq;
 
                             group.position = group.start_pos + (axis * t_axis.clamp(0.0, 1.0));
+
+                            group.sync_colliders();
                         }
                     }
                 }
@@ -174,6 +258,7 @@ impl Level {
                     } else {
                         group.position = group.start_pos;
                     }
+                    group.sync_colliders();
                 }
                 group.is_dragging = false;
                 group.drag_timer = 0.0;
@@ -186,18 +271,17 @@ impl Level {
     /// Returns `true` if the map collides with the given collider at the given position.
     pub fn collides_with(&self, other: &Collider, pos: Vector3) -> bool {
         self.groups.iter().any(|g| {
-            g.children.iter().any(|child| {
-                let world_pos = g.position + child.position;
-                child.collider.collides_with(world_pos, other, pos)
-            })
+            g.children
+                .iter()
+                .any(|child| child.collider.collides_with(Vector3::ZERO, other, pos))
         })
     }
     /// Resolves collisions for the given collider at the given position, returning the new position
     pub fn resolve_collisions(&self, collider: &Collider, mut pos: Vector3) -> Vector3 {
         for group in &self.groups {
             for child in &group.children {
-                let world_pos = group.position + child.position;
-                if let Some(push) = collider.get_penetration_vector(pos, &child.collider, world_pos)
+                if let Some(push) =
+                    collider.get_penetration_vector(pos, &child.collider, Vector3::ZERO)
                 {
                     pos += push;
                 }
@@ -212,38 +296,25 @@ impl Level {
     }
 
     /// Draws the map using the given 3D drawing context.
-    pub fn draw(&mut self, rl: &mut RaylibDrawHandle, assets: &Assets) {
-        let is_clicked = rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT);
-        let camera = self.camera;
-
-        let mut new_selected = self.selected_group;
-
-        //let mut d = rl.begin_drawing(thread);
-        //d.clear_background(Color::RAYWHITE);
-
-        for (i, group) in self.groups.iter_mut().enumerate() {
-            if group.is_mouse_over(&rl, &camera) {
-                group.set_temporary_color(Color::YELLOW);
-                if is_clicked {
-                    new_selected = Some(i);
-                }
-            } else if Some(i) == new_selected {
-                group.set_temporary_color(Color::ORANGE);
-            } else {
-                group.reset_color();
+    pub fn draw(&self, d3d: &mut RaylibMode3D<RaylibDrawHandle>, assets: &Assets) {
+        for group in self.groups.iter() {
+            group.draw(d3d, assets);
+            if group.is_dragging {
+                group.draw_drag_guides(d3d);
             }
         }
+    }
 
-        self.selected_group = new_selected;
-
+    /// Check if the given position is out of the map bounds, and returns the spawn point position in that case.
+    pub fn handle_out_of_map(&self, position: Vector3) -> Vector3 {
+        if position.x < -50.0
+            || position.x > 50.0
+            || position.z < -50.0
+            || position.z > 50.0
+            || position.y < -20.0
         {
-            let mut d3d = rl.begin_mode3D(&camera);
-            for group in self.groups.iter() {
-                group.draw(&mut d3d, assets);
-                if group.is_dragging {
-                    group.draw_drag_guides(&mut d3d);
-                }
-            }
+            return self.spawnpoint;
         }
+        position
     }
 }
