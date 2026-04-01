@@ -68,6 +68,7 @@ impl RoomManager {
     /// Get all clients in the same room
     pub fn get_room_clients(&self, client_id: ClientId) -> Option<Vec<ClientId>> {
         let room_id = self.client_to_room.get(&client_id)?;
+        println!("Client {} is in room {}", client_id, room_id);
         Some(
             self.client_to_room
                 .iter()

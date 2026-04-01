@@ -15,12 +15,6 @@ pub struct Position {
     pub rotation: f32,
 }
 
-#[derive(Serialize, Deserialize, Clone, Copy, Debug)]
-pub struct PositionUpdate {
-    pub client_id: u64,
-    pub position: Position,
-}
-
 impl Position {
     pub fn new(x: f32, y: f32, z: f32, rotation: f32) -> Self {
         Self { x, y, z, rotation }

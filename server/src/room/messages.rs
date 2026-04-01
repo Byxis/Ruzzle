@@ -1,4 +1,4 @@
-use room::{Player, Position, PositionUpdate, RoomManager};
+use room::{Player, Position, RoomManager};
 use serde::{Deserialize, Serialize};
 
 use crate::room;
@@ -7,15 +7,12 @@ use crate::room;
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum RoomMessage {
     // Client -> Server
-    CreateRoom {
-        player_id: u64,
-    },
+    CreateRoom,
     JoinRoom {
         room_id: u64,
-        player_id: u64,
     },
     UpdatePosition {
-        position: PositionUpdate,
+        position: Position,
     },
 
     // Server -> Client
@@ -24,7 +21,6 @@ pub enum RoomMessage {
     },
     RoomJoined {
         room_id: u64,
-        other_player: Option<String>,
     },
     RoomJoinFailed {
         reason: String,
@@ -34,48 +30,47 @@ pub enum RoomMessage {
     },
 }
 
-pub fn treat_message(msg: RoomMessage, room_manager: &mut RoomManager) -> RoomMessage {
+pub fn treat_message(msg: RoomMessage, player: u64, room_manager: &mut RoomManager) -> RoomMessage {
     match msg {
-        RoomMessage::CreateRoom { player_id } => {
-            println!("Creating room for player: {}", player_id);
+        | RoomMessage::CreateRoom => {
+            println!("Creating room for player: {}", player);
             let room_id = room_manager.create_room();
             let _ = room_manager.add_player_to_room(
-                player_id,
+                player,
                 Player {
-                    id: player_id,
-                    name: format!("Player{}", player_id),
+                    id: player,
+                    name: format!("Player{}", player),
                     position: Position::new(0.0, 0.0, 0.0, 0.0),
                 },
                 room_id,
             );
             RoomMessage::RoomCreated { room_id }
         }
-        RoomMessage::JoinRoom { room_id, player_id } => {
-            println!("Player {} is trying to join room {}", player_id, room_id);
+        | RoomMessage::JoinRoom { room_id } => {
+            println!("Player {} is trying to join room {}", player, room_id);
             match room_manager.add_player_to_room(
-                player_id,
+                player,
                 Player {
-                    id: player_id,
-                    name: format!("Player{}", player_id),
+                    id: player,
+                    name: format!("Player{}", player),
                     position: Position::new(0.0, 0.0, 0.0, 0.0),
                 },
                 room_id,
             ) {
                 Ok(_) => RoomMessage::RoomJoined {
                     room_id,
-                    other_player: Some(format!("Player{}", player_id)),
                 },
                 Err(e) => RoomMessage::RoomJoinFailed {
                     reason: e.to_string(),
                 },
             }
         }
-        RoomMessage::UpdatePosition { position } => {
-            println!("Updating position for player: {}", position.client_id);
-            let _ = room_manager.update_player_position(position.client_id, position.position);
+        | RoomMessage::UpdatePosition { position } => {
+            // println!("Updating position for player: {} to ({}, {}, {})", player, position.x, position.y, position.z);
+            let _ = room_manager.update_player_position(player, position);
             RoomMessage::UpdatePosition { position }
         }
-        _ => {
+        | _ => {
             println!("Received unhandled message: {:?}", msg);
             msg
         }

@@ -96,14 +96,18 @@ pub fn server(public_addr: SocketAddr) {
             manage_event(event, &mut server, &transport, &mut usernames);
         }
 
+
         for client_id in server.clients_id() {
             while let Some(message) =
                 server.receive_message(client_id, DefaultChannel::ReliableOrdered)
             {
                 let mes: RoomMessage = bincode::deserialize(&message).unwrap();
-                let response: RoomMessage = treat_message(mes, &mut room_manager);
+                println!("Received message from client {}: {:?}", client_id, mes);
+                let response: RoomMessage = treat_message(mes, client_id, &mut room_manager);
 
                 let players: Option<Vec<ClientId>> = room_manager.get_room_clients(client_id);
+                println!("Broadcasting message to clients in the same room as {}: {:?}", client_id, players);
+
                 for player_id in players.unwrap_or_else(Vec::new) {
                     server.send_message(
                         player_id,
@@ -115,6 +119,6 @@ pub fn server(public_addr: SocketAddr) {
         }
 
         transport.send_packets(&mut server);
-        thread::sleep(Duration::from_millis(50));
+        thread::sleep(Duration::from_millis(16));
     }
 }
