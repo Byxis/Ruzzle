@@ -299,7 +299,7 @@ impl Collider {
     }
 
     /// Draws the collider using the given 3D mode and base position.
-    pub fn draw(&self, d3d: &mut RaylibMode3D<'_, impl RaylibDraw>, base_position: Transform3D) {
+    pub fn draw(&self, d3d: &mut impl RaylibDraw3D, base_position: Transform3D) {
         let pos = self.effective_position(base_position.position);
         match self.shape {
             CollisionShape::Box { half_size } => {

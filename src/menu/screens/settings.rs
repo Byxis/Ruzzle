@@ -1,6 +1,7 @@
 use crate::config::Config;
 use crate::menu::menu::Button;
 use crate::menu::utils::{draw_back_button, draw_text_center};
+use crate::menu::slider::Slider;
 use raylib::prelude::Color;
 use raylib::prelude::RaylibDrawHandle;
 use raylib::prelude::*;
@@ -16,12 +17,16 @@ use raylib::prelude::*;
 /// * d : &mut RaylibDrawHandle, borrows it to draw graphical elements
 /// * config : &Config, used for screen dimensions and font sizes
 /// * back_button : &Button, the back button to return to the main menu
-/// * tex_back : &Option<Texture2D>, optional texture for the back button; if None, uses fallback styling
+/// * texture : &Option<Texture2D>, optional texture for the back button; if None, uses fallback styling
+/// * volume_slider : &mut Slider, the slider for adjusting music volume
+/// * sound_slider : &mut Slider, the slider for adjusting sound effects volume
 pub fn draw_settings(
     d: &mut RaylibDrawHandle,
     config: &Config,
     back_button: &Button,
     texture: Option<&Texture2D>,
+    volume_slider : &mut Slider,
+    sound_slider : &mut Slider,
 ) {
     draw_text_center(
         d,
@@ -31,6 +36,25 @@ pub fn draw_settings(
         config.font_size_h1,
         Color::WHITE,
     );
+
+    volume_slider.draw(d);
+    d.draw_text(
+        "Musique",
+        (config.screen_width / 4) as i32,
+        (config.screen_height / 3 - 40) as i32,
+        config.font_size_h2,
+        Color::WHITE,
+    );
+
+
+    sound_slider.draw(d);
+    d.draw_text(
+        "Effets sonores",
+        (config.screen_width / 4) as i32,
+        (config.screen_height / 2 - 40) as i32,
+        config.font_size_h2,
+        Color::WHITE,
+    );
     draw_back_button(
         d,
         back_button.rectangle,
@@ -38,4 +62,6 @@ pub fn draw_settings(
         &back_button.label,
         config.font_size_h2 / 3,
     );
+
+
 }
