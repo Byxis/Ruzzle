@@ -7,7 +7,6 @@ use crate::sound_manager;
 use raylib::prelude::*;
 use raylib::{ffi::KeyboardKey, RaylibHandle};
 
-
 use crate::menu::utils::draw_texture_contain;
 
 use crate::menu::screens::{
@@ -250,7 +249,6 @@ impl<'a> MenuManager<'a> {
             (config.screen_width / 2) as f32,
             30.0,
         );
-        
 
         let shader_manager = ShaderManager::new(rl, thread);
         let day_cycle = DayCycleManager::new();
@@ -330,7 +328,7 @@ impl<'a> MenuManager<'a> {
         // Update shader uniforms and day cycle
         self.shader_manager
             .set_sunlight_color(self.day_cycle.get_light_color());
-        self.shader_manager﻿
+        self.shader_manager
             .set_ambient_color(self.day_cycle.get_ambient_color());
         self.shader_manager.update_background_colors(
             self.day_cycle.get_background_top(),
@@ -528,8 +526,10 @@ impl<'a> MenuManager<'a> {
 
         self.sound_slider.update(rl);
 
-        self.sound_manager.set_music_volume(self.volume_slider.value);
-        self.sound_manager.set_effect_volume(self.sound_slider.value);
+        self.sound_manager
+            .set_music_volume(self.volume_slider.value);
+        self.sound_manager
+            .set_effect_volume(self.sound_slider.value);
 
         if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
             self.sound_manager.play_sound_effect(SoundEffect::Click);
