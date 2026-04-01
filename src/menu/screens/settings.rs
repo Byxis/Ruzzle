@@ -1,6 +1,7 @@
 use crate::config::Config;
 use crate::menu::menu::Button;
 use crate::menu::utils::{draw_back_button, draw_text_center};
+use crate::menu::slider::Slider;
 use raylib::prelude::Color;
 use raylib::prelude::RaylibDrawHandle;
 use raylib::prelude::*;
@@ -22,6 +23,7 @@ pub fn draw_settings(
     config: &Config,
     back_button: &Button,
     texture: Option<&Texture2D>,
+    volume_slider : &mut Slider,
 ) {
     draw_text_center(
         d,
@@ -31,6 +33,16 @@ pub fn draw_settings(
         config.font_size_h1,
         Color::WHITE,
     );
+
+    volume_slider.draw(d);
+    d.draw_text(
+        "Volume",
+        (config.screen_width / 4) as i32,
+        (config.screen_height / 3 - 40) as i32,
+        config.font_size_h2,
+        Color::WHITE,
+    );
+
     draw_back_button(
         d,
         back_button.rectangle,
@@ -38,4 +50,6 @@ pub fn draw_settings(
         &back_button.label,
         config.font_size_h2 / 3,
     );
+
+
 }

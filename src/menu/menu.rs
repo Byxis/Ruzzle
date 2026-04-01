@@ -5,6 +5,7 @@ use crate::sound_manager;
 use raylib::prelude::*;
 use raylib::{ffi::KeyboardKey, RaylibHandle};
 
+
 use crate::menu::utils::draw_texture_contain;
 
 use crate::menu::screens::{
@@ -15,6 +16,8 @@ use crate::menu::screens::{
 use crate::levels::level::Level;
 use crate::shader::daylight::DayCycleManager;
 use crate::shader::shader::ShaderManager;
+
+use crate::menu::slider::Slider;
 
 use crate::sound_manager::sound_manager::{SoundEffect, SoundManager};
 
@@ -119,6 +122,7 @@ pub struct MenuManager<'a> {
     pub day_cycle: DayCycleManager,
     pub render_target: RenderTexture2D,
     pub sound_manager: SoundManager<'a>,
+    pub volume_slider: Slider,
 }
 
 impl<'a> MenuManager<'a> {
@@ -204,6 +208,13 @@ impl<'a> MenuManager<'a> {
             id: SelectMenuHoveredButtons::None,
         };
 
+        let volume_slider = Slider::new(
+            (config.screen_width / 4) as f32,
+            (config.screen_height / 3) as f32,
+            (config.screen_width / 2) as f32,
+            30.0,
+        );
+
         let shader_manager = ShaderManager::new(rl, thread);
         let day_cycle = DayCycleManager::new();
         let render_target = rl
@@ -228,6 +239,7 @@ impl<'a> MenuManager<'a> {
             day_cycle,
             render_target,
             sound_manager,
+            volume_slider,
         }
     }
     /// Helper to build level selection buttons with a simple vertical layout.
@@ -400,6 +412,7 @@ impl<'a> MenuManager<'a> {
 
     fn update_settings(&mut self, rl: &RaylibHandle) {
         self.handle_back_button(rl);
+        self.volume_slider.update(rl);
         if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
             self.sound_manager.play_sound_effect(SoundEffect::Click);
             self.current_menu = Menu::Title;
@@ -567,6 +580,7 @@ impl<'a> MenuManager<'a> {
                         &self.config,
                         &self.back_button,
                         self.assets.textures.get(3),
+                        &mut self.volume_slider,
                     ),
                     Menu::Loading => draw_loading(d, &self.config, self.assets.textures.get(2)),
                     Menu::Credit => draw_credit(
