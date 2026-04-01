@@ -6,6 +6,7 @@ use crate::blocks::prefab::beach::{
 };
 use crate::components::collider::Collider;
 use crate::menu::menu::Assets;
+use raylib::ffi::RaylibPalette;
 use raylib::prelude::*;
 
 /// Represents a 3D level with a group of blocks.
@@ -138,12 +139,12 @@ impl Level {
 
         for (i, group) in self.groups.iter_mut().enumerate() {
             if group.is_mouse_over(rl, camera) {
-                group.set_temporary_color(Color::YELLOW);
+                group.set_temporary_color(Color::ORANGE);
                 if is_clicked {
                     new_selected = Some(i);
                 }
             } else if Some(i) == new_selected {
-                group.set_temporary_color(Color::ORANGE);
+                group.set_temporary_color(Color::RED);
             } else {
                 group.reset_color();
             }
