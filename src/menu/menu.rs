@@ -394,7 +394,6 @@ impl<'a> MenuManager<'a> {
     ///
     /// # Arguments
     /// * rl - raylib handler (mouse position + click)
-    /// * sound_manager - sound manager for playing sound effects
 
     fn handle_back_button(&mut self, rl: &RaylibHandle) {
         let mouse_pos = rl.get_mouse_position();
