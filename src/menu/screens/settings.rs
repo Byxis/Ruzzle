@@ -17,7 +17,9 @@ use raylib::prelude::*;
 /// * d : &mut RaylibDrawHandle, borrows it to draw graphical elements
 /// * config : &Config, used for screen dimensions and font sizes
 /// * back_button : &Button, the back button to return to the main menu
-/// * tex_back : &Option<Texture2D>, optional texture for the back button; if None, uses fallback styling
+/// * texture : &Option<Texture2D>, optional texture for the back button; if None, uses fallback styling
+/// * volume_slider : &mut Slider, the slider for adjusting music volume
+/// * sound_slider : &mut Slider, the slider for adjusting sound effects volume
 pub fn draw_settings(
     d: &mut RaylibDrawHandle,
     config: &Config,

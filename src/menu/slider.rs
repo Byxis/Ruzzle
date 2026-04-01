@@ -1,5 +1,17 @@
 use raylib::prelude::*;
 
+
+
+/// Represents a horizontal slider UI component for adjusting values such as volume.
+/// The slider consists of a background bar, a filled portion indicating the current value,
+/// and a draggable cursor that the player can interact with to change the value. The slider's value is
+/// normalized between 0.0 and 1.0, allowing it to be easily mapped to various settings (e.g., volume levels). The `update` method handles user input for dragging the cursor,
+/// 
+/// # Arguments
+/// * x : f32, the x-coordinate of the slider's top-left corner
+/// * y : f32, the y-coordinate of the slider's top-left corner
+/// * width : f32, the total width of the slider bar
+/// * height : f32, the height of the slider bar
 pub struct Slider {
     pub rect: Rectangle,
     pub value: f32,
@@ -14,7 +26,7 @@ impl Slider {
             is_dragging: false,
         }
     }
-
+    /// Updates the slider's value based on mouse input.
     pub fn update(&mut self, rl: &RaylibHandle) {
         let mouse_pos = rl.get_mouse_position();
         let cursor_x = self.rect.x + (self.rect.width - 10.0) * self.value;
@@ -36,7 +48,7 @@ impl Slider {
             self.value = (relative_x / self.rect.width).clamp(0.0, 1.0);
         }
     }
-
+    /// Draws the slider on the screen.
     pub fn draw(&self, d: &mut RaylibDrawHandle) {
         // Barre de fond
         d.draw_rectangle_rec(self.rect, Color::DARKGRAY);
