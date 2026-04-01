@@ -1,6 +1,8 @@
+use crate::components::collider::CollisionShape;
 use crate::components::map::Map;
 use crate::config::Config;
 use crate::crab::crab::Crab;
+use crate::menu::screens::draw_finish;
 use raylib::prelude::*;
 use raylib::{ffi::KeyboardKey, RaylibHandle};
 
@@ -8,7 +10,7 @@ use crate::menu::utils::draw_texture_contain;
 
 use crate::menu::screens::{
     draw_credit, draw_game, draw_level_selection, draw_loading, draw_multiplayer, draw_select,
-    draw_settings, draw_title,
+    draw_settings, draw_title, draw_win,
 };
 
 use crate::levels::level::Level;
@@ -48,6 +50,8 @@ pub enum Menu {
     Multiplayer,
     Loading,
     Credit,
+    Win,
+    Finish,
 }
 
 #[derive(Copy, Clone, PartialEq)]
@@ -112,7 +116,8 @@ pub struct MenuManager {
     pub hovered_button: SelectMenuHoveredButtons,
     pub current_level: Option<Level>,
     pub assets: Assets,
-    //pub egg_menu: Option<Texture2D>,
+    pub win_buttons: Vec<Button>,
+    pub current_level_index: i8,
 }
 
 impl MenuManager {
@@ -192,6 +197,28 @@ impl MenuManager {
             label: "Retour".to_string(),
             id: SelectMenuHoveredButtons::None,
         };
+        let win_buttons = vec![
+            Button {
+                rectangle: Rectangle::new(
+                    (config.screen_width / 2 - button_width as i32 / 2) as f32,
+                    (config.screen_height as f32) * 0.52,
+                    button_width,
+                    button_height,
+                ),
+                label: "Suivant".to_string(),
+                id: SelectMenuHoveredButtons::LevelSelection,
+            },
+            Button {
+                rectangle: Rectangle::new(
+                    (config.screen_width / 2 - button_width as i32 / 2) as f32,
+                    (config.screen_height as f32) * 0.67,
+                    button_width,
+                    button_height,
+                ),
+                label: "Menu".to_string(),
+                id: SelectMenuHoveredButtons::Game,
+            },
+        ];
 
         MenuManager {
             current_menu: Menu::Title,
@@ -203,7 +230,8 @@ impl MenuManager {
             hovered_button: SelectMenuHoveredButtons::None,
             current_level: None,
             assets,
-            //egg_menu,
+            win_buttons,
+            current_level_index: 1,
         }
     }
     /// Helper to build level selection buttons with a simple vertical layout.
@@ -260,6 +288,8 @@ impl MenuManager {
             Menu::Multiplayer => self.update_multiplayer(rl),
             Menu::Loading => self.update_loading(rl),
             Menu::Credit => self.update_credit(rl),
+            Menu::Win => self.update_win(rl, crab),
+            Menu::Finish => self.update_finish(rl),
         }
     }
 
@@ -271,11 +301,50 @@ impl MenuManager {
         }
     }
 
+    fn update_win(&mut self, rl: &RaylibHandle, crab: &mut Crab) {
+        let mouse_pos = rl.get_mouse_position();
+        for button in &self.win_buttons {
+            if button.rectangle.check_collision_point_rec(mouse_pos) {
+                if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
+                    match button.id {
+                        SelectMenuHoveredButtons::LevelSelection => {
+                            let next_index = self.current_level_index + 1;
+                            let next_level = Level::new(next_index);
+
+                            if !next_level.groups.is_empty() {
+                                self.current_level_index = next_index;
+                                let spawn = next_level.spawnpoint;
+                                self.current_level = Some(next_level);
+                                crab.teleport(Transform3D {
+                                    position: spawn,
+                                    rotation: 0.0,
+                                });
+                                self.current_menu = Menu::Game;
+                            } else {
+                                self.current_menu = Menu::Finish;
+                            }
+                        }
+                        SelectMenuHoveredButtons::Game => {
+                            self.current_menu = Menu::Select;
+                        }
+                        _ => {}
+                    }
+                }
+            }
+        }
+    }
+
+    fn update_finish(&mut self, rl: &RaylibHandle) {
+        if rl.is_key_pressed(KeyboardKey::KEY_ENTER) || rl.is_key_pressed(KeyboardKey::KEY_ESCAPE) {
+            self.current_menu = Menu::Select;
+        }
+    }
+
     /// update_selects allows to check if mouse is hovering a button,
     ///  and if it's the case, to update the hovered butto state for the menu manager,
     ///  and if the mouse is clicked, to change the menu accordingly to the button
     /// # Arguments
-    /// * rl - raylib handler, handle the raylib librairie
+    /// * rl - raylib handler, handle the raylib librairieupdate_sele
     /// #TODO : make it more abstract to be able to use it for the settings menu and other menu with buttons
     fn update_select(&mut self, rl: &RaylibHandle) {
         let mouse_pos = rl.get_mouse_position();
@@ -332,6 +401,17 @@ impl MenuManager {
 
         t.position = level.handle_out_of_map(t.position);
         crab.teleport(t);
+
+        if let Some(level) = &self.current_level {
+            let radius = match crab.collider.shape {
+                CollisionShape::Sphere { radius } => radius,
+                _ => 1.0,
+            };
+            if level.is_at_endpoint(crab.transform.position, radius) {
+                self.current_menu = Menu::Win;
+                self.current_level = None;
+            }
+        }
     }
 
     fn update_level_selection(
@@ -347,6 +427,7 @@ impl MenuManager {
             if button.rectangle.check_collision_point_rec(mouse_pos) {
                 if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
                     self.current_level = Some(Level::new((i + 1) as i8));
+                    self.current_level_index = (i + 1) as i8;
                     if let Some(level) = self.current_level.as_ref() {
                         let new_transform = Transform3D {
                             position: level.spawnpoint,
@@ -461,6 +542,14 @@ impl MenuManager {
                 &self.back_button,
                 self.assets.textures.get(3),
             ),
+            Menu::Win => draw_win(
+                d,
+                &self.config,
+                &self.back_button,
+                self.assets.textures.get(3),
+                &self.win_buttons,
+            ),
+            Menu::Finish => draw_finish(d, &self.config),
         }
     }
 }

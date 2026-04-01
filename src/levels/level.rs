@@ -20,6 +20,7 @@ pub struct Level {
     pub camera: Camera3D,
     pub selected_group: Option<usize>,
     pub spawnpoint: Vector3,
+    pub endpoint: Vector3,
 }
 
 impl Level {
@@ -28,19 +29,24 @@ impl Level {
     pub fn new(index: i8) -> Self {
         let mut groups = Vec::new();
         let spawnpoint: Vector3;
+        let endpoint: Vector3;
 
         match index {
             1 => {
                 groups.push(create_level1(Vector3::new(0.0, 0.0, 0.0)));
                 spawnpoint = Vector3::new(-5.0, 1.0, 0.0);
+                endpoint = Vector3::new(5.0, 0.0, 0.0);
             }
             2 => {
-                groups.push(create_level2(Vector3::new(0.0, 0.0, 0.0)));
+                //groups.push(create_level2(Vector3::new(0.0, 0.0, 0.0)));
                 spawnpoint = Vector3::new(-5.0, 1.0, 0.0);
+                endpoint = Vector3::new(5.0, 0.0, 0.0);
             }
 
             _ => {
                 spawnpoint = Vector3::new(0.0, 0.0, 0.0);
+
+                endpoint = Vector3::new(0.0, 0.0, 0.0);
             }
         }
 
@@ -58,6 +64,7 @@ impl Level {
             groups,
             selected_group: None,
             spawnpoint: spawnpoint,
+            endpoint: endpoint,
         }
     }
 
@@ -150,6 +157,10 @@ impl Level {
             group.rotation_progress = 0.0;
             group.target_orientation = group.orientation * rot;
         }
+    }
+
+    pub fn is_at_endpoint(&self, pos: Vector3, radius: f32) -> bool {
+        (pos - self.endpoint).length() < radius + 0.5
     }
 
     pub fn update_drag(
