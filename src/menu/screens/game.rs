@@ -50,7 +50,6 @@ pub fn draw_game(
                 d3d.draw_sphere(ep, 0.3, Color::GREEN);
             }
 
-            /*
             for group in &level.groups {
                 for child in &group.children {
                     if let CollisionShape::Box { half_size } = child.collider.shape {
@@ -58,13 +57,12 @@ pub fn draw_game(
                     }
                 }
             }
-            */
         }
         match level_id {
             1 => {
                 draw_text_center(
                     d,
-                    "You can drag group of cubes to a certain position to help you",
+                    "Tu peux bouger de place les blocks en cliquant longtemps et en déplaçant la souris",
                     config.screen_width,
                     (config.screen_height / 7) * 6 as i32,
                     config.font_size_h2,
@@ -74,7 +72,7 @@ pub fn draw_game(
             2 => {
                 draw_text_center(
                     d,
-                    "The problems",
+                    "Les problèmes",
                     config.screen_width,
                     (config.screen_height / 7) * 6 as i32,
                     config.font_size_h2,
@@ -84,7 +82,7 @@ pub fn draw_game(
             3 => {
                 draw_text_center(
                     d,
-                    "Cubes can be rotated with the arrows of the keyboard...",
+                    "Certains cubes peuvent être rotationner avec les flèches du claviers ...",
                     config.screen_width,
                     (config.screen_height / 7) * 6 as i32,
                     config.font_size_h2,
@@ -94,7 +92,7 @@ pub fn draw_game(
             4 => {
                 draw_text_center(
                     d,
-                    "Patient, you must be - Yoda ",
+                    "Patient, tu dois l'être - Yoda ",
                     config.screen_width,
                     (config.screen_height / 7) * 6 as i32,
                     config.font_size_h2,

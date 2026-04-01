@@ -235,9 +235,9 @@ impl GroupBlock {
             let y = child.position.y;
             let z = child.position.z;
 
-            let rx = mat.m0 * x + mat.m4 * y + mat.m8 * z + mat.m12;
-            let ry = mat.m1 * x + mat.m5 * y + mat.m9 * z + mat.m13;
-            let rz = mat.m2 * x + mat.m6 * y + mat.m10 * z + mat.m14;
+            let rx = mat.m0 * x + mat.m1 * y + mat.m2 * z;
+            let ry = mat.m4 * x + mat.m5 * y + mat.m6 * z;
+            let rz = mat.m8 * x + mat.m9 * y + mat.m10 * z;
 
             let world_child_pos = self.position + Vector3::new(rx, ry, rz);
 
@@ -275,9 +275,9 @@ impl GroupBlock {
             let z = child.position.z;
 
             child.position = Vector3::new(
-                mat.m0 * x + mat.m4 * y + mat.m8 * z,
-                mat.m1 * x + mat.m5 * y + mat.m9 * z,
-                mat.m2 * x + mat.m6 * y + mat.m10 * z,
+                mat.m0 * x + mat.m1 * y + mat.m2 * z,
+                mat.m4 * x + mat.m5 * y + mat.m6 * z,
+                mat.m8 * x + mat.m9 * y + mat.m10 * z,
             );
 
             child.position.x = (child.position.x * 100.0).round() / 100.0;
@@ -334,9 +334,9 @@ impl GroupBlock {
             let y = child.position.y;
             let z = child.position.z;
 
-            let rx = mat.m0 * x + mat.m4 * y + mat.m8 * z;
-            let ry = mat.m1 * x + mat.m5 * y + mat.m9 * z;
-            let rz = mat.m2 * x + mat.m6 * y + mat.m10 * z;
+            let rx = mat.m0 * x + mat.m1 * y + mat.m2 * z;
+            let ry = mat.m4 * x + mat.m5 * y + mat.m6 * z;
+            let rz = mat.m8 * x + mat.m9 * y + mat.m10 * z;
 
             child.collider.offset = Vector3::new(
                 self.position.x + rx,
