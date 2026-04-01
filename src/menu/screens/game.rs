@@ -25,11 +25,12 @@ pub fn draw_game(
     camera: &Camera3D,
     level: &mut Level,
     assets: &Assets,
-    shader: &mut Shader,
+    // shader: &mut Shader,
 ) {
     let mut d3d = d.begin_mode3D(camera);
-    let mut s = d3d.begin_shader_mode(shader);
-    crab.draw(&mut s);
-    map.draw(&mut s);
-    level.draw(&mut s, assets);
+    // let mut s = d3d.begin_shader_mode(shader);
+    d3d.draw_grid(10, 1.0);
+    crab.draw(&mut d3d);
+    map.draw(&mut d3d);
+    level.draw(&mut d3d, assets);
 }

@@ -22,7 +22,7 @@ pub enum CrabAnimation {
 ///
 /// let mut rl = RaylibHandle::new();
 /// let thread = RaylibThread::new();
-/// let mut crab = CrabAnimator::new(&mut rl, &thread, "rsc/crab.glb");
+/// let mut crab = CrabAnimator::new(&mut rl, &thread, "/rsc/crab.glb");
 /// crab.handle_animation(&mut rl, &thread);
 /// ```
 pub struct CrabAnimator {

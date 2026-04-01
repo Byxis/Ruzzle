@@ -52,7 +52,7 @@ fn main() {
     );
 
     let spawn_point = Transform3D::new(Vector3::new(0.0, 5.0, 0.0), 0.0);
-    let mut map = Map::new(&mut rl, &thread, "rsc/map.glb");
+    let mut map = Map::new(&mut rl, &thread, "/rsc/map.glb");
 
     map.set_position(Vector3::new(0.0, -0.2, 0.0));
     map.set_spawn_point(spawn_point);
@@ -71,17 +71,22 @@ fn main() {
         Vec3::new(-4.5, 0.0, -4.5),
     ));
 
-    let mut crab = Crab::new(&mut rl, &thread, "rsc/crab.glb");
+    let mut crab = Crab::new(&mut rl, &thread, "/rsc/crab.glb");
     crab.teleport(map.spawn_point);
 
     rl.set_target_fps(60);
 
-    menu_manager
-        .shader_manager
-        .apply_cel_shade_to_model(&mut map.model);
-    menu_manager
-        .shader_manager
-        .apply_cel_shade_to_model(&mut crab.crab_animator.model);
+    unsafe {
+        println!("Map mesh count: {}", map.model.meshCount);
+        println!("Crab mesh count: {}", crab.crab_animator.model.meshCount);
+    }
+
+    // menu_manager
+    //     .shader_manager
+    //     .apply_cel_shade_to_model(&mut map.model);
+    // menu_manager
+    //     .shader_manager
+    //     .apply_cel_shade_to_model(&mut crab.crab_animator.model);
 
     menu_manager
         .sound_manager

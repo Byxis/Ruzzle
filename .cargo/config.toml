@@ -1,5 +1,5 @@
-[build]
-rustflags = ["--cfg=getrandom_backend=\"wasm_js\""]
-
-[target.wasm32-unknown-unknown]
-rustflags = ["--cfg=getrandom_backend=\"wasm_js\""]
+[target.wasm32-unknown-emscripten]
+rustflags = [
+    "-C", "link-arg=-sASYNCIFY",
+    "-C", "link-arg=-sASYNCIFY_STACK_SIZE=65536",
+]

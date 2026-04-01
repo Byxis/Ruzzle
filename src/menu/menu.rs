@@ -1,7 +1,7 @@
 use crate::components::map::Map;
 use crate::config::Config;
 use crate::crab::crab::Crab;
-use crate::sound_manager;
+// use crate::sound_manager;
 use raylib::prelude::*;
 use raylib::{ffi::KeyboardKey, RaylibHandle};
 
@@ -13,8 +13,8 @@ use crate::menu::screens::{
 };
 
 use crate::levels::level::Level;
-use crate::shader::daylight::DayCycleManager;
-use crate::shader::shader::ShaderManager;
+// use crate::shader::daylight::DayCycleManager;
+// use crate::shader::shader::ShaderManager;
 
 use crate::sound_manager::sound_manager::{SoundEffect, SoundManager};
 
@@ -26,15 +26,15 @@ impl Assets {
     pub fn new(rl: &mut RaylibHandle, thread: &RaylibThread) -> Self {
         Self {
             textures: vec![
-                rl.load_texture(thread, "rsc/images/sand.png")
+                rl.load_texture(thread, "/rsc/images/sand.png")
                     .expect("sand"),
-                rl.load_texture(thread, "rsc/images/bg_loading.png")
+                rl.load_texture(thread, "/rsc/images/bg_loading.png")
                     .expect("bg_loading"),
-                rl.load_texture(thread, "rsc/images/bg_logo.png")
+                rl.load_texture(thread, "/rsc/images/bg_logo.png")
                     .expect("bg_logo"),
-                rl.load_texture(thread, "rsc/images/back_button.png")
+                rl.load_texture(thread, "/rsc/images/back_button.png")
                     .expect("bg_logo"),
-                rl.load_texture(thread, "rsc/images/background.png")
+                rl.load_texture(thread, "/rsc/images/background.png")
                     .expect("background"),
             ],
         }
@@ -115,8 +115,8 @@ pub struct MenuManager<'a> {
     pub hovered_button: SelectMenuHoveredButtons,
     pub current_level: Option<Level>,
     pub assets: Assets,
-    pub shader_manager: ShaderManager,
-    pub day_cycle: DayCycleManager,
+    // pub shader_manager: ShaderManager,
+    // pub day_cycle: DayCycleManager,
     pub render_target: RenderTexture2D,
     pub sound_manager: SoundManager<'a>,
 }
@@ -204,8 +204,8 @@ impl<'a> MenuManager<'a> {
             id: SelectMenuHoveredButtons::None,
         };
 
-        let shader_manager = ShaderManager::new(rl, thread);
-        let day_cycle = DayCycleManager::new();
+        // let shader_manager = ShaderManager::new(rl, thread);
+        // let day_cycle = DayCycleManager::new();
         let render_target = rl
             .load_render_texture(
                 thread,
@@ -224,8 +224,8 @@ impl<'a> MenuManager<'a> {
             hovered_button: SelectMenuHoveredButtons::None,
             current_level: None,
             assets,
-            shader_manager,
-            day_cycle,
+            // shader_manager,
+            // day_cycle,
             render_target,
             sound_manager,
         }
@@ -276,18 +276,18 @@ impl<'a> MenuManager<'a> {
         self.frame_count += 1;
 
         // Update shader uniforms and day cycle
-        self.shader_manager
-            .set_sunlight_color(self.day_cycle.get_light_color());
-        self.shader_manager
-            .set_ambient_color(self.day_cycle.get_ambient_color());
-        self.shader_manager.update_background_colors(
-            self.day_cycle.get_background_top(),
-            self.day_cycle.get_background_bottom(),
-        );
-        self.shader_manager.update_postprocess_resolution(
-            self.config.screen_width as f32,
-            self.config.screen_height as f32,
-        );
+        // self.shader_manager
+        //     .set_sunlight_color(self.day_cycle.get_light_color());
+        // self.shader_manager
+        //     .set_ambient_color(self.day_cycle.get_ambient_color());
+        // self.shader_manager.update_background_colors(
+        //     self.day_cycle.get_background_top(),
+        //     self.day_cycle.get_background_bottom(),
+        // );
+        // self.shader_manager.update_postprocess_resolution(
+        //     self.config.screen_width as f32,
+        //     self.config.screen_height as f32,
+        // );
 
         match self.current_menu {
             Menu::Title => self.update_title(rl),
@@ -459,6 +459,11 @@ impl<'a> MenuManager<'a> {
         crab: &mut Crab,
         camera: &Camera3D,
     ) {
+        if let Some(text) = &self.assets.textures.get(4) {
+            draw_texture_contain(d, text, self.config.screen_width, self.config.screen_height);
+        } else {
+            d.clear_background(Color::BLACK);
+        }
         match self.current_menu {
             Menu::Game => {
                 if let Some(level) = &mut self.current_level {
@@ -474,23 +479,14 @@ impl<'a> MenuManager<'a> {
                             camera,
                             level,
                             &self.assets,
-                            &mut self.shader_manager.cel_shade_shader,
+                            // &mut self.shader_manager.cel_shade_shader,
                         );
                     }
 
                     // Draw the RenderTexture to screen with post-process shader
                     {
                         let menu_flag = 0i32;
-                        self.shader_manager.postprocess_shader.set_shader_value(
-                            self.shader_manager
-                                .postprocess_shader
-                                .get_shader_location("isMenuBackground"),
-                            menu_flag,
-                        );
-
-                        let mut sd =
-                            d.begin_shader_mode(&mut self.shader_manager.postprocess_shader);
-                        sd.draw_texture_rec(
+                        d.draw_texture_rec(
                             self.render_target.texture(),
                             Rectangle::new(
                                 0.0,
@@ -521,26 +517,26 @@ impl<'a> MenuManager<'a> {
 
                     {
                         let menu_flag = 1i32;
-                        self.shader_manager.postprocess_shader.set_shader_value(
-                            self.shader_manager
-                                .postprocess_shader
-                                .get_shader_location("isMenu"),
-                            menu_flag,
-                        );
+                        // self.shader_manager.postprocess_shader.set_shader_value(
+                        //     self.shader_manager
+                        //         .postprocess_shader
+                        //         .get_shader_location("isMenu"),
+                        //     menu_flag,
+                        // );
 
-                        let mut sd =
-                            d.begin_shader_mode(&mut self.shader_manager.postprocess_shader);
-                        sd.draw_texture_rec(
-                            self.render_target.texture(),
-                            Rectangle::new(
-                                0.0,
-                                0.0,
-                                self.render_target.texture().width as f32,
-                                -(self.render_target.texture().height as f32),
-                            ),
-                            Vector2::new(0.0, 0.0),
-                            Color::WHITE,
-                        );
+                        // let mut sd =
+                        //     d.begin_shader_mode(&mut self.shader_manager.postprocess_shader);
+                        // sd.draw_texture_rec(
+                        //     self.render_target.texture(),
+                        //     Rectangle::new(
+                        //         0.0,
+                        //         0.0,
+                        //         self.render_target.texture().width as f32,
+                        //         -(self.render_target.texture().height as f32),
+                        //     ),
+                        //     Vector2::new(0.0, 0.0),
+                        //     Color::WHITE,
+                        // );
                     }
                 } else {
                     d.clear_background(Color::BLACK);

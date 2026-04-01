@@ -20,8 +20,8 @@ impl ShaderManager {
         // --- cel_shade shader ---
         let mut cel_shade_shader = rl.load_shader(
             thread,
-            Some("rsc/shaders/cel_shade.vs"),
-            Some("rsc/shaders/cel_shade.fs"),
+            Some("/rsc/shaders/cel_shade.vs"),
+            Some("/rsc/shaders/cel_shade.fs"),
         );
 
         let sunlight_dir_loc = cel_shade_shader.get_shader_location("sunLightDir");
@@ -34,7 +34,7 @@ impl ShaderManager {
         cel_shade_shader.set_shader_value(ambient_color_loc, [0.25f32, 0.2, 0.15]);
 
         // --- Postprocess shader ---
-        let postprocess_shader = rl.load_shader(thread, None, Some("rsc/shaders/postprocess.fs"));
+        let postprocess_shader = rl.load_shader(thread, None, Some("/rsc/shaders/postprocess.fs"));
 
         let pp_resolution_loc = postprocess_shader.get_shader_location("resolution");
         let pp_bg_top_loc = postprocess_shader.get_shader_location("bgTop");
