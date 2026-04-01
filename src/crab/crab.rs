@@ -169,7 +169,7 @@ impl Crab {
     }
 
     /// Draws the crab model using the given `RaylibMode3D` draw handle.
-    pub fn draw(&self, d3d: &mut RaylibMode3D<'_, impl RaylibDraw>) {
+    pub fn draw(&self, d3d: &mut impl RaylibDraw3D) {
         d3d.draw_model_ex(
             &self.crab_animator.model,
             self.transform.position + Vector3::new(0.0, CrabStats::MODEL_OFFSET, 0.0),
