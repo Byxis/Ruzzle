@@ -24,6 +24,8 @@ const SCREEN_HEIGHT: i32 = 720;
 mod config;
 use config::Config;
 
+mod shader;
+
 fn main() {
     let config = Config::new(SCREEN_WIDTH, SCREEN_HEIGHT);
     let (mut rl, thread) = raylib::init()
@@ -34,7 +36,6 @@ fn main() {
     let audio = RaylibAudio::init_audio_device().expect("Failed to initialize audio device");
     let sound_manager = SoundManager::new(&audio, &config);
 
-    // let mut current_menu = Menu::Title;
     let mut menu_manager = MenuManager::new(&config, &mut rl, &thread, sound_manager);
     if rl.get_screen_width() != menu_manager.config.screen_width
         || rl.get_screen_height() != menu_manager.config.screen_height
@@ -75,22 +76,28 @@ fn main() {
 
     rl.set_target_fps(60);
 
-    // Apply default sound parameters and start game music
-    menu_manager.sound_manager.set_background_music(BackgroundMusic::CrabRave);
+    menu_manager
+        .shader_manager
+        .apply_cel_shade_to_model(&mut map.model);
+    menu_manager
+        .shader_manager
+        .apply_cel_shade_to_model(&mut crab.crab_animator.model);
+
+    menu_manager
+        .sound_manager
+        .set_background_music(BackgroundMusic::CrabRave);
     menu_manager.sound_manager.start_background_music();
 
-    // Frame loop
     while !rl.window_should_close() {
-        // Update background music stream (for continuous playing)
         menu_manager.sound_manager.update_music_stream();
 
-        //Updating the game
         menu_manager.update(&mut rl, &thread, &map, &mut crab, &camera);
 
-        //Drawing the game
-        let mut d = rl.begin_drawing(&thread);
-        d.clear_background(Color::BLACK);
+        {
+            let mut d = rl.begin_drawing(&thread);
+            d.clear_background(Color::BLACK);
 
-        menu_manager.draw(&mut d, &map, &mut crab, &camera);
+            menu_manager.draw(&mut d, &thread, &map, &mut crab, &camera);
+        }
     }
 }
