@@ -5,13 +5,14 @@ use raylib::prelude::Color;
 use raylib::prelude::RaylibDrawHandle;
 use raylib::prelude::*;
 
-pub fn draw_win(
-    d: &mut RaylibDrawHandle,
-    config: &Config,
-    back_button: &Button,
-    texture: Option<&Texture2D>,
-    buttons: &[Button],
-) {
+/// Draws the win screen.
+///
+/// Displays when the player finishes a level, this screen let's the player move on the the next or to the menu.
+///
+/// # Arguments
+/// * d : &mut RaylibDrawHandle, borrows it to draw graphical elements
+/// * config : &Config, used for screen dimensions and font sizes
+pub fn draw_win(d: &mut RaylibDrawHandle, config: &Config, buttons: &[Button]) {
     draw_text_center(
         d,
         "Niveau terminé !",

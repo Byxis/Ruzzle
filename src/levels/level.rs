@@ -296,7 +296,6 @@ impl Level {
 
     /// Draws the map using the given 3D drawing context.
     pub fn draw(&self, d3d: &mut RaylibMode3D<RaylibDrawHandle>, assets: &Assets) {
-        // Plus de begin_mode3D ici, on reçoit directement le contexte 3D
         for group in self.groups.iter() {
             group.draw(d3d, assets);
             if group.is_dragging {

@@ -16,7 +16,7 @@ use raylib::prelude::*;
 /// * d : &mut RaylibDrawHandle, borrows it to draw graphical elements
 /// * config : &Config, used for screen dimensions and font sizes
 /// * back_button : &Button, the back button to return to the main menu
-/// * tex_back : &Option<Texture2D>, optional texture for the back button; if None, uses fallback styling
+/// * texture : Option<&Texture2D>, optional texture for the back button; if None, uses fallback styling
 pub fn draw_credit(
     d: &mut RaylibDrawHandle,
     config: &Config,

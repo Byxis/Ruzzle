@@ -200,7 +200,8 @@ impl GroupBlock {
         }
     }
 
-    /// Returns the position of the world if endpoint
+    /// Calculates the world-space position of the group's endpoint
+    /// Returns `None` if no local endpoint is defined
     pub fn endpoint_world(&self) -> Option<Vector3> {
         self.endpoint_local.map(|local| {
             let mat = self.orientation.to_matrix();
@@ -264,6 +265,7 @@ impl GroupBlock {
         }
     }
 
+    ///Permanently applies the current orientation to the children's local offsets
     pub fn bake_rotation(&mut self) {
         let mat = self.orientation.to_matrix();
 
@@ -408,7 +410,7 @@ impl GroupBlock {
     }
 }
 
-/// Custom renderer that applies a 2D texture to a 3D cube with correct UV mapping.
+///Renders a 3D cube with a texture applied to each of its six faces
 fn draw_cube_with_texture(
     tex: &Texture2D,
     position: Vector3,

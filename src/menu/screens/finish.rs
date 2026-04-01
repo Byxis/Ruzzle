@@ -6,6 +6,13 @@ use raylib::prelude::Color;
 use raylib::prelude::RaylibDrawHandle;
 use raylib::prelude::*;
 
+/// Draws the finish game screen.
+///
+/// Displays a text to congratulates .
+///
+/// # Arguments
+/// * d : &mut RaylibDrawHandle, borrows it to draw graphical elements
+/// * config : &Config, used for screen dimensions and font sizes
 pub fn draw_finish(d: &mut RaylibDrawHandle, config: &Config) {
     draw_text_center(
         d,
