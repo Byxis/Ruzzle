@@ -14,66 +14,173 @@ pub fn create_sand_row(pos: Vector3) -> GroupBlock {
     GroupBlock::new(pos, children, BlockType::All)
 }
 
-pub fn create_level1(pos: Vector3) -> GroupBlock {
+pub fn level_start(pos: Vector3) -> GroupBlock {
     let mut groups = vec![];
+    groups.push(BlockPrefab::new(
+        Vector3::new(0.0, 0.0, -5.0),
+        None,
+        BlockType::Fixe,
+        BlockMaterial::sand(),
+    ));
+    groups.push(BlockPrefab::new(
+        Vector3::new(0.0, 0.0, -6.0),
+        None,
+        BlockType::Fixe,
+        BlockMaterial::sand(),
+    ));
+    groups.push(BlockPrefab::new(
+        Vector3::new(-1.0, 0.0, -5.0),
+        None,
+        BlockType::Fixe,
+        BlockMaterial::sand(),
+    ));
+    groups.push(BlockPrefab::new(
+        Vector3::new(-1.0, 0.0, -6.0),
+        None,
+        BlockType::Fixe,
+        BlockMaterial::sand(),
+    ));
 
-    for x in -5..=5 {
-        groups.push(BlockPrefab::new(
-            Vector3::new(x as f32, 0.0, 0.0),
-            None,
-            BlockType::Fixe,
-            BlockMaterial::sand(),
-        ));
-    }
     GroupBlock::new(pos, groups, BlockType::Fixe)
 }
 
-pub fn create_level2(pos: Vector3) -> GroupBlock {
+pub fn level1_moving_block(pos: Vector3) -> GroupBlock {
     let mut groups = vec![];
 
-    for x in -5..=-3 {
+    for z in -3..=3 {
         groups.push(BlockPrefab::new(
-            Vector3::new(x as f32, 0.0, 0.0),
+            Vector3::new(0.0, 0.0, z as f32),
             None,
             BlockType::Fixe,
             BlockMaterial::sand(),
         ));
-    }
-    for z in 1..=2 {
         groups.push(BlockPrefab::new(
-            Vector3::new(-3.0, 0.0, z as f32),
-            None,
-            BlockType::Fixe,
-            BlockMaterial::sand(),
-        ));
-    }
-
-    for x in -3..=3 {
-        groups.push(BlockPrefab::new(
-            Vector3::new(x as f32, 0.0, 2.0),
+            Vector3::new(1.0, 0.0, z as f32),
             None,
             BlockType::Fixe,
             BlockMaterial::sand(),
         ));
     }
 
-    for z in 1..=2 {
+    GroupBlock::new(pos, groups, BlockType::Drag).with_end_pos(Vector3::new(0.0, 0.0, 0.0))
+}
+
+pub fn flag_block(pos: Vector3, rl: &mut RaylibHandle, thread: &RaylibThread) -> GroupBlock {
+    let mat = BlockMaterial::sand();
+    let children = vec![
+        BlockPrefab::new(Vector3::new(-0.5, 0.0, -0.5), None, BlockType::Fixe, mat),
+        BlockPrefab::new(Vector3::new(0.5, 0.0, -0.5), None, BlockType::Fixe, mat),
+        BlockPrefab::new(Vector3::new(-0.5, 0.0, 0.5), None, BlockType::Fixe, mat),
+        BlockPrefab::new(Vector3::new(0.5, 0.0, 0.5), None, BlockType::Fixe, mat),
+    ];
+
+    let mut group = GroupBlock::new(pos, children, BlockType::All);
+    group.endpoint_local = Some(Vector3::new(0.0, 1.0, 0.0));
+
+    group.model = rl.load_model(thread, "rsc/flag.glb").ok();
+    group.model_offset = Vector3::new(0.0, 1.0, 0.0);
+
+    group
+}
+
+pub fn level2_moving_block(pos: Vector3) -> GroupBlock {
+    let mut groups = vec![];
+
+    for z in -4..=-1 {
         groups.push(BlockPrefab::new(
-            Vector3::new(3.0, 0.0, z as f32),
+            Vector3::new(0.0, 0.0, z as f32),
+            None,
+            BlockType::Fixe,
+            BlockMaterial::sand(),
+        ));
+        groups.push(BlockPrefab::new(
+            Vector3::new(1.0, 0.0, z as f32),
             None,
             BlockType::Fixe,
             BlockMaterial::sand(),
         ));
     }
 
-    for x in 3..=5 {
+    GroupBlock::new(pos, groups, BlockType::Drag)
+}
+
+pub fn level3_rotating_block(pos: Vector3) -> GroupBlock {
+    let mut groups = vec![];
+
+    for z in -5..=5 {
         groups.push(BlockPrefab::new(
-            Vector3::new(x as f32, 0.0, 0.0),
+            Vector3::new(0.0, z as f32, 0.0),
+            None,
+            BlockType::Fixe,
+            BlockMaterial::sand(),
+        ));
+        groups.push(BlockPrefab::new(
+            Vector3::new(-1.0, z as f32, 0.0),
+            None,
+            BlockType::Fixe,
+            BlockMaterial::sand(),
+        ));
+        groups.push(BlockPrefab::new(
+            Vector3::new(1.0, z as f32, 0.0),
             None,
             BlockType::Fixe,
             BlockMaterial::sand(),
         ));
     }
 
-    GroupBlock::new(pos, groups, BlockType::Fixe)
+    GroupBlock::new(pos, groups, BlockType::RotationV)
+}
+
+pub fn level4_rotating_block(pos: Vector3) -> GroupBlock {
+    let mut groups = vec![];
+
+    for z in 0..=4 {
+        groups.push(BlockPrefab::new(
+            Vector3::new(0.0, z as f32, 0.0),
+            None,
+            BlockType::Fixe,
+            BlockMaterial::sand(),
+        ));
+        groups.push(BlockPrefab::new(
+            Vector3::new(-1.0, z as f32, 0.0),
+            None,
+            BlockType::Fixe,
+            BlockMaterial::sand(),
+        ));
+        groups.push(BlockPrefab::new(
+            Vector3::new(1.0, z as f32, 0.0),
+            None,
+            BlockType::Fixe,
+            BlockMaterial::sand(),
+        ));
+    }
+
+    GroupBlock::new(pos, groups, BlockType::RotationV)
+}
+
+pub fn flag_block_hidden(pos: Vector3, rl: &mut RaylibHandle, thread: &RaylibThread) -> GroupBlock {
+    let mat = BlockMaterial::sand();
+    let children = vec![
+        BlockPrefab::new(Vector3::new(-0.5, 0.0, -0.5), None, BlockType::Fixe, mat),
+        BlockPrefab::new(Vector3::new(0.5, 0.0, -0.5), None, BlockType::Fixe, mat),
+        BlockPrefab::new(Vector3::new(-0.5, 0.0, 0.5), None, BlockType::Fixe, mat),
+        BlockPrefab::new(Vector3::new(0.5, 0.0, 0.5), None, BlockType::Fixe, mat),
+        BlockPrefab::new(Vector3::new(-0.5, 1.0, -0.5), None, BlockType::Fixe, mat),
+        BlockPrefab::new(Vector3::new(0.5, 1.0, -0.5), None, BlockType::Fixe, mat),
+        BlockPrefab::new(Vector3::new(-0.5, 1.0, 0.5), None, BlockType::Fixe, mat),
+        BlockPrefab::new(Vector3::new(0.5, 1.0, 0.5), None, BlockType::Fixe, mat),
+    ];
+
+    let mut group = GroupBlock::new(pos, children, BlockType::All);
+    group.endpoint_local = Some(Vector3::new(0.0, 1.0, 0.0));
+
+    group.model = rl.load_model(thread, "rsc/flag.glb").ok();
+    group.model_offset = Vector3::new(0.0, 1.0, 0.0);
+
+    group.orientation =
+        Quaternion::from_axis_angle(Vector3::new(0.0, 0.0, 1.0), 180.0f32.to_radians());
+
+    group.bake_rotation();
+
+    group
 }
