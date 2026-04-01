@@ -80,7 +80,7 @@ pub enum SelectMenuHoveredButtons {
 /// * id as SelectMenuHoveredButtons #FIXME : i need to find a way to be more abstract on the button
 ///
 ///
-/// #Examples :
+/// # Examples :
 ///
 /// Create a button displaying hello
 /// let rec = Rectangle::new((config.screen_width / 2 - button_width as i32 / 2) as f32, (config.screen_height as f32) * 0.3,  button_width,button_height)
@@ -446,8 +446,14 @@ impl<'a> MenuManager<'a> {
                 crab.effective_position() - Vector3::new(0.0, 0.4, 0.0),
             );
 
-            let mut t =
-                crab.calculate_next_transform(rl, &camera, &thread, is_grounded, will_grounded);
+            let mut t = crab.calculate_next_transform(
+                rl,
+                &camera,
+                &thread,
+                is_grounded,
+                will_grounded,
+                &mut self.sound_manager,
+            );
 
             t.position = level.resolve_collisions(&crab.collider, t.position);
 
@@ -533,7 +539,6 @@ impl<'a> MenuManager<'a> {
     ///
     /// # Arguments
     /// * rl - raylib handler (mouse position + click)
-
     fn handle_back_button(&mut self, rl: &RaylibHandle) {
         let mouse_pos = rl.get_mouse_position();
         if self

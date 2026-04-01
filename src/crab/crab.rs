@@ -3,6 +3,7 @@ use crate::components::transform::Transform3D;
 use crate::crab::crab_animator::CrabAnimation;
 use crate::crab::crab_animator::CrabAnimator;
 use crate::crab::crab_stats::CrabStats;
+use crate::sound_manager::sound_manager::{SoundEffect, SoundManager};
 use raylib::prelude::*;
 use std::f32::consts::PI;
 
@@ -94,6 +95,7 @@ impl Crab {
         thread: &RaylibThread,
         is_grounded: bool,
         will_grounded: bool,
+        sound_manager: &mut SoundManager,
     ) -> Transform3D {
         let mut transform = self.transform.clone();
 
@@ -111,6 +113,7 @@ impl Crab {
         move_vec = move_vec.normalize();
 
         if move_vec.length() > 0.0 {
+            sound_manager.play_sound_effect(SoundEffect::Walking);
             transform.position += move_vec * CrabStats::CRAB_SPEED * dt;
 
             let angle_rad = move_vec.x.atan2(move_vec.z);
@@ -119,6 +122,7 @@ impl Crab {
 
         // Y movement (jump mechanic)
         if rl.is_key_down(KeyboardKey::KEY_SPACE) && self.jump_timer <= 0.0 && is_grounded {
+            sound_manager.play_sound_effect(SoundEffect::Jump);
             self.jump_timer = PI;
             self.jump_start_y = transform.position.y;
             self.has_landed = false;
@@ -152,10 +156,11 @@ impl Crab {
         }
 
         if self.crab_animator.current == CrabAnimation::Idle && rl.is_key_down(KeyboardKey::KEY_E) {
+            sound_manager.play_sound_effect(SoundEffect::Boing);
             self.crab_animator.change_animation(CrabAnimation::Emote);
         }
 
-        return transform;
+        transform
     }
 
     /// Get crab effective position (position - model offset)
