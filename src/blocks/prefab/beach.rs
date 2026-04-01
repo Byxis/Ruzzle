@@ -130,3 +130,30 @@ pub fn level3_rotating_block(pos: Vector3) -> GroupBlock {
 
     GroupBlock::new(pos, groups, BlockType::RotationV)
 }
+
+pub fn level4_rotating_block(pos: Vector3) -> GroupBlock {
+    let mut groups = vec![];
+
+    for z in 0..=4 {
+        groups.push(BlockPrefab::new(
+            Vector3::new(0.0, z as f32, 0.0),
+            None,
+            BlockType::Fixe,
+            BlockMaterial::sand(),
+        ));
+        groups.push(BlockPrefab::new(
+            Vector3::new(-1.0, z as f32, 0.0),
+            None,
+            BlockType::Fixe,
+            BlockMaterial::sand(),
+        ));
+        groups.push(BlockPrefab::new(
+            Vector3::new(1.0, z as f32, 0.0),
+            None,
+            BlockType::Fixe,
+            BlockMaterial::sand(),
+        ));
+    }
+
+    GroupBlock::new(pos, groups, BlockType::RotationV)
+}
