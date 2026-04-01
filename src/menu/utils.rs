@@ -199,8 +199,7 @@ pub fn draw_back_button(
 ) {
     draw_interactive_button(d, rect, texture, label, font_size);
 }
-
-/// Draws a text bubble for quotes.
+/// Draws a text bubble for quotes with proper word wrapping.
 ///
 /// # Arguments
 /// * d : &mut RaylibDrawHandle, to draw on the screen
@@ -216,25 +215,57 @@ pub fn draw_quote_bubble(
     max_width: f32,
 ) {
     let padding = 15.0;
-    let line_height = font_size as f32 + 5.0;
-    
-    // Estimer le nombre de lignes
-    let text_width = d.measure_text(text, font_size) as f32;
-    let approximate_lines = ((text_width / (max_width - padding * 2.0)).ceil()).max(1.0);
-    let text_height = approximate_lines * line_height;
+    let line_height = font_size as f32 + 8.0;
+    let available_width = max_width - padding * 2.0;
 
+    // Découper le texte en lignes avec word-wrap
+    let mut lines: Vec<String> = Vec::new();
+    let mut current_line = String::new();
+
+    for word in text.split_whitespace() {
+        let test_line = if current_line.is_empty() {
+            word.to_string()
+        } else {
+            format!("{} {}", current_line, word)
+        };
+
+        let test_width = d.measure_text(&test_line, font_size) as f32;
+
+        if test_width > available_width {
+            if !current_line.is_empty() {
+                lines.push(current_line.clone());
+                current_line = word.to_string();
+            } else {
+                // Le mot est trop long, le forcer sur une ligne
+                lines.push(word.to_string());
+                current_line.clear();
+            }
+        } else {
+            current_line = test_line;
+        }
+    }
+
+    if !current_line.is_empty() {
+        lines.push(current_line);
+    }
+
+    // Calculer la hauteur totale
+    let text_height = lines.len() as f32 * line_height;
     let bubble_rect = Rectangle::new(pos.x, pos.y, max_width, text_height + padding * 2.0);
 
     // Dessiner la bulle
     d.draw_rectangle_rounded(bubble_rect, 0.2, 8, Color::new(240, 240, 240, 220));
     d.draw_rectangle_rounded_lines(bubble_rect, 0.2, 8, Color::DARKGRAY);
 
-    // Dessiner le texte
-    d.draw_text(
-        text,
-        (pos.x + padding) as i32,
-        (pos.y + padding) as i32,
-        font_size,
-        Color::BLACK,
-    );
+    // Dessiner chaque ligne
+    for (i, line) in lines.iter().enumerate() {
+        let line_y = pos.y + padding + (i as f32 * line_height);
+        d.draw_text(
+            line,
+            (pos.x + padding) as i32,
+            line_y as i32,
+            font_size,
+            Color::BLACK,
+        );
+    }
 }
