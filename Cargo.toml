@@ -7,6 +7,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+discord-rpc-client = "0.4.0"
 raylib = { version = "5.7.0" }
 renet = "2.0.0"
 renet_netcode = "2.0.0"

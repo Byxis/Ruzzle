@@ -10,6 +10,9 @@ use crate::levels::level::Level;
 mod crab;
 use crate::crab::crab::Crab;
 
+mod discord;
+use crate::discord::rpc::discord_rpc;
+
 mod menu;
 use crate::menu::menu::MenuManager;
 
@@ -33,6 +36,8 @@ fn main() {
         .size(config.screen_width, config.screen_height)
         .title("Ruzzle")
         .build();
+
+    let _drpc = discord_rpc();
 
     let audio = RaylibAudio::init_audio_device().expect("Failed to initialize audio device");
     let sound_manager = SoundManager::new(&audio, &config);
