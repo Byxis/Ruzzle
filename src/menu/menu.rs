@@ -352,7 +352,7 @@ impl<'a> MenuManager<'a> {
                                 self.current_level_index = next_index;
                                 let spawn = next_level.spawnpoint;
                                 let mut next_level = next_level;
-                                self.apply_shader_to_level(&mut next_level);
+                                // self.apply_shader_to_level(&mut next_level);
                                 self.current_level = Some(next_level);
                                 crab.teleport(Transform3D {
                                     position: spawn,
@@ -396,7 +396,7 @@ impl<'a> MenuManager<'a> {
                     match button.id {
                         SelectMenuHoveredButtons::Game => {
                             let mut level = Level::new((1) as i8, rl, thread);
-                            self.apply_shader_to_level(&mut level);
+                            // self.apply_shader_to_level(&mut level);
                             self.current_level = Some(level);
                             self.current_level_index = (1) as i8;
                             self.current_menu = Menu::Game;
@@ -682,12 +682,12 @@ impl<'a> MenuManager<'a> {
         }
     }
 
-    /// Applies the cel-shade shader to all models contained within a level.
-    fn apply_shader_to_level(&self, level: &mut Level) {
-        for group in level.groups.iter_mut() {
-            if let Some(model) = &mut group.model {
-                self.shader_manager.apply_cel_shade_to_model(model);
-            }
-        }
-    }
+    // /// Applies the cel-shade shader to all models contained within a level.
+    // fn apply_shader_to_level(&self, level: &mut Level) {
+    //     for group in level.groups.iter_mut() {
+    //         if let Some(model) = &mut group.model {
+    //             self.shader_manager.apply_cel_shade_to_model(model);
+    //         }
+    //     }
+    // }
 }
