@@ -63,6 +63,9 @@ pub struct GroupBlock {
     pub drag_timer: f32,
 
     pub endpoint_local: Option<Vector3>,
+    pub model: Option<Model>,
+    pub model_offset: Vector3,
+    pub model_orientation: Quaternion,
 }
 
 impl GroupBlock {
@@ -88,6 +91,9 @@ impl GroupBlock {
             drag_timer: 0.0,
 
             endpoint_local: None,
+            model: None,
+            model_offset: Vector3::ZERO,
+            model_orientation: Quaternion::identity(),
         }
     }
 
@@ -158,6 +164,37 @@ impl GroupBlock {
                 */
             }
             raylib::ffi::rlPopMatrix();
+        }
+        if let Some(model) = &self.model {
+            let x = self.model_offset.x;
+            let y = self.model_offset.y;
+            let z = self.model_offset.z;
+
+            let rx = mat.m0 * x + mat.m1 * y + mat.m2 * z;
+            let ry = mat.m4 * x + mat.m5 * y + mat.m6 * z;
+            let rz = mat.m8 * x + mat.m9 * y + mat.m10 * z;
+
+            let world_pos = Vector3::new(
+                self.position.x + rx,
+                self.position.y + ry,
+                self.position.z + rz,
+            );
+
+            let animated_model_orientation = self.model_orientation
+                * self
+                    .orientation
+                    .slerp(self.target_orientation, self.rotation_progress);
+
+            let (axis, angle) = animated_model_orientation.to_axis_angle();
+
+            d.draw_model_ex(
+                model,
+                world_pos,
+                axis,
+                angle.to_degrees(),
+                Vector3::ONE,
+                Color::WHITE,
+            );
         }
     }
 
@@ -262,6 +299,20 @@ impl GroupBlock {
             ));
         }
 
+        let x = self.model_offset.x;
+        let y = self.model_offset.y;
+        let z = self.model_offset.z;
+        let baked_x = mat.m0 * x + mat.m1 * y + mat.m2 * z;
+        let baked_y = mat.m4 * x + mat.m5 * y + mat.m6 * z;
+        let baked_z = mat.m8 * x + mat.m9 * y + mat.m10 * z;
+
+        self.model_offset = Vector3::new(
+            (baked_x * 100.0).round() / 100.0,
+            (baked_y * 100.0).round() / 100.0,
+            (baked_z * 100.0).round() / 100.0,
+        );
+
+        self.model_orientation = self.orientation * self.model_orientation;
         self.orientation = Quaternion::identity();
         self.target_orientation = Quaternion::identity();
 

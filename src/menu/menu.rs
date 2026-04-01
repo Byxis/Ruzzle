@@ -276,7 +276,6 @@ impl MenuManager {
         map: &Map,
         crab: &mut Crab,
         camera: &Camera3D,
-        level: &Level,
     ) {
         self.frame_count += 1;
         match self.current_menu {
@@ -288,7 +287,7 @@ impl MenuManager {
             Menu::Multiplayer => self.update_multiplayer(rl),
             Menu::Loading => self.update_loading(rl),
             Menu::Credit => self.update_credit(rl),
-            Menu::Win => self.update_win(rl, crab),
+            Menu::Win => self.update_win(rl, thread, crab),
             Menu::Finish => self.update_finish(rl),
         }
     }
@@ -301,7 +300,7 @@ impl MenuManager {
         }
     }
 
-    fn update_win(&mut self, rl: &RaylibHandle, crab: &mut Crab) {
+    fn update_win(&mut self, rl: &mut RaylibHandle, thread: &RaylibThread, crab: &mut Crab) {
         let mouse_pos = rl.get_mouse_position();
         for button in &self.win_buttons {
             if button.rectangle.check_collision_point_rec(mouse_pos) {
@@ -309,7 +308,7 @@ impl MenuManager {
                     match button.id {
                         SelectMenuHoveredButtons::LevelSelection => {
                             let next_index = self.current_level_index + 1;
-                            let next_level = Level::new(next_index);
+                            let next_level = Level::new(next_index, rl, thread);
 
                             if !next_level.groups.is_empty() {
                                 self.current_level_index = next_index;
@@ -422,7 +421,7 @@ impl MenuManager {
         for (i, button) in self.level_buttons.iter().enumerate() {
             if button.rectangle.check_collision_point_rec(mouse_pos) {
                 if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
-                    self.current_level = Some(Level::new((i + 1) as i8));
+                    self.current_level = Some(Level::new((i + 1) as i8, rl, thread));
                     self.current_level_index = (i + 1) as i8;
                     if let Some(level) = self.current_level.as_ref() {
                         let new_transform = Transform3D {

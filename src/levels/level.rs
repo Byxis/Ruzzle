@@ -1,6 +1,6 @@
 use crate::blocks::material::BlockMaterial;
 use crate::blocks::modele::{BlockType, GroupBlock};
-use crate::blocks::prefab::beach::{create_level1, create_level2};
+use crate::blocks::prefab::beach::{create_level1, create_level2, flag_block};
 use crate::components::collider::Collider;
 use crate::menu::menu::Assets;
 use raylib::prelude::*;
@@ -26,7 +26,7 @@ pub struct Level {
 impl Level {
     /// Initialize a level
     /// To add a new level, just add the index and the group of blocks wanted
-    pub fn new(index: i8) -> Self {
+    pub fn new(index: i8, rl: &mut RaylibHandle, thread: &RaylibThread) -> Self {
         let mut groups = Vec::new();
         let spawnpoint: Vector3;
         let endpoint_group;
@@ -34,8 +34,9 @@ impl Level {
         match index {
             1 => {
                 groups.push(create_level1(Vector3::new(0.0, 0.0, 0.0)));
+                groups.push(flag_block(Vector3::new(5.0, 1.0, 0.0), rl, thread));
                 spawnpoint = Vector3::new(-5.0, 1.0, 0.0);
-                endpoint_group = Some(0);
+                endpoint_group = Some(1);
             }
             2 => {
                 //groups.push(create_level2(Vector3::new(0.0, 0.0, 0.0)));
