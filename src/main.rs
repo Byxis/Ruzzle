@@ -2,6 +2,7 @@ use raylib::math::glam::Vec3;
 use raylib::prelude::*;
 
 mod components;
+use crate::components::camera_controller::CameraController;
 use crate::components::collider::Collider;
 use crate::components::map::Map;
 use crate::components::transform::Transform3D;
@@ -45,7 +46,7 @@ fn main() {
             raylib::ffi::SetConfigFlags(raylib::ffi::ConfigFlags::FLAG_WINDOW_RESIZABLE as u32);
         }
     }
-    let camera = Camera3D::perspective(
+    let mut camera = Camera3D::perspective(
         Vector3::new(10.0, 10.0, 0.0),
         Vector3::new(0.0, 0.0, 0.5),
         Vector3::new(0.0, 1.0, 0.0),
@@ -77,6 +78,8 @@ fn main() {
     let mut crab = Crab::new(&mut rl, &thread, "/rsc/crab.glb");
     crab.teleport(map.spawn_point);
 
+    let mut camera_controller = CameraController::new();
+
     rl.set_target_fps(60);
 
     unsafe {
@@ -98,6 +101,8 @@ fn main() {
 
     while !rl.window_should_close() {
         menu_manager.sound_manager.update_music_stream();
+
+        camera_controller.update(&mut camera, &rl);
 
         menu_manager.update(&mut rl, &thread, &map, &mut crab, &camera);
 

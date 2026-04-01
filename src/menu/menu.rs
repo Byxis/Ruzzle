@@ -351,6 +351,8 @@ impl<'a> MenuManager<'a> {
                             if !next_level.groups.is_empty() {
                                 self.current_level_index = next_index;
                                 let spawn = next_level.spawnpoint;
+                                let mut next_level = next_level;
+                                self.apply_shader_to_level(&mut next_level);
                                 self.current_level = Some(next_level);
                                 crab.teleport(Transform3D {
                                     position: spawn,
@@ -393,7 +395,9 @@ impl<'a> MenuManager<'a> {
                     // self.sound_manager.play_sound_effect(SoundEffect::Click);
                     match button.id {
                         SelectMenuHoveredButtons::Game => {
-                            self.current_level = Some(Level::new((1) as i8, rl, thread));
+                            let mut level = Level::new((1) as i8, rl, thread);
+                            self.apply_shader_to_level(&mut level);
+                            self.current_level = Some(level);
                             self.current_level_index = (1) as i8;
                             self.current_menu = Menu::Game;
                             if let Some(level) = self.current_level.as_ref() {
@@ -472,7 +476,8 @@ impl<'a> MenuManager<'a> {
         for (i, button) in self.level_buttons.iter().enumerate() {
             if button.rectangle.check_collision_point_rec(mouse_pos) {
                 if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
-                    self.current_level = Some(Level::new((i + 1) as i8, rl, thread));
+                    let mut level = Level::new((i + 1) as i8, rl, thread);
+                    self.current_level = Some(level);
                     self.current_level_index = (i + 1) as i8;
                     self.current_menu = Menu::Game;
                     if let Some(level) = self.current_level.as_ref() {
@@ -673,6 +678,15 @@ impl<'a> MenuManager<'a> {
                     Menu::Finish => draw_finish(d, &self.config),
                     _ => {}
                 }
+            }
+        }
+    }
+
+    /// Applies the cel-shade shader to all models contained within a level.
+    fn apply_shader_to_level(&self, level: &mut Level) {
+        for group in level.groups.iter_mut() {
+            if let Some(model) = &mut group.model {
+                self.shader_manager.apply_cel_shade_to_model(model);
             }
         }
     }
