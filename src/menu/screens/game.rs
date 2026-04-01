@@ -38,11 +38,10 @@ pub fn draw_game(
         {
             let mut d3d = d.begin_mode3D(camera);
 
-            crab.draw(&mut d3d);
-            level.draw(&mut d3d, assets);
-
             {
-                d3d.begin_shader_mode(shader);
+                let mut sd = d3d.begin_shader_mode(shader);
+                crab.draw(&mut sd);
+                level.draw(&mut sd, assets);
             }
         }
         match level_id {

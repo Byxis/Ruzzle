@@ -5,3 +5,4 @@ pub mod utils;
 pub mod screens;
 
 pub mod slider;
+pub mod quotes;
