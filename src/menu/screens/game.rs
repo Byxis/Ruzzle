@@ -43,19 +43,6 @@ pub fn draw_game(
 
             {
                 d3d.begin_shader_mode(shader);
-                //map.draw(&mut s);
-            }
-
-            if let Some(ep) = level.endpoint_world() {
-                d3d.draw_sphere(ep, 0.3, Color::GREEN);
-            }
-
-            for group in &level.groups {
-                for child in &group.children {
-                    if let CollisionShape::Box { half_size } = child.collider.shape {
-                        d3d.draw_cube_wires_v(child.collider.offset, half_size * 2.0, Color::RED);
-                    }
-                }
             }
         }
         match level_id {
