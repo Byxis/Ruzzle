@@ -9,7 +9,8 @@ use raylib::prelude::*;
 /// 
 /// They are used for sound effecting purposes
 /// Each action will trigger a sound effect played in the menu manager
-enum CrabAction {
+#[derive(PartialEq, Eq, Hash, Clone, Copy)]
+pub enum CrabAction {
     Move,
     Jump,
     Emote,

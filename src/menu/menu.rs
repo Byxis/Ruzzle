@@ -1,6 +1,6 @@
 use crate::components::map::Map;
 use crate::config::Config;
-use crate::crab::crab::Crab;
+use crate::crab::crab::{Crab, CrabAction};
 use crate::sound_manager;
 use raylib::prelude::*;
 use raylib::{ffi::KeyboardKey, RaylibHandle};
@@ -333,7 +333,24 @@ impl<'a> MenuManager<'a> {
             crab.effective_position() - Vector3::new(0.0, 0.4, 0.0),
         );
 
-        let mut t = crab.calculate_next_transform(rl, &camera, &thread, is_grounded, will_grounded);
+        let res = crab.calculate_next_transform(rl, &camera, &thread, is_grounded, will_grounded);
+        // Unwrap tuple returned 
+        let mut t = res.0;
+        let mut action = res.1;
+
+        // Play sound effect based on crab action
+        match action {
+            CrabAction::Move => {
+                self.sound_manager.play_sound_effect(SoundEffect::Walking);
+                //TODO : add a timer to avoid spamming the sound effect when moving ?
+            }
+            CrabAction::Jump => {
+                self.sound_manager.play_sound_effect(SoundEffect::Jump);
+            }
+            CrabAction::Emote => {
+                self.sound_manager.play_sound_effect(SoundEffect::Boing);
+            }
+        }
 
         t.position = map.resolve_collisions(&crab.collider, t.position);
 
