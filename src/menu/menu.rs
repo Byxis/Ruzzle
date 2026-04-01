@@ -1,6 +1,7 @@
 use crate::components::map::Map;
 use crate::config::Config;
 use crate::crab::crab::Crab;
+use crate::sound_manager;
 use raylib::prelude::*;
 use raylib::{ffi::KeyboardKey, RaylibHandle};
 
@@ -12,6 +13,8 @@ use crate::menu::screens::{
 };
 
 use crate::levels::level::Level;
+
+use crate::sound_manager::sound_manager::{SoundManager,SoundEffect};
 
 pub struct Assets {
     pub textures: Vec<Texture2D>,
@@ -100,21 +103,27 @@ impl Button {
 /// It is used with two functions :
 /// * update to affect game logic and variables
 /// * draw to draw the graphical elements
-pub struct MenuManager {
+pub struct MenuManager<'a> {
     pub current_menu: Menu,
     pub frame_count: i32,
     pub buttons: Vec<Button>,
     pub level_buttons: Vec<Button>,
     pub back_button: Button,
-    pub config: Config,
+    pub config: &'a Config,
     pub hovered_button: SelectMenuHoveredButtons,
     pub current_level: Option<Level>,
     pub assets: Assets,
+    pub sound_manager: SoundManager<'a>,
     //pub egg_menu: Option<Texture2D>,
 }
 
-impl MenuManager {
-    pub fn new(config: Config, rl: &mut RaylibHandle, thread: &RaylibThread) -> Self {
+impl<'a> MenuManager<'a> {
+    pub fn new(
+        config: &'a Config,
+        rl: &mut RaylibHandle,
+        thread: &RaylibThread,
+        sound_manager: SoundManager<'a>,
+    ) -> Self {
         let button_width = (config.screen_width as f32) * 0.2;
         let button_height = (config.screen_height as f32) * 0.1;
         let assets = Assets::new(rl, thread);
@@ -201,6 +210,7 @@ impl MenuManager {
             hovered_button: SelectMenuHoveredButtons::None,
             current_level: None,
             assets,
+            sound_manager,
             //egg_menu,
         }
     }
@@ -263,6 +273,7 @@ impl MenuManager {
     /// Update fonctions
     fn update_title(&mut self, rl: &RaylibHandle) {
         if rl.is_key_pressed(KeyboardKey::KEY_ENTER) {
+            self.sound_manager.play_sound_effect(SoundEffect::Click);
             self.current_menu = Menu::Loading;
             self.frame_count = 0;
         }
@@ -281,6 +292,7 @@ impl MenuManager {
             if button.rectangle.check_collision_point_rec(mouse_pos) {
                 self.hovered_button = button.id;
                 if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
+                    self.sound_manager.play_sound_effect(SoundEffect::Click);
                     match button.id {
                         SelectMenuHoveredButtons::Game => self.current_menu = Menu::Game,
                         SelectMenuHoveredButtons::LevelSelection => {
@@ -307,6 +319,7 @@ impl MenuManager {
         camera: &Camera3D,
     ) {
         if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
+            self.sound_manager.play_sound_effect(SoundEffect::Click);
             self.current_menu = Menu::Title;
         }
 
@@ -338,6 +351,7 @@ impl MenuManager {
         for (i, button) in self.level_buttons.iter().enumerate() {
             if button.rectangle.check_collision_point_rec(mouse_pos) {
                 if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
+                    self.sound_manager.play_sound_effect(SoundEffect::Click);
                     self.current_level = Some(Level::new((i + 1) as i8));
                     self.current_menu = Menu::Game;
                 }
@@ -348,6 +362,7 @@ impl MenuManager {
     fn update_multiplayer(&mut self, rl: &RaylibHandle) {
         self.handle_back_button(rl);
         if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
+            self.sound_manager.play_sound_effect(SoundEffect::Click);
             self.current_menu = Menu::Title;
         }
     }
@@ -355,6 +370,7 @@ impl MenuManager {
     fn update_settings(&mut self, rl: &RaylibHandle) {
         self.handle_back_button(rl);
         if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
+            self.sound_manager.play_sound_effect(SoundEffect::Click);
             self.current_menu = Menu::Title;
         }
     }
@@ -369,6 +385,7 @@ impl MenuManager {
     fn update_credit(&mut self, rl: &RaylibHandle) {
         self.handle_back_button(rl);
         if rl.is_key_pressed(KeyboardKey::KEY_TAB) {
+            self.sound_manager.play_sound_effect(SoundEffect::Click);
             self.current_menu = Menu::Title;
         }
     }
@@ -386,6 +403,7 @@ impl MenuManager {
             .check_collision_point_rec(mouse_pos)
         {
             if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
+                self.sound_manager.play_sound_effect(SoundEffect::Click);
                 self.current_menu = Menu::Select;
             }
         }
