@@ -34,9 +34,9 @@ pub fn draw_game(
     {
         let mut d3d = d.begin_mode3D(camera);
         // let mut s = d3d.begin_shader_mode(shader);
-        d3d.draw_grid(10, 1.0);
+        // d3d.draw_grid(10, 1.0);
         crab.draw(&mut d3d);
-        map.draw(&mut d3d);
+        // map.draw(&mut d3d);
         level.draw(&mut d3d, assets);
     }
     match level_id {
